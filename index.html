@@ -1,0 +1,1676 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sandbox de Nós — Margem</title>
+<meta name="description" content="Sandbox de Nós — quadro de estudos com nós e questões geradas por IA.">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#FAF8F3">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%237A1F2B'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Serif:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  html,body{height:100%;margin:0;background:#FAF8F3;}
+  #app{height:100%;}
+  *{box-sizing:border-box;}
+  ::selection{background:rgba(122,31,43,0.16);}
+  @keyframes ox-blink{0%,46%{opacity:1}47%,100%{opacity:0}}
+  @keyframes ox-sweep{0%{transform:translateX(-110%)}100%{transform:translateX(320%)}}
+  @keyframes ox-fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes ox-scale{from{opacity:0;transform:scale(0.97)}to{opacity:1;transform:scale(1)}}
+  textarea::placeholder,input::placeholder{color:rgba(33,30,26,0.34);}
+  .ox-scroll::-webkit-scrollbar{width:9px;height:9px;}
+  .ox-scroll::-webkit-scrollbar-thumb{background:rgba(33,30,26,0.18);border-radius:0;}
+  .ox-scroll::-webkit-scrollbar-track{background:transparent;}
+</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+</head>
+<body>
+<div id="app"></div>
+
+<script type="text/html" id="dc-template">
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Serif:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;}
+  ::selection{background:rgba(122,31,43,0.16);}
+  @keyframes ox-blink{0%,46%{opacity:1}47%,100%{opacity:0}}
+  @keyframes ox-sweep{0%{transform:translateX(-110%)}100%{transform:translateX(320%)}}
+  @keyframes ox-fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes ox-scale{from{opacity:0;transform:scale(0.97)}to{opacity:1;transform:scale(1)}}
+  textarea::placeholder,input::placeholder{color:rgba(33,30,26,0.34);}
+  .ox-scroll::-webkit-scrollbar{width:9px;height:9px;}
+  .ox-scroll::-webkit-scrollbar-thumb{background:rgba(33,30,26,0.18);border-radius:0;}
+  .ox-scroll::-webkit-scrollbar-track{background:transparent;}
+</style>
+</helmet>
+<div style="position:relative;width:100%;height:100vh;overflow:hidden;background:#FAF8F3;font-family:'IBM Plex Mono',ui-monospace,monospace;--ox:{{ accent }};--serif:{{ serifVar }};">
+
+  <!-- ===================== MASTHEAD ===================== -->
+  <div style="position:absolute;top:0;left:0;right:0;height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:#FAF8F3;border-bottom:1px solid rgba(33,30,26,0.14);z-index:40;">
+    <div style="display:flex;align-items:center;gap:16px;">
+      <button onClick="{{ goHome }}" style="display:flex;align-items:center;gap:9px;background:none;border:none;cursor:pointer;padding:0;">
+        <span style="width:9px;height:9px;background:var(--ox);display:inline-block;"></span>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:.3em;color:#211E1A;font-weight:500;">MARGEM</span>
+      </button>
+      <sc-if value="{{ showCrumb }}" hint-placeholder-val="{{ false }}">
+        <span style="display:flex;align-items:center;gap:10px;">
+          <span style="color:rgba(33,30,26,0.3);font-size:12px;">/</span>
+          <button onClick="{{ goHome }}" style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.04em;color:rgba(33,30,26,0.5);background:none;border:none;cursor:pointer;padding:0;" style-hover="color:#211E1A;">Biblioteca</button>
+          <span style="color:rgba(33,30,26,0.3);font-size:12px;">/</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.04em;color:#211E1A;">{{ crumbName }}</span>
+        </span>
+      </sc-if>
+    </div>
+    <div style="display:flex;align-items:center;gap:11px;">
+      <button onClick="{{ openSearch }}" style="display:flex;align-items:center;gap:24px;background:#FFFDF8;border:1px solid rgba(33,30,26,0.2);border-radius:2px;padding:7px 10px 7px 13px;cursor:pointer;" style-hover="border-color:rgba(33,30,26,0.4);">
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.04em;color:rgba(33,30,26,0.5);">Buscar…</span>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.06em;color:rgba(33,30,26,0.42);border:1px solid rgba(33,30,26,0.2);border-radius:2px;padding:1px 5px;">⌘K</span>
+      </button>
+      <button onClick="{{ openConta }}" title="Conta" style="width:30px;height:30px;display:flex;align-items:center;justify-content:center;background:{{ contaBg }};border:1px solid var(--ox);border-radius:2px;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.05em;color:{{ contaFg }};" style-hover="filter:brightness(0.97);">{{ identInitials }}</button>
+    </div>
+  </div>
+
+  <!-- ===================== BIBLIOTECA ===================== -->
+  <sc-if value="{{ showBiblioteca }}" hint-placeholder-val="{{ true }}">
+    <div class="ox-scroll" style="position:absolute;inset:54px 0 0 0;overflow:auto;background:#FAF8F3;background-image:radial-gradient(circle, rgba(40,32,24,0.05) 1px, transparent 1.4px);background-size:30px 30px;">
+      <div style="max-width:1140px;margin:0 auto;padding:60px 56px 40px;min-height:calc(100vh - 54px);display:flex;flex-direction:column;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-end;border-bottom:1px solid rgba(33,30,26,0.16);padding-bottom:22px;">
+          <div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.32em;color:var(--ox);text-transform:uppercase;margin-bottom:14px;">Estante · Vol. IV · 2026.1</div>
+            <h1 style="font-family:var(--serif);font-size:62px;line-height:0.95;color:#211E1A;font-weight:600;margin:0;letter-spacing:.005em;">Suas disciplinas</h1>
+          </div>
+          <div style="text-align:right;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;color:rgba(33,30,26,0.45);line-height:1.9;padding-bottom:5px;">
+            <div>{{ shelfName }}</div>
+            <div>{{ shelfMeta }}</div>
+          </div>
+        </div>
+
+        <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:30px 0;">
+          <div style="display:flex;align-items:flex-end;gap:15px;border-bottom:2px solid rgba(33,30,26,0.55);padding:0 4px;">
+            <sc-for list="{{ spines }}" as="s" hint-placeholder-count="6">
+              <div onClick="{{ s.onOpen }}" style="cursor:pointer;flex:none;">
+
+                <sc-if value="{{ s.normal }}" hint-placeholder-val="{{ true }}">
+                  <div style="display:flex;flex-direction:column;align-items:center;justify-content:space-between;width:98px;height:{{ s.h }}px;background:#FFFDF8;border:1px solid rgba(33,30,26,0.24);box-shadow:-3px 4px 9px rgba(33,30,26,0.06);transition:transform .2s ease,box-shadow .2s ease;" style-hover="transform:translateY(-10px);box-shadow:-4px 8px 16px rgba(33,30,26,0.1);">
+                    <div style="padding:14px 0 0;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;color:rgba(33,30,26,0.45);">{{ s.num }}</div>
+                    <div style="writing-mode:vertical-rl;text-orientation:mixed;font-family:var(--serif);font-size:23px;color:#211E1A;font-weight:600;letter-spacing:.01em;white-space:nowrap;padding:6px 0;">{{ s.name }}</div>
+                    <div style="padding:0 0 14px;writing-mode:vertical-rl;font-family:'IBM Plex Mono',monospace;font-size:8.5px;letter-spacing:.16em;color:rgba(33,30,26,0.4);text-transform:uppercase;white-space:nowrap;">{{ s.aulas }}</div>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{ s.active }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-direction:column;align-items:center;justify-content:space-between;width:104px;height:{{ s.h }}px;background:#FFFDF8;border:1px solid var(--ox);box-shadow:-3px 4px 12px rgba(122,31,43,0.12);transition:transform .2s ease;" style-hover="transform:translateY(-10px);">
+                    <div style="width:100%;height:7px;background:var(--ox);"></div>
+                    <div style="padding:12px 0 0;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;color:var(--ox);">{{ s.num }}</div>
+                    <div style="writing-mode:vertical-rl;text-orientation:mixed;font-family:var(--serif);font-size:24px;color:#211E1A;font-weight:600;letter-spacing:.01em;white-space:nowrap;padding:6px 0;">{{ s.name }}</div>
+                    <div style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:0 0 14px;">
+                      <span style="writing-mode:vertical-rl;font-family:'IBM Plex Mono',monospace;font-size:8.5px;letter-spacing:.16em;color:rgba(33,30,26,0.5);text-transform:uppercase;white-space:nowrap;">{{ s.aulas }}</span>
+                      <span style="width:5px;height:5px;border-radius:50%;background:var(--ox);"></span>
+                    </div>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{ s.ghost }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-direction:column;align-items:center;justify-content:space-between;width:98px;height:{{ s.h }}px;background:rgba(255,253,248,0.4);border:1px dashed rgba(33,30,26,0.32);transition:transform .2s ease,border-color .2s ease;" style-hover="transform:translateY(-10px);border-color:var(--ox);">
+                    <div style="padding:15px 0 0;font-family:var(--serif);font-size:22px;color:rgba(33,30,26,0.4);line-height:1;">+</div>
+                    <div style="writing-mode:vertical-rl;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.18em;color:rgba(33,30,26,0.42);text-transform:uppercase;white-space:nowrap;padding:6px 0;">Nova disciplina</div>
+                    <div style="padding:0 0 16px;"></div>
+                  </div>
+                </sc-if>
+
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(33,30,26,0.12);padding-top:18px;">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.08em;color:rgba(33,30,26,0.42);">Toque numa lombada para abrir o quadro.</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.08em;color:rgba(33,30,26,0.42);">{{ footerStats }}</span>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ===================== CANVAS ===================== -->
+  <sc-if value="{{ showCanvas }}" hint-placeholder-val="{{ false }}">
+    <div ref="{{ setVp }}" onPointerDown="{{ onBgPointerDown }}" onDoubleClick="{{ onBgDblClick }}" style="position:absolute;inset:54px 0 0 0;overflow:hidden;background-color:#FAF8F3;background-image:{{ bgImage }};background-size:{{ bgSize }}px {{ bgSize }}px;background-position:{{ panX }}px {{ panY }}px;cursor:{{ cursor }};user-select:none;touch-action:none;">
+
+      <div style="position:absolute;left:0;top:0;transform:{{ worldTransform }};transform-origin:0 0;pointer-events:none;">
+        <svg style="position:absolute;left:0;top:0;width:1px;height:1px;overflow:visible;pointer-events:none;">
+          <sc-for list="{{ lines }}" as="ln" hint-placeholder-count="2">
+            <line x1="{{ ln.x1 }}" y1="{{ ln.y1 }}" x2="{{ ln.x2 }}" y2="{{ ln.y2 }}" stroke="{{ ln.stroke }}" stroke-width="1.25" vector-effect="non-scaling-stroke"></line>
+          </sc-for>
+          <sc-if value="{{ dragLine }}" hint-placeholder-val="{{ false }}">
+            <line x1="{{ dragLine.x1 }}" y1="{{ dragLine.y1 }}" x2="{{ dragLine.x2 }}" y2="{{ dragLine.y2 }}" stroke="var(--ox)" stroke-width="1.5" stroke-dasharray="5 4" vector-effect="non-scaling-stroke"></line>
+          </sc-if>
+        </svg>
+
+        <sc-for list="{{ nodes }}" as="n" hint-placeholder-count="3">
+          <div onPointerDown="{{ n.onDown }}" style="position:absolute;left:{{ n.x }}px;top:{{ n.y }}px;width:{{ n.w }}px;pointer-events:auto;cursor:grab;">
+
+            <sc-if value="{{ n.isTitle }}" hint-placeholder-val="{{ false }}">
+              <div style="background:#FFFDF8;border:1px solid rgba(33,30,26,0.28);border-radius:3px;padding:28px 32px;box-shadow:0 1px 0 rgba(33,30,26,0.05),inset 0 0 0 3px rgba(33,30,26,0.035);text-align:center;">
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.3em;color:var(--ox);text-transform:uppercase;margin-bottom:13px;">{{ n.kickerLabel }}</div>
+                <div style="font-family:var(--serif);font-size:44px;line-height:1.0;color:#211E1A;font-weight:600;letter-spacing:.005em;">{{ n.titleBig }}</div>
+                <div style="height:1px;background:rgba(33,30,26,0.2);margin:18px auto 13px;width:58px;"></div>
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.16em;color:rgba(33,30,26,0.5);text-transform:uppercase;">{{ n.titleMeta }}</div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ n.isLesson }}" hint-placeholder-val="{{ true }}">
+              <div style="background:#FFFDF8;border:1px solid rgba(33,30,26,0.24);border-radius:3px;padding:19px 21px;box-shadow:0 1px 0 rgba(33,30,26,0.04);">
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.28em;color:rgba(33,30,26,0.42);text-transform:uppercase;margin-bottom:9px;">{{ n.kicker }}</div>
+                <div style="font-family:var(--serif);font-size:22px;line-height:1.1;color:#211E1A;font-weight:600;">{{ n.titleText }}</div>
+                <button onPointerDown="{{ stop }}" onClick="{{ n.onMaterial }}" style="display:flex;align-items:center;gap:8px;margin-top:15px;background:none;border:none;padding:0;cursor:pointer;width:100%;text-align:left;" style-hover="opacity:0.7;">
+                  <span style="width:5px;height:5px;background:var(--ox);display:inline-block;flex:none;"></span>
+                  <span style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.1em;color:rgba(33,30,26,0.5);text-transform:uppercase;flex:1;">{{ n.material }}</span>
+                  <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--ox);">↗</span>
+                </button>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ n.genEmpty }}" hint-placeholder-val="{{ false }}">
+              <div style="background:#FCFAF4;border:1px dashed rgba(33,30,26,0.36);border-radius:3px;padding:20px;">
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.28em;color:rgba(33,30,26,0.4);text-transform:uppercase;margin-bottom:13px;">Nó vazio</div>
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;line-height:1.55;color:rgba(33,30,26,0.6);margin-bottom:15px;">Conecte aulas e invoque a IA para preencher este nó.</div>
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.04em;color:rgba(33,30,26,0.5);margin-bottom:16px;">{{ n.connLine }}</div>
+                <button onPointerDown="{{ stop }}" onClick="{{ n.onAi }}" style="width:100%;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ox);background:transparent;border:1px solid var(--ox);border-radius:2px;padding:10px 12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;" style-hover="background:rgba(122,31,43,0.06);">
+                  <span style="width:5px;height:5px;background:var(--ox);display:inline-block;"></span>Invocar IA
+                </button>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ n.genResult }}" hint-placeholder-val="{{ false }}">
+              <div onClick="{{ n.onSkip }}" onDoubleClick="{{ n.onOpen }}" style="background:#FFFDF8;border:1px solid rgba(33,30,26,0.26);border-radius:3px;padding:20px 22px;box-shadow:0 1px 0 rgba(33,30,26,0.05);">
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.24em;color:var(--ox);text-transform:uppercase;margin-bottom:5px;">{{ n.resultKicker }}</div>
+                <div style="font-family:var(--serif);font-size:25px;line-height:1.04;color:#211E1A;font-weight:600;margin-bottom:7px;">{{ n.blockTitle }}</div>
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.08em;color:rgba(33,30,26,0.45);text-transform:uppercase;margin-bottom:15px;">lê de — {{ n.connectedLabel }}</div>
+                <div style="height:1px;background:rgba(33,30,26,0.16);margin-bottom:15px;"></div>
+                <sc-if value="{{ n.showStatus }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;align-items:center;gap:9px;margin-bottom:2px;">
+                    <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(33,30,26,0.6);">{{ n.statusText }}</span>
+                    <span style="display:inline-block;width:6px;height:13px;background:var(--ox);animation:ox-blink 1s steps(1) infinite;"></span>
+                  </div>
+                  <div style="height:1px;background:rgba(33,30,26,0.1);overflow:hidden;margin-top:12px;position:relative;">
+                    <div style="position:absolute;top:0;left:0;height:1px;width:38%;background:var(--ox);animation:ox-sweep 1.5s ease-in-out infinite;"></div>
+                  </div>
+                </sc-if>
+                <sc-for list="{{ n.shownLines }}" as="line" hint-placeholder-count="0">
+                  <div style="display:flex;gap:12px;margin-bottom:13px;align-items:flex-start;">
+                    <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ox);line-height:1.62;flex:none;padding-top:1px;">{{ line.n }}</span>
+                    <span style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;line-height:1.62;color:#211E1A;">{{ line.text }}<sc-if value="{{ line.caret }}" hint-placeholder-val="{{ false }}"><span style="display:inline-block;width:6px;height:12px;background:var(--ox);margin-left:2px;transform:translateY(1px);animation:ox-blink 1s steps(1) infinite;"></span></sc-if></span>
+                  </div>
+                </sc-for>
+                <sc-if value="{{ n.filled }}" hint-placeholder-val="{{ false }}">
+                  <div style="height:1px;background:rgba(33,30,26,0.12);margin:3px 0 13px;"></div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <button onPointerDown="{{ stop }}" onClick="{{ n.onRegen }}" style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:rgba(33,30,26,0.55);background:transparent;border:none;cursor:pointer;padding:0;" style-hover="color:var(--ox);">↺ regenerar</button>
+                    <button onPointerDown="{{ stop }}" onClick="{{ n.onOpen }}" style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ox);background:transparent;border:none;cursor:pointer;padding:0;display:flex;align-items:center;gap:6px;" style-hover="opacity:0.7;">abrir leitura ↗</button>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-if>
+
+            <div onPointerDown="{{ n.onHandleDown }}" title="arraste para conectar" style="position:absolute;top:50%;right:-7px;transform:translateY(-50%);width:13px;height:13px;border-radius:50%;background:#FFFDF8;border:1px solid var(--ox);opacity:0.34;cursor:crosshair;display:flex;align-items:center;justify-content:center;" style-hover="opacity:1;">
+              <span style="width:4px;height:4px;border-radius:50%;background:var(--ox);display:block;"></span>
+            </div>
+
+            <sc-if value="{{ n.selected }}" hint-placeholder-val="{{ false }}">
+              <div style="position:absolute;inset:-7px;pointer-events:none;">
+                <span style="position:absolute;top:0;left:0;width:11px;height:11px;border-top:1.5px solid var(--ox);border-left:1.5px solid var(--ox);"></span>
+                <span style="position:absolute;top:0;right:0;width:11px;height:11px;border-top:1.5px solid var(--ox);border-right:1.5px solid var(--ox);"></span>
+                <span style="position:absolute;bottom:0;left:0;width:11px;height:11px;border-bottom:1.5px solid var(--ox);border-left:1.5px solid var(--ox);"></span>
+                <span style="position:absolute;bottom:0;right:0;width:11px;height:11px;border-bottom:1.5px solid var(--ox);border-right:1.5px solid var(--ox);"></span>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ n.isOver }}" hint-placeholder-val="{{ false }}">
+              <div style="position:absolute;inset:-4px;border:1px solid var(--ox);border-radius:5px;pointer-events:none;background:rgba(122,31,43,0.05);"></div>
+            </sc-if>
+
+          </div>
+        </sc-for>
+      </div>
+
+      <!-- canvas chrome -->
+      <div style="position:absolute;left:24px;bottom:24px;display:flex;align-items:center;gap:12px;">
+        <div style="display:flex;align-items:center;background:#FFFDF8;border:1px solid rgba(33,30,26,0.22);border-radius:2px;overflow:hidden;">
+          <button onClick="{{ zoomOut }}" style="font-family:'IBM Plex Mono',monospace;font-size:15px;color:#211E1A;background:transparent;border:none;border-right:1px solid rgba(33,30,26,0.16);padding:6px 13px;cursor:pointer;line-height:1;" style-hover="background:rgba(33,30,26,0.04);">−</button>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.06em;color:rgba(33,30,26,0.62);padding:0 11px;min-width:54px;text-align:center;">{{ zoomPct }}</span>
+          <button onClick="{{ zoomIn }}" style="font-family:'IBM Plex Mono',monospace;font-size:15px;color:#211E1A;background:transparent;border:none;border-left:1px solid rgba(33,30,26,0.16);padding:6px 13px;cursor:pointer;line-height:1;" style-hover="background:rgba(33,30,26,0.04);">+</button>
+        </div>
+        <button onClick="{{ resetView }}" style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:rgba(33,30,26,0.5);background:transparent;border:none;cursor:pointer;padding:0;" style-hover="color:var(--ox);">ajustar</button>
+      </div>
+
+      <div style="position:absolute;right:24px;bottom:24px;display:flex;gap:10px;align-items:center;">
+        <button onClick="{{ addNode }}" style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#211E1A;background:#FFFDF8;border:1px solid rgba(33,30,26,0.26);border-radius:2px;padding:11px 16px;cursor:pointer;" style-hover="border-color:rgba(33,30,26,0.5);">+ Nó</button>
+        <button onClick="{{ cornerAi }}" style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#FFFDF8;background:var(--ox);border:1px solid var(--ox);border-radius:2px;padding:11px 18px;cursor:pointer;display:flex;align-items:center;gap:8px;" style-hover="filter:brightness(0.88);">
+          <span style="width:5px;height:5px;background:#FFFDF8;display:inline-block;"></span>Invocar IA
+        </button>
+      </div>
+
+      <sc-if value="{{ hintOpen }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;top:18px;right:24px;width:270px;background:#FFFDF8;border:1px solid rgba(33,30,26,0.24);border-radius:3px;padding:18px 18px 17px;box-shadow:0 2px 12px rgba(33,30,26,0.07);">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px;">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--ox);">Como funciona</span>
+            <button onClick="{{ dismissHint }}" style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(33,30,26,0.45);background:none;border:none;cursor:pointer;padding:0;line-height:1;" style-hover="color:#211E1A;">✕</button>
+          </div>
+          <div style="display:flex;gap:11px;margin-bottom:11px;align-items:flex-start;">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--ox);padding-top:1px;">01</span>
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;line-height:1.5;color:rgba(33,30,26,0.7);">Toque duplo no papel para criar um nó.</span>
+          </div>
+          <div style="display:flex;gap:11px;margin-bottom:11px;align-items:flex-start;">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--ox);padding-top:1px;">02</span>
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;line-height:1.5;color:rgba(33,30,26,0.7);">Arraste das aulas (●) para dentro do nó.</span>
+          </div>
+          <div style="display:flex;gap:11px;align-items:flex-start;">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--ox);padding-top:1px;">03</span>
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;line-height:1.5;color:rgba(33,30,26,0.7);">Selecione o nó e invoque a IA.</span>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ hintClosed }}" hint-placeholder-val="{{ true }}">
+        <button onClick="{{ openHint }}" style="position:absolute;top:18px;right:24px;width:30px;height:30px;border-radius:50%;border:1px solid rgba(33,30,26,0.26);background:#FFFDF8;font-family:var(--serif);font-size:16px;color:#211E1A;cursor:pointer;" style-hover="border-color:var(--ox);">?</button>
+      </sc-if>
+    </div>
+  </sc-if>
+
+  <!-- ===================== CONTA ===================== -->
+  <sc-if value="{{ showConta }}" hint-placeholder-val="{{ false }}">
+    <div class="ox-scroll" style="position:absolute;inset:54px 0 0 0;overflow:auto;background:#FAF8F3;">
+      <div style="max-width:920px;margin:0 auto;padding:56px 56px 64px;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.32em;color:var(--ox);text-transform:uppercase;margin-bottom:14px;">Conta &amp; preferências</div>
+        <h1 style="font-family:var(--serif);font-size:54px;line-height:0.95;color:#211E1A;font-weight:600;margin:0 0 40px;">{{ acctName }}</h1>
+
+        <div style="display:grid;grid-template-columns:260px 1fr;gap:48px;align-items:start;">
+          <!-- identity -->
+          <div>
+            <div style="width:88px;height:88px;background:#FFFDF8;border:1px solid var(--ox);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:34px;color:var(--ox);margin-bottom:20px;">{{ acctInitials }}</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;line-height:1.9;color:rgba(33,30,26,0.6);">
+              <sc-if value="{{ acctHasEmail }}"><div style="color:#211E1A;">{{ acctEmail }}</div></sc-if>
+              <sc-if value="{{ acctHasCourse }}"><div>{{ acctCourse }}</div></sc-if>
+              <div>{{ acctTerm }}</div>
+            </div>
+            <div style="display:flex;gap:36px;margin-top:30px;padding-top:24px;border-top:1px solid rgba(33,30,26,0.14);">
+              <div><div style="font-family:var(--serif);font-size:34px;color:#211E1A;line-height:1;">{{ statDisc }}</div><div style="font-family:'IBM Plex Mono',monospace;font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;color:rgba(33,30,26,0.45);margin-top:5px;">Disciplinas</div></div>
+              <div><div style="font-family:var(--serif);font-size:34px;color:#211E1A;line-height:1;">{{ statNos }}</div><div style="font-family:'IBM Plex Mono',monospace;font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;color:rgba(33,30,26,0.45);margin-top:5px;">Nós</div></div>
+              <div><div style="font-family:var(--serif);font-size:34px;color:var(--ox);line-height:1;">{{ statGer }}</div><div style="font-family:'IBM Plex Mono',monospace;font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;color:rgba(33,30,26,0.45);margin-top:5px;">Gerações</div></div>
+            </div>
+          </div>
+
+          <!-- preferences -->
+          <div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:rgba(33,30,26,0.45);padding-bottom:14px;border-bottom:1px solid rgba(33,30,26,0.16);margin-bottom:6px;">Aparência</div>
+
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:18px 0;border-bottom:1px solid rgba(33,30,26,0.1);">
+              <div><div style="font-family:var(--serif);font-size:19px;color:#211E1A;">Cor de acento</div><div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:rgba(33,30,26,0.5);margin-top:3px;">Usada com parcimônia em todo o app.</div></div>
+              <div style="display:flex;gap:9px;">
+                <sc-for list="{{ accentSwatches }}" as="sw" hint-placeholder-count="4">
+                  <button onClick="{{ sw.onPick }}" title="{{ sw.label }}" style="width:26px;height:26px;border-radius:2px;background:{{ sw.color }};border:1px solid rgba(33,30,26,0.2);cursor:pointer;position:relative;" style-hover="transform:scale(1.08);">
+                    <sc-if value="{{ sw.selected }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;inset:-4px;border:1px solid #211E1A;border-radius:3px;"></span></sc-if>
+                  </button>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:18px 0;border-bottom:1px solid rgba(33,30,26,0.1);">
+              <div><div style="font-family:var(--serif);font-size:19px;color:#211E1A;">Fonte dos títulos</div><div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:rgba(33,30,26,0.5);margin-top:3px;">Serifa editorial dos cabeçalhos.</div></div>
+              <div style="display:flex;border:1px solid rgba(33,30,26,0.22);border-radius:2px;overflow:hidden;">
+                <sc-for list="{{ serifOptions }}" as="so" hint-placeholder-count="2">
+                  <button onClick="{{ so.onPick }}" style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.06em;padding:8px 13px;cursor:pointer;border:none;background:{{ so.bg }};color:{{ so.fg }};border-left:{{ so.sep }};" style-hover="filter:brightness(0.97);">{{ so.short }}</button>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:18px 0;border-bottom:1px solid rgba(33,30,26,0.1);">
+              <div><div style="font-family:var(--serif);font-size:19px;color:#211E1A;">Grid pontilhado</div><div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:rgba(33,30,26,0.5);margin-top:3px;">Pontos guia no fundo do quadro.</div></div>
+              <button onClick="{{ toggleGrid }}" style="width:42px;height:23px;border-radius:2px;border:1px solid rgba(33,30,26,0.22);background:{{ gridTrack }};position:relative;cursor:pointer;padding:0;">
+                <span style="position:absolute;top:2px;left:{{ gridKnob }};width:17px;height:17px;background:#FFFDF8;border:1px solid rgba(33,30,26,0.2);transition:left .16s ease;"></span>
+              </button>
+            </div>
+
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:18px 0;border-bottom:1px solid rgba(33,30,26,0.1);">
+              <div><div style="font-family:var(--serif);font-size:19px;color:#211E1A;">Mostrar dicas no quadro</div><div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:rgba(33,30,26,0.5);margin-top:3px;">Painel "Como funciona" ao abrir.</div></div>
+              <button onClick="{{ toggleHints }}" style="width:42px;height:23px;border-radius:2px;border:1px solid rgba(33,30,26,0.22);background:{{ hintsTrack }};position:relative;cursor:pointer;padding:0;">
+                <span style="position:absolute;top:2px;left:{{ hintsKnob }};width:17px;height:17px;background:#FFFDF8;border:1px solid rgba(33,30,26,0.2);transition:left .16s ease;"></span>
+              </button>
+            </div>
+
+            <div style="display:flex;gap:14px;margin-top:34px;">
+              <button onClick="{{ goHome }}" style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#211E1A;background:#FFFDF8;border:1px solid rgba(33,30,26,0.26);border-radius:2px;padding:11px 18px;cursor:pointer;" style-hover="border-color:rgba(33,30,26,0.5);">← Voltar à estante</button>
+              <button onClick="{{ resetAll }}" style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(33,30,26,0.5);background:transparent;border:none;cursor:pointer;padding:11px 4px;" style-hover="color:var(--ox);">Apagar tudo</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ===================== READING / FOCUS ===================== -->
+  <sc-if value="{{ reading }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeReading }}" style="position:absolute;inset:0;z-index:70;background:rgba(33,30,26,0.32);display:flex;align-items:flex-start;justify-content:center;padding:40px 24px;overflow:auto;" class="ox-scroll">
+      <div onClick="{{ stop }}" style="width:100%;max-width:860px;background:#FFFDF8;border:1px solid rgba(33,30,26,0.3);box-shadow:0 18px 60px rgba(33,30,26,0.22);margin:auto;">
+        <div style="padding:38px 52px 28px;border-bottom:1px solid rgba(33,30,26,0.14);">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+            <div>
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--ox);margin-bottom:11px;">{{ readingKicker }}</div>
+              <h2 style="font-family:var(--serif);font-size:40px;line-height:1;color:#211E1A;font-weight:600;margin:0;">{{ readingTitle }}</h2>
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.04em;color:rgba(33,30,26,0.5);margin-top:12px;">{{ readingMeta }}</div>
+            </div>
+            <button onClick="{{ closeReading }}" style="font-family:'IBM Plex Mono',monospace;font-size:14px;color:rgba(33,30,26,0.45);background:none;border:1px solid rgba(33,30,26,0.18);border-radius:2px;width:30px;height:30px;cursor:pointer;flex:none;" style-hover="color:#211E1A;border-color:rgba(33,30,26,0.4);">✕</button>
+          </div>
+          <div style="display:flex;align-items:center;gap:13px;margin-top:24px;">
+            <div style="flex:1;height:2px;background:rgba(33,30,26,0.1);position:relative;">
+              <div style="position:absolute;top:0;left:0;height:2px;background:var(--ox);width:{{ readProgressW }};transition:width .3s ease;"></div>
+            </div>
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.08em;color:rgba(33,30,26,0.55);white-space:nowrap;">{{ readProgressLabel }}</span>
+          </div>
+        </div>
+
+        <div style="padding:14px 52px 44px;">
+          <sc-for list="{{ readingQs }}" as="q" hint-placeholder-count="3">
+            <div style="display:grid;grid-template-columns:1fr 184px;gap:32px;padding:30px 0;border-bottom:1px solid rgba(33,30,26,0.1);">
+              <div>
+                <div style="display:flex;gap:16px;align-items:flex-start;">
+                  <span style="font-family:var(--serif);font-size:30px;color:var(--ox);line-height:1;flex:none;width:34px;">{{ q.num }}</span>
+                  <div style="flex:1;">
+                    <div style="font-family:'IBM Plex Mono',monospace;font-size:14px;line-height:1.62;color:#211E1A;">{{ q.text }}</div>
+
+                    <textarea placeholder="sua resolução…" style="width:100%;margin-top:16px;min-height:74px;resize:vertical;font-family:'IBM Plex Mono',monospace;font-size:12.5px;line-height:25px;color:#211E1A;background:linear-gradient(transparent 24px, rgba(33,30,26,0.1) 25px);background-size:100% 25px;border:none;border-top:1px solid rgba(33,30,26,0.12);border-bottom:1px solid rgba(33,30,26,0.12);padding:6px 2px;outline:none;"></textarea>
+
+                    <div style="display:flex;gap:18px;align-items:center;margin-top:14px;">
+                      <button onClick="{{ q.onResolve }}" style="display:flex;align-items:center;gap:9px;background:none;border:none;cursor:pointer;padding:0;">
+                        <span style="width:16px;height:16px;border:1px solid {{ q.checkBorder }};background:{{ q.checkBg }};display:flex;align-items:center;justify-content:center;color:#FFFDF8;font-size:10px;">{{ q.checkMark }}</span>
+                        <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:{{ q.resolveColor }};">{{ q.resolveLabel }}</span>
+                      </button>
+                      <button onClick="{{ q.onReveal }}" style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:rgba(33,30,26,0.5);background:none;border:none;cursor:pointer;padding:0;" style-hover="color:var(--ox);">{{ q.revealLabel }}</button>
+                    </div>
+
+                    <sc-if value="{{ q.revealed }}" hint-placeholder-val="{{ false }}">
+                      <div style="margin-top:16px;padding:18px 20px;background:#FAF8F3;border:1px solid rgba(33,30,26,0.14);border-left:2px solid var(--ox);">
+                        <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--ox);margin-bottom:12px;">Resolução</div>
+                        <sc-for list="{{ q.solution }}" as="sl" hint-placeholder-count="2">
+                          <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;line-height:1.6;color:#211E1A;margin-bottom:9px;">{{ sl }}</div>
+                        </sc-for>
+                        <sc-if value="{{ q.hasTable }}" hint-placeholder-val="{{ false }}">
+                          <div style="display:inline-grid;grid-template-columns:repeat(5,auto);border:1px solid rgba(33,30,26,0.2);margin:6px 0 4px;">
+                            <sc-for list="{{ truthHead }}" as="h" hint-placeholder-count="5">
+                              <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ox);padding:6px 13px;text-align:center;border-bottom:1px solid rgba(33,30,26,0.2);background:rgba(33,30,26,0.03);">{{ h }}</div>
+                            </sc-for>
+                            <sc-for list="{{ truthCells }}" as="c" hint-placeholder-count="20">
+                              <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#211E1A;padding:5px 13px;text-align:center;border-bottom:1px solid rgba(33,30,26,0.08);">{{ c }}</div>
+                            </sc-for>
+                          </div>
+                        </sc-if>
+                        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ox);margin-top:8px;letter-spacing:.02em;">→ {{ q.answer }}</div>
+                      </div>
+                    </sc-if>
+                  </div>
+                </div>
+              </div>
+
+              <div style="border-left:1px solid rgba(33,30,26,0.1);padding-left:24px;">
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:rgba(33,30,26,0.4);margin-bottom:10px;">Margem</div>
+                <textarea placeholder="anotação…" style="width:100%;min-height:60px;resize:vertical;font-family:var(--serif);font-style:italic;font-size:15px;line-height:1.45;color:rgba(33,30,26,0.72);background:transparent;border:none;outline:none;padding:0;"></textarea>
+              </div>
+            </div>
+          </sc-for>
+
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:28px;">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.06em;color:rgba(33,30,26,0.45);">Salvo no nó · {{ readProgressLabel }}</span>
+            <button onClick="{{ closeReading }}" style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#FFFDF8;background:var(--ox);border:none;border-radius:2px;padding:11px 22px;cursor:pointer;" style-hover="filter:brightness(0.88);">Concluir</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ===================== MATERIAL VIEWER ===================== -->
+  <sc-if value="{{ material }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeMaterial }}" style="position:absolute;inset:0;z-index:70;background:rgba(33,30,26,0.34);display:flex;align-items:center;justify-content:center;padding:34px;">
+      <div onClick="{{ stop }}" style="width:100%;max-width:980px;height:100%;max-height:780px;background:#FFFDF8;border:1px solid rgba(33,30,26,0.3);box-shadow:0 18px 60px rgba(33,30,26,0.24);display:flex;flex-direction:column;">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:18px 26px;border-bottom:1px solid rgba(33,30,26,0.14);flex:none;">
+          <div style="display:flex;align-items:baseline;gap:14px;">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--ox);">{{ material.kicker }}</span>
+            <span style="font-family:var(--serif);font-size:21px;color:#211E1A;font-weight:600;">{{ material.title }}</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:16px;">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.06em;color:rgba(33,30,26,0.45);">{{ material.meta }}</span>
+            <button style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:rgba(33,30,26,0.55);background:none;border:1px solid rgba(33,30,26,0.2);border-radius:2px;padding:6px 11px;cursor:pointer;" style-hover="color:var(--ox);border-color:var(--ox);">↓ PDF</button>
+            <button onClick="{{ closeMaterial }}" style="font-family:'IBM Plex Mono',monospace;font-size:14px;color:rgba(33,30,26,0.45);background:none;border:1px solid rgba(33,30,26,0.18);border-radius:2px;width:30px;height:30px;cursor:pointer;" style-hover="color:#211E1A;">✕</button>
+          </div>
+        </div>
+
+        <div style="flex:1;display:flex;min-height:0;">
+          <div class="ox-scroll" style="width:128px;flex:none;border-right:1px solid rgba(33,30,26,0.12);padding:16px 14px;overflow:auto;display:flex;flex-direction:column;gap:12px;">
+            <sc-for list="{{ matThumbs }}" as="t" hint-placeholder-count="3">
+              <button onClick="{{ t.onPick }}" style="background:#FFFDF8;border:1px solid {{ t.border }};cursor:pointer;padding:0;text-align:left;box-shadow:0 1px 0 rgba(33,30,26,0.04);">
+                <div style="height:74px;padding:9px 9px 0;overflow:hidden;">
+                  <div style="height:3px;width:60%;background:rgba(33,30,26,0.3);margin-bottom:5px;"></div>
+                  <div style="height:2px;width:90%;background:rgba(33,30,26,0.12);margin-bottom:4px;"></div>
+                  <div style="height:2px;width:82%;background:rgba(33,30,26,0.12);margin-bottom:4px;"></div>
+                  <div style="height:2px;width:88%;background:rgba(33,30,26,0.12);"></div>
+                </div>
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:8.5px;letter-spacing:.08em;color:{{ t.numColor }};padding:5px 9px 8px;border-top:1px solid rgba(33,30,26,0.08);">{{ t.n }}</div>
+              </button>
+            </sc-for>
+          </div>
+
+          <div class="ox-scroll" style="flex:1;overflow:auto;padding:46px 60px;">
+            <sc-if value="{{ matPage.isDef }}" hint-placeholder-val="{{ true }}">
+              <div style="max-width:560px;">
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:var(--ox);margin-bottom:14px;">{{ matPage.eyebrow }}</div>
+                <h3 style="font-family:var(--serif);font-size:34px;line-height:1.04;color:#211E1A;font-weight:600;margin:0 0 18px;">{{ matPage.title }}</h3>
+                <p style="font-family:'IBM Plex Serif',Georgia,serif;font-size:15px;line-height:1.7;color:rgba(33,30,26,0.82);margin:0 0 26px;">{{ matPage.intro }}</p>
+                <sc-if value="{{ matPage.hasTerms }}" hint-placeholder-val="{{ false }}">
+                  <div style="border-top:1px solid rgba(33,30,26,0.16);">
+                    <sc-for list="{{ matPage.terms }}" as="tm" hint-placeholder-count="5">
+                      <div style="display:grid;grid-template-columns:48px 150px 1fr;gap:16px;align-items:baseline;padding:11px 0;border-bottom:1px solid rgba(33,30,26,0.09);">
+                        <span style="font-family:var(--serif);font-size:24px;color:var(--ox);">{{ tm.sym }}</span>
+                        <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#211E1A;">{{ tm.name }}</span>
+                        <span style="font-family:'IBM Plex Serif',Georgia,serif;font-style:italic;font-size:14px;color:rgba(33,30,26,0.65);">{{ tm.read }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ matPage.hasBullets }}" hint-placeholder-val="{{ false }}">
+                  <div>
+                    <sc-for list="{{ matPage.bullets }}" as="b" hint-placeholder-count="3">
+                      <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:12px;">
+                        <span style="width:5px;height:5px;background:var(--ox);margin-top:8px;flex:none;"></span>
+                        <span style="font-family:'IBM Plex Serif',Georgia,serif;font-size:15px;line-height:1.6;color:rgba(33,30,26,0.82);">{{ b }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ matPage.isTable }}" hint-placeholder-val="{{ false }}">
+              <div style="max-width:560px;">
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:var(--ox);margin-bottom:14px;">{{ matPage.eyebrow }}</div>
+                <h3 style="font-family:var(--serif);font-size:34px;line-height:1.04;color:#211E1A;font-weight:600;margin:0 0 22px;">{{ matPage.title }}</h3>
+                <div style="display:inline-grid;grid-template-columns:repeat(5,auto);border:1px solid rgba(33,30,26,0.24);">
+                  <sc-for list="{{ truthHead }}" as="h" hint-placeholder-count="5">
+                    <div style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--ox);padding:9px 20px;text-align:center;border-bottom:1px solid rgba(33,30,26,0.24);background:rgba(33,30,26,0.03);">{{ h }}</div>
+                  </sc-for>
+                  <sc-for list="{{ truthCells }}" as="c" hint-placeholder-count="20">
+                    <div style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:#211E1A;padding:8px 20px;text-align:center;border-bottom:1px solid rgba(33,30,26,0.09);">{{ c }}</div>
+                  </sc-for>
+                </div>
+                <p style="font-family:'IBM Plex Serif',Georgia,serif;font-size:14px;line-height:1.65;color:rgba(33,30,26,0.7);margin:24px 0 0;max-width:440px;">{{ matPage.note }}</p>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ matPage.isPlaceholder }}" hint-placeholder-val="{{ false }}">
+              <div style="max-width:600px;">
+                <div style="width:100%;height:380px;border:1px solid rgba(33,30,26,0.2);background-image:repeating-linear-gradient(45deg, rgba(33,30,26,0.05) 0, rgba(33,30,26,0.05) 1px, transparent 1px, transparent 9px);display:flex;align-items:center;justify-content:center;">
+                  <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;color:rgba(33,30,26,0.4);background:#FFFDF8;padding:8px 16px;border:1px solid rgba(33,30,26,0.16);">slide digitalizado</span>
+                </div>
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.06em;color:rgba(33,30,26,0.5);margin-top:14px;">{{ matPage.caption }}</div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ matPage.isRefs }}" hint-placeholder-val="{{ false }}">
+              <div style="max-width:560px;">
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:var(--ox);margin-bottom:14px;">Referências</div>
+                <h3 style="font-family:var(--serif);font-size:34px;line-height:1.04;color:#211E1A;font-weight:600;margin:0 0 22px;">Leituras &amp; exercícios</h3>
+                <sc-for list="{{ matPage.refs }}" as="r" hint-placeholder-count="3">
+                  <div style="display:flex;gap:16px;align-items:baseline;padding:13px 0;border-bottom:1px solid rgba(33,30,26,0.1);">
+                    <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--ox);">{{ r.n }}</span>
+                    <span style="font-family:'IBM Plex Serif',Georgia,serif;font-size:15px;line-height:1.5;color:rgba(33,30,26,0.82);">{{ r.text }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ===================== SEARCH ===================== -->
+  <sc-if value="{{ search }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeSearch }}" style="position:absolute;inset:0;z-index:80;background:rgba(33,30,26,0.3);display:flex;align-items:flex-start;justify-content:center;padding-top:96px;">
+      <div onClick="{{ stop }}" style="width:100%;max-width:600px;background:#FFFDF8;border:1px solid rgba(33,30,26,0.3);box-shadow:0 20px 60px rgba(33,30,26,0.24);">
+        <div style="display:flex;align-items:center;gap:14px;padding:18px 22px;border-bottom:1px solid rgba(33,30,26,0.14);">
+          <span style="width:7px;height:7px;background:var(--ox);display:inline-block;flex:none;"></span>
+          <input ref="{{ setSearchInput }}" value="{{ search.q }}" onInput="{{ onSearchInput }}" onKeyDown="{{ onSearchKey }}" placeholder="Buscar disciplinas, aulas, nós…" style="flex:1;font-family:'IBM Plex Mono',monospace;font-size:15px;color:#211E1A;background:transparent;border:none;outline:none;" />
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.06em;color:rgba(33,30,26,0.4);border:1px solid rgba(33,30,26,0.2);border-radius:2px;padding:2px 6px;">ESC</span>
+        </div>
+
+        <div class="ox-scroll" style="max-height:50vh;overflow:auto;">
+          <sc-if value="{{ searchEmpty }}" hint-placeholder-val="{{ true }}">
+            <div style="padding:22px;">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:rgba(33,30,26,0.4);margin-bottom:14px;">Sugestões</div>
+              <div style="display:flex;flex-wrap:wrap;gap:9px;">
+                <sc-for list="{{ suggestions }}" as="sg" hint-placeholder-count="4">
+                  <button onClick="{{ sg.onPick }}" style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#211E1A;background:#FAF8F3;border:1px solid rgba(33,30,26,0.18);border-radius:2px;padding:7px 12px;cursor:pointer;" style-hover="border-color:var(--ox);color:var(--ox);">{{ sg.text }}</button>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ searchHasResults }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:8px 0 12px;">
+              <sc-for list="{{ searchResults }}" as="r" hint-placeholder-count="4">
+                <button onClick="{{ r.onPick }}" style="display:flex;align-items:center;gap:16px;width:100%;padding:13px 22px;background:none;border:none;border-bottom:1px solid rgba(33,30,26,0.07);cursor:pointer;text-align:left;" style-hover="background:#FAF8F3;">
+                  <span style="font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.14em;color:var(--ox);border:1px solid rgba(122,31,43,0.4);padding:3px 6px;width:46px;text-align:center;flex:none;">{{ r.type }}</span>
+                  <span style="flex:1;min-width:0;">
+                    <span style="font-family:var(--serif);font-size:18px;color:#211E1A;display:block;line-height:1.2;">{{ r.title }}</span>
+                    <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:rgba(33,30,26,0.5);display:block;margin-top:2px;">{{ r.context }}</span>
+                  </span>
+                  <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(33,30,26,0.35);flex:none;">↗</span>
+                </button>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ searchNoResults }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:34px 22px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(33,30,26,0.45);">Nada encontrado para "{{ search.q }}".</div>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ===================== NEW DISCIPLINE ===================== -->
+  <sc-if value="{{ newDisc }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeNewDisc }}" style="position:absolute;inset:0;z-index:80;background:rgba(33,30,26,0.34);display:flex;align-items:center;justify-content:center;padding:24px;">
+      <div onClick="{{ stop }}" style="width:100%;max-width:440px;background:#FFFDF8;border:1px solid rgba(33,30,26,0.3);box-shadow:0 18px 60px rgba(33,30,26,0.24);padding:34px 36px 30px;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--ox);margin-bottom:12px;">Novo quadro</div>
+        <h2 style="font-family:var(--serif);font-size:34px;line-height:1;color:#211E1A;font-weight:600;margin:0 0 24px;">Nova disciplina</h2>
+
+        <label style="display:block;font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:rgba(33,30,26,0.5);margin-bottom:8px;">Nome da disciplina</label>
+        <input ref="{{ setNewName }}" onKeyDown="{{ onNewKey }}" placeholder="ex.: Estruturas de Dados" style="width:100%;font-family:var(--serif);font-size:22px;color:#211E1A;background:#FCFAF4;border:1px solid rgba(33,30,26,0.22);border-radius:2px;padding:11px 13px;outline:none;margin-bottom:20px;" style-focus="border-color:var(--ox);" />
+
+        <label style="display:block;font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:rgba(33,30,26,0.5);margin-bottom:8px;">Semestre</label>
+        <input ref="{{ setNewSem }}" value="2026.1" style="width:100%;font-family:'IBM Plex Mono',monospace;font-size:13px;color:#211E1A;background:#FCFAF4;border:1px solid rgba(33,30,26,0.22);border-radius:2px;padding:11px 13px;outline:none;margin-bottom:26px;" style-focus="border-color:var(--ox);" />
+
+        <div style="display:flex;justify-content:flex-end;gap:12px;">
+          <button onClick="{{ closeNewDisc }}" style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:rgba(33,30,26,0.55);background:none;border:none;cursor:pointer;padding:11px 12px;" style-hover="color:#211E1A;">Cancelar</button>
+          <button onClick="{{ createDisc }}" style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#FFFDF8;background:var(--ox);border:none;border-radius:2px;padding:11px 20px;cursor:pointer;" style-hover="filter:brightness(0.88);">Criar quadro</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ===================== AI POPOVER ===================== -->
+  <sc-if value="{{ popover }}" hint-placeholder-val="{{ false }}">
+    <div onPointerDown="{{ stop }}" style="position:absolute;left:{{ popover.left }}px;top:{{ popover.top }}px;width:320px;background:#FFFDF8;border:1px solid rgba(33,30,26,0.3);border-radius:3px;box-shadow:0 8px 28px rgba(33,30,26,0.14);padding:16px 16px 14px;z-index:60;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:13px;">
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--ox);display:flex;align-items:center;gap:7px;"><span style="width:5px;height:5px;background:var(--ox);display:inline-block;"></span>Invocar IA</span>
+        <button onClick="{{ closePopover }}" style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(33,30,26,0.45);background:none;border:none;cursor:pointer;padding:0;line-height:1;" style-hover="color:#211E1A;">✕</button>
+      </div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.08em;color:rgba(33,30,26,0.5);text-transform:uppercase;margin-bottom:7px;">Lê de</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;min-height:20px;">
+        <sc-for list="{{ popover.chips }}" as="chip" hint-placeholder-count="2">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#211E1A;border:1px solid rgba(33,30,26,0.22);border-radius:2px;padding:3px 8px;">{{ chip }}</span>
+        </sc-for>
+        <sc-if value="{{ popover.empty }}" hint-placeholder-val="{{ false }}">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:rgba(33,30,26,0.45);font-style:italic;">nenhum nó conectado — conecte aulas para dar contexto</span>
+        </sc-if>
+      </div>
+      <textarea ref="{{ setAiInput }}" value="{{ popover.text }}" onInput="{{ onPopInput }}" onKeyDown="{{ onPopKey }}" placeholder="ex.: faça um bloco de questões das aulas 1 e 2" style="width:100%;height:62px;resize:none;font-family:'IBM Plex Mono',monospace;font-size:12px;line-height:1.5;color:#211E1A;background:#FCFAF4;border:1px solid rgba(33,30,26,0.22);border-radius:2px;padding:10px;outline:none;" style-focus="border-color:var(--ox);"></textarea>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;">
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.08em;color:rgba(33,30,26,0.4);text-transform:uppercase;">↵ gerar · esc fecha</span>
+        <button onClick="{{ submitGen }}" style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#FFFDF8;background:var(--ox);border:none;border-radius:2px;padding:9px 17px;cursor:pointer;" style-hover="filter:brightness(0.88);">Gerar</button>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ===================== TOAST ===================== -->
+  <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;left:50%;bottom:30px;transform:translateX(-50%);z-index:90;background:#211E1A;color:#FAF8F3;font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.06em;padding:10px 16px;border-radius:2px;">{{ toast }}</div>
+  </sc-if>
+
+</div>
+</script>
+
+<script>
+/* ============================================================================
+   dc-lite — a compact, self-contained renderer for this Design Component.
+   Implements the exact template DSL the design uses (a faithful subset of the
+   dc-runtime): {{ path }} interpolation, <sc-if>, <sc-for>, inline style
+   strings, style-hover / style-focus pseudo-classes, ref callbacks, and
+   camelCase DOM events. Template + logic below are kept verbatim from the
+   imported "Sandbox de Nós.dc.html".
+   ============================================================================ */
+(function () {
+  "use strict";
+  var React = window.React, ReactDOM = window.ReactDOM;
+  var h = React.createElement;
+
+  /* ---- expression resolver: {{ a.b[c] }}, ===/!==, !x, literals ---- */
+  var IDENT_RE = /^[A-Za-z_$][A-Za-z0-9_$]*/;
+  var NUMBER_RE = /^-?\d+(\.\d+)?$/;
+  function resolve(vals, srcExpr) {
+    var expr = String(srcExpr).trim();
+    if (!expr) return undefined;
+    if (expr[0] === "(" && expr[expr.length - 1] === ")" && parensWrapWhole(expr)) return resolve(vals, expr.slice(1, -1));
+    var eq = findTopLevelEquality(expr);
+    if (eq) {
+      var lv = resolve(vals, expr.slice(0, eq.index));
+      var rv = resolve(vals, expr.slice(eq.index + eq.op.length));
+      switch (eq.op) { case "===": return lv === rv; case "!==": return lv !== rv; case "==": return lv == rv; default: return lv != rv; }
+    }
+    if (expr[0] === "!") return !resolve(vals, expr.slice(1));
+    if (expr === "true") return true;
+    if (expr === "false") return false;
+    if (expr === "null") return null;
+    if (expr === "undefined") return undefined;
+    if (NUMBER_RE.test(expr)) return Number(expr);
+    if (expr.length >= 2 && (expr[0] === '"' || expr[0] === "'") && expr[expr.length - 1] === expr[0]) return expr.slice(1, -1);
+    return resolvePath(vals, expr);
+  }
+  function parensWrapWhole(expr) { var d = 0; for (var i = 0; i < expr.length - 1; i++) { if (expr[i] === "(") d++; else if (expr[i] === ")") { d--; if (d === 0) return false; } } return true; }
+  function findTopLevelEquality(expr) {
+    var d = 0;
+    for (var i = 0; i < expr.length; i++) {
+      var c = expr[i];
+      if (c === "[" || c === "(") d++;
+      else if (c === "]" || c === ")") d--;
+      else if (d === 0 && (c === "=" || c === "!") && expr[i + 1] === "=") {
+        if (i > 0 && (expr[i - 1] === "=" || expr[i - 1] === "!")) continue;
+        if (!expr.slice(0, i).trim()) continue;
+        var op = expr[i + 2] === "=" ? c + "==" : c + "=";
+        return { index: i, op: op };
+      }
+    }
+    return null;
+  }
+  function resolvePath(vals, expr) {
+    var head = expr.match(IDENT_RE);
+    if (!head) return undefined;
+    var cur = vals == null ? undefined : vals[head[0]];
+    var i = head[0].length;
+    while (i < expr.length) {
+      if (expr[i] === ".") {
+        var m = expr.slice(i + 1).match(IDENT_RE) || expr.slice(i + 1).match(/^\d+/);
+        if (!m) return undefined;
+        cur = cur == null ? undefined : cur[m[0]];
+        i += 1 + m[0].length;
+      } else if (expr[i] === "[") {
+        var depth = 1, j = i + 1;
+        while (j < expr.length && depth > 0) { if (expr[j] === "[") depth++; else if (expr[j] === "]") { depth--; if (depth === 0) break; } j++; }
+        if (depth !== 0) return undefined;
+        var key = resolve(vals, expr.slice(i + 1, j));
+        cur = cur == null ? undefined : cur[key];
+        i = j + 1;
+      } else return undefined;
+    }
+    return cur;
+  }
+
+  /* ---- attribute value compiler ---- */
+  function compileAttr(raw) {
+    var whole = raw.match(/^\s*\{\{([\s\S]+?)\}\}\s*$/);
+    if (whole) { var path = whole[1]; return function (vals) { return resolve(vals, path); }; }
+    if (raw.indexOf("{{") >= 0) {
+      var parts = raw.split(/\{\{([\s\S]+?)\}\}/g);
+      return function (vals) {
+        var out = "";
+        for (var i = 0; i < parts.length; i++) {
+          if (i & 1) { var v = resolve(vals, parts[i]); out += (v === null || v === undefined) ? "" : v; }
+          else out += parts[i];
+        }
+        return out;
+      };
+    }
+    return function () { return raw; };
+  }
+
+  /* ---- css + case helpers ---- */
+  function kebabToCamel(s) { return s.replace(/-([a-z])/g, function (_, c) { return c.toUpperCase(); }); }
+  function cssToObj(css) {
+    var o = {}, decls = css.split(";");
+    for (var k = 0; k < decls.length; k++) {
+      var decl = decls[k], i = decl.indexOf(":");
+      if (i < 0) continue;
+      var prop = decl.slice(0, i).trim();
+      if (!prop) continue;
+      o[prop.indexOf("--") === 0 ? prop : kebabToCamel(prop)] = decl.slice(i + 1).trim();
+    }
+    return o;
+  }
+  var CAMEL_ATTR = "sc-camel-";
+  var CAMEL_ATTR_RE = /(\s)([a-z]+[A-Z][A-Za-z0-9]*)(\s*=)/g;
+  function encodeCase(html) {
+    // preserve camelCase attribute names through the HTML parser (which lowercases),
+    // and tag <helmet> so the runtime can route it to <head>.
+    html = html.replace(/<helmet(\s|>)/gi, "<sc-helmet$1").replace(/<\/helmet\s*>/gi, "</sc-helmet>");
+    html = html.replace(CAMEL_ATTR_RE, function (_, sp, name, eq) {
+      return sp + CAMEL_ATTR + name.replace(/[A-Z]/g, function (c) { return "-" + c.toLowerCase(); }) + eq;
+    });
+    return html;
+  }
+
+  /* ---- pseudo-class stylesheet for style-hover / style-focus ---- */
+  var pseudoClass = (function () {
+    var el = null, cache = {}, n = 0;
+    return function (pseudo, css) {
+      var key = pseudo + "|" + css;
+      if (cache[key]) return cache[key];
+      if (!el) { el = document.createElement("style"); document.head.appendChild(el); }
+      var cls = "scp" + (n++).toString(36);
+      var sel = (pseudo === "before" || pseudo === "after") ? "." + cls + "::" + pseudo : "." + cls + ":" + pseudo;
+      el.sheet.insertRule(sel + "{" + css + "}", el.sheet.cssRules.length);
+      cache[key] = cls;
+      return cls;
+    };
+  })();
+
+  /* ---- template compiler ---- */
+  function compileTemplate(html) {
+    var tpl = document.createElement("template");
+    tpl.innerHTML = encodeCase(html);
+    var builders = walkChildren(tpl.content);
+    return function (vals) { return builders.map(function (b, i) { return b(vals || {}, i); }); };
+  }
+  function walkChildren(node) {
+    var out = [], cs = node.childNodes;
+    for (var i = 0; i < cs.length; i++) { var b = walk(cs[i]); if (b != null) out.push(b); }
+    return out;
+  }
+  function walk(node) {
+    if (node.nodeType === 3) return walkText(node);
+    if (node.nodeType !== 1) return null;
+    var tag = node.tagName.toLowerCase();
+    if (tag === "sc-for") return walkFor(node);
+    if (tag === "sc-if") return walkIf(node);
+    if (tag === "sc-helmet") return function () { return null; }; // static head content already in <head>
+    return walkElement(node);
+  }
+  function walkText(node) {
+    var txt = node.nodeValue || "";
+    if (txt.indexOf("{{") < 0) {
+      if (!txt.trim() && txt.indexOf(" ") < 0) return null;
+      return function () { return txt; };
+    }
+    var parts = txt.split(/\{\{([\s\S]+?)\}\}/g);
+    return function (vals, key) {
+      var kids = [];
+      for (var i = 0; i < parts.length; i++) {
+        if (!(i & 1)) { kids.push(parts[i]); continue; }
+        var v = resolve(vals, parts[i]);
+        if (v === undefined) { kids.push(null); continue; }
+        if (React.isValidElement(v) || Array.isArray(v)) { kids.push(h(React.Fragment, { key: i }, v)); continue; }
+        if (v === null || typeof v === "boolean") { kids.push(null); continue; }
+        kids.push(h("span", { key: i, className: "sc-interp" }, String(v)));
+      }
+      return h(React.Fragment, { key: key }, kids);
+    };
+  }
+  function walkFor(el) {
+    var listGet = compileAttr(el.getAttribute("list") || "");
+    var asName = el.getAttribute("as") || "item";
+    var kids = walkChildren(el);
+    return function (vals, key) {
+      var list = listGet(vals);
+      if (!Array.isArray(list)) list = [];
+      return h(React.Fragment, { key: key }, list.map(function (item, i) {
+        var sub = Object.assign({}, vals);
+        sub[asName] = item; sub.$index = i;
+        return h(React.Fragment, { key: i }, kids.map(function (b, j) { return b(sub, j); }));
+      }));
+    };
+  }
+  function walkIf(el) {
+    var valGet = compileAttr(el.getAttribute("value") || "");
+    var kids = walkChildren(el);
+    return function (vals, key) {
+      return valGet(vals) ? h(React.Fragment, { key: key }, kids.map(function (b, j) { return b(vals, j); })) : null;
+    };
+  }
+  var EVENT_MAP = { onclick: "onClick", onchange: "onChange", oninput: "onInput", onsubmit: "onSubmit", onkeydown: "onKeyDown", onkeyup: "onKeyUp", onkeypress: "onKeyPress", onmousedown: "onMouseDown", onmouseup: "onMouseUp", onmouseenter: "onMouseEnter", onmouseleave: "onMouseLeave", onfocus: "onFocus", onblur: "onBlur", ondoubleclick: "onDoubleClick", oncontextmenu: "onContextMenu" };
+  function collectProps(el) {
+    var getters = [], pseudo = [], attrs = el.attributes;
+    for (var a = 0; a < attrs.length; a++) {
+      var name = attrs[a].name, value = attrs[a].value, key = name;
+      if (key.indexOf(CAMEL_ATTR) === 0) key = kebabToCamel(key.slice(CAMEL_ATTR.length));
+      if (key === "hint-size" || key.indexOf("hint-placeholder") === 0) continue;
+      if (key.indexOf("style-") === 0) { pseudo.push(pseudoClass(key.slice(6), value)); continue; }
+      if (key === "class") key = "className";
+      else if (key === "for") key = "htmlFor";
+      else if (key.indexOf("on") === 0) key = EVENT_MAP[key.toLowerCase()] || ("on" + key[2].toUpperCase() + key.slice(3));
+      getters.push([key, compileAttr(value)]);
+    }
+    return { getters: getters, pseudo: pseudo };
+  }
+  function walkElement(el) {
+    var tag = el.localName;
+    var cp = collectProps(el);
+    var kids = walkChildren(el);
+    return function (vals, key) {
+      var props = { key: key };
+      for (var g = 0; g < cp.getters.length; g++) {
+        var k = cp.getters[g][0], v = cp.getters[g][1](vals);
+        if (k === "style" && typeof v === "string") v = cssToObj(v);
+        if ((k === "value" || k === "checked") && v === undefined) v = (k === "checked" ? false : "");
+        props[k] = v;
+      }
+      if (cp.pseudo.length) props.className = [props.className].concat(cp.pseudo).filter(Boolean).join(" ");
+      return h.apply(null, [tag, props].concat(kids.map(function (b, j) { return b(vals, j); })));
+    };
+  }
+
+  /* ---- logic base class (the design's `DCLogic`) ---- */
+  class DCLogic {
+    constructor(props) { this.props = props || {}; this.state = {}; this.__host = null; }
+    setState(u, cb) { if (this.__host) this.__host.__set(u, cb); }
+    forceUpdate() { if (this.__host) this.__host.forceUpdate(); }
+    componentDidMount() {}
+    componentDidUpdate() {}
+    componentWillUnmount() {}
+    renderVals() { return {}; }
+  }
+
+  /* ---- React host: drives a DCLogic instance against the compiled template ---- */
+  function makeHost(LogicClass, tpl) {
+    return class DCHost extends React.Component {
+      constructor(props) { super(props); this.state = { __v: 0 }; this.logic = new LogicClass(props); this.logic.__host = this; }
+      __set(update, cb) {
+        var prev = this.logic.state;
+        var patch = (typeof update === "function") ? update(prev) : update;
+        this.logic.state = Object.assign({}, prev, patch);
+        this.setState(function (s) { return { __v: s.__v + 1 }; }, cb);
+      }
+      componentDidMount() { try { this.logic.componentDidMount(); } catch (e) { console.error(e); } }
+      componentDidUpdate(prev) { this.logic.props = this.props; try { this.logic.componentDidUpdate(prev); } catch (e) { console.error(e); } }
+      componentWillUnmount() { try { this.logic.componentWillUnmount(); } catch (e) { console.error(e); } }
+      render() {
+        this.logic.props = this.props;
+        var vals;
+        try { vals = Object.assign({}, this.props, this.logic.renderVals() || {}); }
+        catch (e) { console.error(e); vals = this.props; }
+        return h.apply(null, [React.Fragment, null].concat(tpl(vals)));
+      }
+    };
+  }
+
+  window.__dcLite = { compileTemplate: compileTemplate, makeHost: makeHost, DCLogic: DCLogic };
+})();
+
+/* ===== Application logic ===== */
+var DCLogic = window.__dcLite.DCLogic;
+class Component extends DCLogic {
+  // --- Identidade (edite aqui para personalizar quem usa o app) ---
+  IDENT = { name: 'Estudante', initials: 'ES', email: '', course: '', term: '2026.1' };
+  STORAGE_KEY = 'sandbox-de-nos:v1';
+
+  TRUTH = {
+    head: ['p', 'q', 'p→q', '¬q→¬p', '∧'],
+    rows: [['V','V','V','V','V'], ['V','F','F','F','F'], ['F','V','V','V','V'], ['F','F','V','V','V']],
+  };
+  CONN = [
+    { sym: '¬', name: 'Negação', read: 'não p' },
+    { sym: '∧', name: 'Conjunção', read: 'p e q' },
+    { sym: '∨', name: 'Disjunção', read: 'p ou q' },
+    { sym: '→', name: 'Condicional', read: 'se p então q' },
+    { sym: '↔', name: 'Bicondicional', read: 'p se e somente se q' },
+  ];
+
+  DISCIPLINES = []; // começa vazio — o usuário cria as próprias disciplinas
+
+  cid = 2;
+  nidc = 0;
+  dynNum = 7;
+
+  state = {
+    screen: 'biblioteca',
+    activeDisc: null,
+    prefs: { accent: null, serif: null, grid: null, showHints: true },
+    pan: { x: 0, y: 0 }, zoom: 0.95, panning: false,
+    selectedId: null, drag: null, gen: null, popover: null,
+    hintOpen: true,
+    reading: null, material: null, search: null, newDisc: null, toast: null,
+    disciplines: this.DISCIPLINES.slice(),
+    boards: {},
+    nodes: [], connections: [],
+  };
+
+  starterBoard(d) {
+    const nodes = [{ id: 't', type: 'title', x: -180, y: -86, w: 360, h: 172, locked: true, shortLabel: d.name, titleBig: d.name, titleMeta: d.semester + ' · ' + d.aulas + ' aulas', kickerLabel: 'Disciplina' }];
+    const conns = [];
+    const ls = d.lessons || [];
+    const R = 330, cx = 0, cy = 0;
+    ls.forEach((title, i) => {
+      const ang = (-90 + i * (360 / Math.max(ls.length, 1))) * Math.PI / 180;
+      const w = 250, h = 120;
+      const px = cx + R * Math.cos(ang) - w / 2;
+      const py = cy + R * Math.sin(ang) - h / 2 + 40;
+      const num = String(i + 1).padStart(2, '0');
+      const id = 'l' + i;
+      nodes.push({ id, type: 'lesson', x: px, y: py, w, h, shortLabel: 'Aula ' + num, kicker: 'Aula ' + num, titleText: title, material: 'material · ' + (10 + i * 4) + ' págs', lessonKey: d.id + '-' + num, pages: 3 });
+      conns.push({ id: 'sc' + i, from: 't', to: id });
+    });
+    return { nodes, connections: conns };
+  }
+
+  componentDidMount() {
+    window.addEventListener('pointermove', this.onMove);
+    window.addEventListener('pointerup', this.onUp);
+    window.addEventListener('keydown', this.onKey);
+    window.addEventListener('resize', this.onResize);
+    this.load();
+  }
+  componentWillUnmount() {
+    window.removeEventListener('pointermove', this.onMove);
+    window.removeEventListener('pointerup', this.onUp);
+    window.removeEventListener('keydown', this.onKey);
+    window.removeEventListener('resize', this.onResize);
+    this.clearGenTimers();
+    clearTimeout(this.tt);
+    clearTimeout(this._pt);
+    if (this.vp) this.vp.removeEventListener('wheel', this.onWheel);
+  }
+
+  // ---------- persistence (localStorage) ----------
+  componentDidUpdate() { this.schedulePersist(); }
+  schedulePersist() { clearTimeout(this._pt); this._pt = setTimeout(() => this.persist(), 400); }
+  persist() {
+    try {
+      const S = this.state;
+      const boards = { ...S.boards };
+      if (S.screen === 'canvas' && S.activeDisc) boards[S.activeDisc] = { nodes: S.nodes, connections: S.connections };
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify({
+        v: 1, disciplines: S.disciplines, boards, prefs: S.prefs,
+        counters: { nidc: this.nidc, cid: this.cid },
+      }));
+    } catch (e) {}
+  }
+  load() {
+    try {
+      const raw = localStorage.getItem(this.STORAGE_KEY);
+      if (!raw) return;
+      const d = JSON.parse(raw);
+      if (!d || d.v !== 1) return;
+      if (d.counters) { this.nidc = d.counters.nidc || 0; this.cid = d.counters.cid || 2; }
+      this.setState({
+        disciplines: Array.isArray(d.disciplines) ? d.disciplines : [],
+        boards: d.boards && typeof d.boards === 'object' ? d.boards : {},
+        prefs: { ...this.state.prefs, ...(d.prefs || {}) },
+      });
+    } catch (e) {}
+  }
+  resetAll = () => {
+    try { localStorage.removeItem(this.STORAGE_KEY); } catch (e) {}
+    this.nidc = 0; this.cid = 2;
+    this.clearGenTimers();
+    this.setState({
+      screen: 'biblioteca', activeDisc: null, disciplines: [], boards: {},
+      nodes: [], connections: [], selectedId: null, popover: null, gen: null,
+      reading: null, material: null, search: null, newDisc: null,
+    });
+    this.toast('Tudo apagado — comece do zero');
+  };
+
+  setVp = (el) => {
+    if (this.vp && this.vp !== el) this.vp.removeEventListener('wheel', this.onWheel);
+    this.vp = el;
+    if (el) {
+      el.addEventListener('wheel', this.onWheel, { passive: false });
+      requestAnimationFrame(() => this.fitView());
+      setTimeout(() => this.fitView(), 70);
+    }
+  };
+  setAiInput = (el) => { this.aiInput = el; if (el) setTimeout(() => { try { el.focus(); } catch (e) {} }, 20); };
+  setSearchInput = (el) => { if (el) setTimeout(() => { try { el.focus(); } catch (e) {} }, 20); };
+  setNewName = (el) => { this.newNameEl = el; if (el) setTimeout(() => { try { el.focus(); } catch (e) {} }, 20); };
+  setNewSem = (el) => { this.newSemEl = el; };
+  stop = (e) => { e.stopPropagation(); };
+  onResize = () => this.forceUpdate();
+
+  byId() { const m = {}; this.state.nodes.forEach(n => { m[n.id] = n; }); return m; }
+  disc(id) { return this.state.disciplines.find(d => d.id === id); }
+
+  screenToWorld(cx, cy) {
+    const r = this.vp.getBoundingClientRect();
+    const S = this.state;
+    return { x: (cx - r.left - S.pan.x) / S.zoom, y: (cy - r.top - S.pan.y) / S.zoom };
+  }
+  nodeAt(wx, wy, exclude) {
+    const ns = this.state.nodes;
+    for (let i = ns.length - 1; i >= 0; i--) {
+      const n = ns[i];
+      if (n.id === exclude) continue;
+      if (wx >= n.x && wx <= n.x + n.w && wy >= n.y && wy <= n.y + n.h) return n;
+    }
+    return null;
+  }
+  selectNode(id) {
+    const patch = { selectedId: id };
+    if (this.state.popover && this.state.popover.nodeId !== id) patch.popover = null;
+    this.setState(patch);
+  }
+
+  // ---------- navigation ----------
+  goHome = () => { this.saveBoard(); this.setState({ screen: 'biblioteca', selectedId: null, popover: null }); };
+  openConta = () => { this.saveBoard(); this.setState({ screen: 'conta', popover: null }); };
+
+  saveBoard() {
+    if (this.state.screen !== 'canvas') return;
+    const boards = { ...this.state.boards, [this.state.activeDisc]: { nodes: this.state.nodes, connections: this.state.connections } };
+    this.setState({ boards });
+  }
+
+  openDiscipline = (id) => {
+    const boards = { ...this.state.boards };
+    if (this.state.screen === 'canvas') boards[this.state.activeDisc] = { nodes: this.state.nodes, connections: this.state.connections };
+    let target = boards[id];
+    if (!target) { target = this.starterBoard(this.disc(id)); boards[id] = target; }
+    this.clearGenTimers();
+    this.setState({
+      screen: 'canvas', activeDisc: id, boards,
+      nodes: target.nodes, connections: target.connections,
+      selectedId: null, popover: null, gen: null, drag: null,
+      reading: null, material: null, search: null,
+      hintOpen: this.state.prefs.showHints,
+    });
+    requestAnimationFrame(() => this.fitView());
+    setTimeout(() => this.fitView(), 60);
+  };
+
+  // ---------- canvas pointer ----------
+  onBgPointerDown = (e) => {
+    if (e.button !== 0) return;
+    const S = this.state;
+    this.g = { type: 'pan', sx: e.clientX, sy: e.clientY, px: S.pan.x, py: S.pan.y, moved: false };
+  };
+  onBgDblClick = (e) => {
+    if (e.target !== e.currentTarget) return;
+    const w = this.screenToWorld(e.clientX, e.clientY);
+    this.createNodeAt(w.x, w.y);
+  };
+  nodeDown = (e, id) => {
+    e.stopPropagation();
+    this.selectNode(id);
+    const n = this.byId()[id];
+    this.g = { type: 'node', id, sx: e.clientX, sy: e.clientY, ox: n.x, oy: n.y, moved: false };
+  };
+  handleDown = (e, id) => {
+    e.stopPropagation();
+    const w = this.screenToWorld(e.clientX, e.clientY);
+    this.g = { type: 'conn', fromId: id, moved: false };
+    this.setState({ drag: { fromId: id, cur: w, overId: null } });
+  };
+  onMove = (e) => {
+    const g = this.g;
+    if (!g) return;
+    if (g.type === 'pan') {
+      const dx = e.clientX - g.sx, dy = e.clientY - g.sy;
+      if (Math.abs(dx) + Math.abs(dy) > 3) g.moved = true;
+      this.setState({ pan: { x: g.px + dx, y: g.py + dy }, panning: true });
+    } else if (g.type === 'node') {
+      const z = this.state.zoom;
+      const dx = (e.clientX - g.sx) / z, dy = (e.clientY - g.sy) / z;
+      if (Math.abs(e.clientX - g.sx) + Math.abs(e.clientY - g.sy) > 3) g.moved = true;
+      this.setState({ nodes: this.state.nodes.map(n => n.id === g.id ? { ...n, x: g.ox + dx, y: g.oy + dy } : n) });
+    } else if (g.type === 'conn') {
+      const w = this.screenToWorld(e.clientX, e.clientY);
+      const over = this.nodeAt(w.x, w.y, g.fromId);
+      this.setState({ drag: { fromId: g.fromId, cur: w, overId: over ? over.id : null } });
+    }
+  };
+  onUp = () => {
+    const g = this.g;
+    if (!g) return;
+    this.g = null;
+    if (g.type === 'pan') {
+      this.setState({ panning: false });
+      if (!g.moved) this.setState({ selectedId: null, popover: null });
+    } else if (g.type === 'conn') {
+      const d = this.state.drag;
+      this.setState({ drag: null });
+      if (d && d.overId && d.overId !== g.fromId) this.addConn(g.fromId, d.overId);
+    }
+  };
+  addConn(from, to) {
+    if (from === to) return;
+    const exists = this.state.connections.some(c => (c.from === from && c.to === to) || (c.from === to && c.to === from));
+    if (exists) return;
+    this.setState({ connections: [...this.state.connections, { id: 'c' + (++this.cid), from, to }] });
+  }
+  createNodeAt(wx, wy) {
+    const id = 'n' + (++this.nidc);
+    const node = { id, type: 'generated', x: wx - 150, y: wy - 78, w: 300, h: 156, filled: false, shortLabel: 'Novo nó' };
+    this.setState({ nodes: [...this.state.nodes, node], selectedId: id });
+    return id;
+  }
+  addNode = () => {
+    const r = this.vp.getBoundingClientRect();
+    const j = (this.nidc % 4) * 26;
+    const w = this.screenToWorld(r.left + r.width * 0.5 + j, r.top + r.height * 0.7 + j);
+    this.createNodeAt(w.x, w.y);
+  };
+  deleteNode(id) {
+    const n = this.byId()[id];
+    if (!n || n.locked) return;
+    const patch = {
+      nodes: this.state.nodes.filter(x => x.id !== id),
+      connections: this.state.connections.filter(c => c.from !== id && c.to !== id),
+      selectedId: null, popover: null,
+    };
+    if (this.state.gen && this.state.gen.nodeId === id) { this.clearGenTimers(); patch.gen = null; }
+    this.setState(patch);
+  }
+  cornerAi = () => {
+    const sel = this.state.selectedId;
+    if (sel) {
+      const n = this.byId()[sel];
+      if (n && n.type === 'generated') this.openPopover(sel);
+      else this.toast('selecione um nó de geração');
+    } else this.toast('selecione um nó para gerar');
+  };
+  toast(msg) {
+    this.setState({ toast: msg });
+    clearTimeout(this.tt);
+    this.tt = setTimeout(() => this.setState({ toast: null }), 2800);
+  }
+
+  // ---------- AI popover + generation ----------
+  openPopover(id) { this.setState({ selectedId: id, popover: { nodeId: id, text: '' } }); }
+  closePopover = () => this.setState({ popover: null });
+  onPopInput = (e) => { const p = this.state.popover; if (p) this.setState({ popover: { ...p, text: e.target.value } }); };
+  onPopKey = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); this.submitGen(); }
+    else if (e.key === 'Escape') this.closePopover();
+  };
+  submitGen = () => { const p = this.state.popover; const id = p && p.nodeId; const text = p ? p.text : ''; this.closePopover(); if (id) this.startGen(id, text); };
+
+  // Collect text context from the nodes connected to `id` to ground the AI.
+  gatherContext(id) {
+    const byId = this.byId();
+    const neigh = this.state.connections.filter(c => c.from === id || c.to === id).map(c => byId[c.from === id ? c.to : c.from]).filter(Boolean);
+    const out = [];
+    neigh.forEach(n => {
+      if (n.type === 'lesson') out.push((n.kicker ? n.kicker + ': ' : '') + (n.titleText || ''));
+      else if (n.type === 'title') out.push('Disciplina: ' + (n.titleBig || ''));
+      else if (n.type === 'generated' && n.filled && n.questions) out.push('Questões já geradas: ' + n.questions.map(q => q.text).join(' | '));
+    });
+    return out;
+  }
+
+  // Real generation: call the backend proxy, then animate the typed result.
+  startGen(id, prompt) {
+    this.clearGenTimers();
+    const promptText = (prompt || '').trim();
+    this.setState({ selectedId: id, gen: { nodeId: id, phase: 'reading', statusText: 'lendo nós conectados…', shown: 0 } });
+    const disc = this.disc(this.state.activeDisc);
+    const payload = { discipline: disc ? disc.name : '', context: this.gatherContext(id), prompt: promptText };
+    this.t1 = setTimeout(() => { const g = this.state.gen; if (g && g.nodeId === id && g.phase === 'reading') this.setState({ gen: { ...g, statusText: 'compondo questões com a IA…' } }); }, 900);
+    fetch('/api/generate', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) })
+      .then(async (res) => {
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || ('erro ' + res.status));
+        return data;
+      })
+      .then((data) => {
+        const g = this.state.gen;
+        if (!g || g.nodeId !== id) return; // navegou para fora / nó removido
+        const questions = (data.questions || []).map((q, i) => ({
+          n: q.n || String(i + 1).padStart(2, '0'),
+          text: q.text || '',
+          solution: Array.isArray(q.solution) ? q.solution : [],
+          answer: q.answer || '',
+        }));
+        if (!questions.length) throw new Error('nenhuma questão gerada');
+        this.setState({ nodes: this.state.nodes.map(n => n.id === id ? { ...n, questions, blockTitle: data.title || 'Bloco de Questões', lastPrompt: promptText } : n) });
+        this.startTyping(id);
+      })
+      .catch((err) => {
+        clearTimeout(this.t1);
+        if (this.state.gen && this.state.gen.nodeId === id) this.setState({ gen: null });
+        this.toast('IA: ' + (err && err.message ? err.message : 'falha ao gerar'));
+      });
+  }
+  startTyping(id) {
+    const node = this.byId()[id];
+    const qs = (node && node.questions) || [];
+    this.setState({ gen: { nodeId: id, phase: 'typing', statusText: '', shown: 0 } });
+    const total = qs.reduce((s, q) => s + q.text.length, 0) || 1;
+    this.typer = setInterval(() => {
+      const g = this.state.gen;
+      if (!g || g.nodeId !== id || g.phase !== 'typing') { clearInterval(this.typer); return; }
+      const s = g.shown + 3;
+      if (s >= total) { clearInterval(this.typer); this.finishGen(id); }
+      else this.setState({ gen: { ...g, shown: s } });
+    }, 18);
+  }
+  finishGen(id) {
+    this.clearGenTimers();
+    this.setState({
+      nodes: this.state.nodes.map(n => {
+        if (n.id !== id) return n;
+        const cnt = (n.questions || []).length;
+        return { ...n, filled: true, w: 364, h: Math.max(220, 150 + cnt * 72) };
+      }),
+      gen: null,
+    });
+  }
+  regen(id) {
+    const node = this.byId()[id];
+    const prompt = (node && node.lastPrompt) || '';
+    this.setState({ nodes: this.state.nodes.map(n => n.id === id ? { ...n, filled: false, w: 300, h: 156 } : n) });
+    this.startGen(id, prompt);
+  }
+  skipTyping = (id) => {
+    if (this.g && this.g.moved) return;
+    const g = this.state.gen;
+    if (g && g.nodeId === id && g.phase === 'typing') this.finishGen(id);
+  };
+  clearGenTimers() { clearTimeout(this.t1); clearTimeout(this.t2); clearInterval(this.typer); }
+
+  // ---------- reading ----------
+  openReading = (id) => {
+    const node = this.byId()[id];
+    const cnt = (node && node.questions) ? node.questions.length : 0;
+    this.setState({ reading: { nodeId: id, resolved: Array(cnt).fill(false), reveal: Array(cnt).fill(false) } });
+  };
+  closeReading = () => this.setState({ reading: null });
+  toggleResolve = (i) => { const r = this.state.reading; if (!r) return; const res = r.resolved.slice(); res[i] = !res[i]; this.setState({ reading: { ...r, resolved: res } }); };
+  toggleReveal = (i) => { const r = this.state.reading; if (!r) return; const rv = r.reveal.slice(); rv[i] = !rv[i]; this.setState({ reading: { ...r, reveal: rv } }); };
+
+  // ---------- material ----------
+  openMaterial = (info) => { this.setState({ material: { ...info, page: 0 } }); };
+  closeMaterial = () => this.setState({ material: null });
+  setMatPage = (i) => { const m = this.state.material; if (m) this.setState({ material: { ...m, page: i } }); };
+
+  matPages(m) {
+    return [
+      { kind: 'def', eyebrow: 'Visão geral', title: m.title, intro: 'Material da aula. Conecte este nó a um nó de geração para usá-lo como contexto para a IA.', hasBullets: true, bullets: ['Definições e notação', 'Exemplos resolvidos', 'Exercícios propostos'] },
+      { kind: 'placeholder', caption: 'slide · anotações de aula' },
+      { kind: 'refs' },
+    ];
+  }
+
+  // ---------- search ----------
+  openSearch = () => this.setState({ search: { q: '' } });
+  closeSearch = () => this.setState({ search: null });
+  onSearchInput = (e) => this.setState({ search: { q: e.target.value } });
+  onSearchKey = (e) => { if (e.key === 'Escape') this.closeSearch(); else if (e.key === 'Enter') { const r = this.searchResults(this.state.search.q); if (r[0]) r[0].pick(); } };
+  norm(s) { return (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
+
+  searchItems() {
+    const items = [];
+    this.state.disciplines.forEach(d => {
+      items.push({ type: 'DISC', title: d.name, context: (d.semester || '') + (d.aulas ? (' · ' + d.aulas + ' aulas') : ''), pick: () => { this.closeSearch(); this.openDiscipline(d.id); } });
+      const board = this.state.boards[d.id];
+      if (!board) return;
+      board.nodes.filter(n => n.type === 'lesson').forEach(ls => {
+        items.push({ type: 'AULA', title: ls.titleText, context: d.name + ' · ' + (ls.kicker || 'Aula'), pick: () => { this.closeSearch(); this.openDiscipline(d.id); setTimeout(() => this.openMaterial({ kicker: ls.kicker || 'Aula', title: ls.titleText, key: ls.lessonKey, meta: ls.material || 'material' }), 120); } });
+      });
+      board.nodes.filter(n => n.type === 'generated' && n.filled).forEach(gn => {
+        items.push({ type: 'NÓ', title: gn.blockTitle || 'Bloco de Questões', context: d.name + ' · gerado', pick: () => { this.closeSearch(); this.openDiscipline(d.id); setTimeout(() => this.openReading(gn.id), 140); } });
+      });
+    });
+    return items;
+  }
+  searchResults(q) {
+    const nq = this.norm(q);
+    if (!nq) return [];
+    return this.searchItems().filter(it => this.norm(it.title).includes(nq) || this.norm(it.context).includes(nq)).slice(0, 8);
+  }
+
+  // ---------- new discipline ----------
+  openNewDisc = () => this.setState({ newDisc: {} });
+  closeNewDisc = () => this.setState({ newDisc: null });
+  onNewKey = (e) => { if (e.key === 'Enter') { e.preventDefault(); this.createDisc(); } else if (e.key === 'Escape') this.closeNewDisc(); };
+  createDisc = () => {
+    const name = (this.newNameEl && this.newNameEl.value.trim()) || 'Nova disciplina';
+    const sem = (this.newSemEl && this.newSemEl.value.trim()) || this.IDENT.term;
+    const id = 'd' + (++this.dynNum) + '-' + (this.nidc + this.cid);
+    const roman = ['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'];
+    const d = { id, name, num: roman[this.state.disciplines.length] || String(this.state.disciplines.length + 1), semester: sem, aulas: 0, h: 350 + (this.state.disciplines.length % 3) * 24, lessons: [] };
+    const board = { nodes: [{ id: 't', type: 'title', x: -180, y: -86, w: 360, h: 172, locked: true, shortLabel: name, titleBig: name, titleMeta: sem + ' · quadro novo', kickerLabel: 'Disciplina' }], connections: [] };
+    const boards = { ...this.state.boards, [id]: board };
+    this.setState({
+      disciplines: [...this.state.disciplines, d], boards, newDisc: null,
+      screen: 'canvas', activeDisc: id, nodes: board.nodes, connections: board.connections,
+      selectedId: null, popover: null, gen: null, drag: null, hintOpen: this.state.prefs.showHints,
+    });
+    this.clearGenTimers();
+    requestAnimationFrame(() => this.fitView());
+    setTimeout(() => { this.fitView(); this.toast('Quadro criado — toque duplo no papel para criar um nó'); }, 80);
+  };
+
+  // ---------- prefs ----------
+  setPref(k, v) { this.setState({ prefs: { ...this.state.prefs, [k]: v } }); }
+  toggleGrid = () => this.setPref('grid', !this.curGrid());
+  toggleHints = () => { const v = !this.curHints(); this.setPref('showHints', v); if (v) this.setState({ hintOpen: true }); };
+  curAccent() { return this.state.prefs.accent ?? this.props.accent ?? '#7A1F2B'; }
+  curSerif() { return this.state.prefs.serif ?? this.props.serifFont ?? 'Cormorant Garamond'; }
+  curGrid() { const p = this.state.prefs.grid; return p === null ? (this.props.paperGrid ?? true) : p; }
+  curHints() { return this.state.prefs.showHints; }
+
+  // ---------- view ----------
+  applyZoom(cx, cy, f) {
+    const S = this.state;
+    const nz = Math.min(2.4, Math.max(0.4, S.zoom * f));
+    const wx = (cx - S.pan.x) / S.zoom, wy = (cy - S.pan.y) / S.zoom;
+    this.setState({ zoom: nz, pan: { x: cx - wx * nz, y: cy - wy * nz } });
+  }
+  onWheel = (e) => { e.preventDefault(); const r = this.vp.getBoundingClientRect(); this.applyZoom(e.clientX - r.left, e.clientY - r.top, Math.exp(-e.deltaY * 0.0012)); };
+  zoomBy = (f) => { const r = this.vp.getBoundingClientRect(); this.applyZoom(r.width / 2, r.height / 2, f); };
+  fitView = () => {
+    const ns = this.state.nodes;
+    if (!ns.length || !this.vp) return;
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    ns.forEach(n => { minX = Math.min(minX, n.x); minY = Math.min(minY, n.y); maxX = Math.max(maxX, n.x + n.w); maxY = Math.max(maxY, n.y + n.h); });
+    const r = this.vp.getBoundingClientRect();
+    if (r.width < 2) return;
+    const pad = 130;
+    const zw = (r.width - 2 * pad) / Math.max(1, maxX - minX);
+    const zh = (r.height - 2 * pad) / Math.max(1, maxY - minY);
+    const z = Math.max(0.45, Math.min(zw, zh, 1.25));
+    const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2;
+    this.setState({ zoom: z, pan: { x: r.width / 2 - cx * z, y: r.height / 2 - cy * z } });
+  };
+
+  edge(n, tx, ty) {
+    const cx = n.x + n.w / 2, cy = n.y + n.h / 2;
+    const dx = tx - cx, dy = ty - cy;
+    if (!dx && !dy) return { x: cx, y: cy };
+    const hw = n.w / 2, hh = n.h / 2;
+    const s = 1 / Math.max(Math.abs(dx) / hw, Math.abs(dy) / hh);
+    return { x: cx + dx * s, y: cy + dy * s };
+  }
+  computeShown(shown, qs) {
+    qs = qs || [];
+    let rem = shown; const out = []; let caretIdx = -1;
+    for (let i = 0; i < qs.length; i++) {
+      const full = qs[i].text.length;
+      if (rem <= 0) break;
+      if (rem >= full) { out.push({ n: qs[i].n, text: qs[i].text }); rem -= full; }
+      else { out.push({ n: qs[i].n, text: qs[i].text.slice(0, rem) }); caretIdx = i; rem = 0; }
+    }
+    if (caretIdx === -1 && out.length) caretIdx = out.length - 1;
+    return out.map((o, i) => ({ n: o.n, text: o.text, caret: i === caretIdx }));
+  }
+
+  onKey = (e) => {
+    if ((e.key === 'k' || e.key === 'K') && (e.metaKey || e.ctrlKey)) { e.preventDefault(); if (this.state.search) this.closeSearch(); else this.openSearch(); return; }
+    const t = e.target;
+    const typing = t && /input|textarea/i.test(t.tagName);
+    if (e.key === 'Escape') {
+      if (this.state.search) return this.closeSearch();
+      if (this.state.newDisc) return this.closeNewDisc();
+      if (this.state.material) return this.closeMaterial();
+      if (this.state.reading) return this.closeReading();
+      if (this.state.popover) return this.closePopover();
+      if (this.state.selectedId) return this.setState({ selectedId: null });
+      return;
+    }
+    if (typing) return;
+    if ((e.key === 'Backspace' || e.key === 'Delete') && this.state.selectedId && this.state.screen === 'canvas') {
+      e.preventDefault(); this.deleteNode(this.state.selectedId);
+    }
+  };
+
+  renderVals() {
+    const S = this.state;
+    const accent = this.curAccent();
+    const serifVar = "'" + this.curSerif() + "', Georgia, serif";
+    const grid = this.curGrid();
+    const byId = this.byId();
+    const center = (n) => ({ x: n.x + n.w / 2, y: n.y + n.h / 2 });
+    const activeName = (this.disc(S.activeDisc) || {}).name || '';
+
+    // masthead
+    const showCrumb = S.screen !== 'biblioteca';
+    const crumbName = S.screen === 'conta' ? 'Conta' : activeName;
+
+    // spines
+    const spines = S.disciplines.map(d => ({
+      id: d.id, name: d.name, num: d.num, aulas: d.aulas + ' aulas', h: d.h,
+      active: d.id === S.activeDisc, normal: d.id !== S.activeDisc, ghost: false,
+      onOpen: () => this.openDiscipline(d.id),
+    }));
+    spines.push({ ghost: true, active: false, normal: false, h: 300, name: '', num: '', aulas: '', onOpen: this.openNewDisc });
+
+    // aggregate counts across all boards (live board for the open discipline)
+    const allBoards = { ...S.boards };
+    if (S.screen === 'canvas' && S.activeDisc) allBoards[S.activeDisc] = { nodes: S.nodes, connections: S.connections };
+    let lessonCount = 0, nodeCount = 0, genCount = 0;
+    Object.keys(allBoards).forEach(k => {
+      (allBoards[k].nodes || []).forEach(n => {
+        if (n.type === 'lesson') { lessonCount++; nodeCount++; }
+        else if (n.type === 'generated') { nodeCount++; if (n.filled) genCount++; }
+      });
+    });
+    const footerStats = S.disciplines.length + ' disciplinas · ' + lessonCount + ' aulas · ' + nodeCount + ' nós';
+
+    // canvas lines + nodes
+    const lines = S.connections.map(cn => {
+      const A = byId[cn.from], B = byId[cn.to];
+      if (!A || !B) return null;
+      const ca = center(A), cb = center(B);
+      const pa = this.edge(A, cb.x, cb.y), pb = this.edge(B, ca.x, ca.y);
+      const sel = S.selectedId && (cn.from === S.selectedId || cn.to === S.selectedId);
+      return { x1: pa.x, y1: pa.y, x2: pb.x, y2: pb.y, stroke: sel ? accent : 'rgba(33,30,26,0.5)' };
+    }).filter(Boolean);
+
+    let dragLine = null;
+    if (S.drag) {
+      const A = byId[S.drag.fromId];
+      if (A) {
+        let to = S.drag.cur;
+        if (S.drag.overId && byId[S.drag.overId]) to = this.edge(byId[S.drag.overId], center(A).x, center(A).y);
+        const from = this.edge(A, to.x, to.y);
+        dragLine = { x1: from.x, y1: from.y, x2: to.x, y2: to.y };
+      }
+    }
+
+    const nodes = S.nodes.map(n => {
+      const neigh = S.connections.filter(c => c.from === n.id || c.to === n.id).map(c => byId[c.from === n.id ? c.to : c.from]).filter(Boolean);
+      const connectedLabel = neigh.map(x => x.shortLabel).join(' · ');
+      const hasConn = neigh.length > 0;
+      const genHere = !!(S.gen && S.gen.nodeId === n.id);
+      const filled = !!n.filled;
+      const isGen = n.type === 'generated';
+      const qs = n.questions || [];
+      const v = {
+        id: n.id, x: n.x, y: n.y, w: n.w,
+        isTitle: n.type === 'title', isLesson: n.type === 'lesson',
+        kicker: n.kicker, titleText: n.titleText, material: n.material,
+        kickerLabel: n.kickerLabel, titleBig: n.titleBig, titleMeta: n.titleMeta,
+        blockTitle: n.blockTitle || 'Bloco de Questões',
+        selected: S.selectedId === n.id,
+        isOver: !!(S.drag && S.drag.overId === n.id),
+        connectedLabel,
+        connLine: hasConn ? ('●  lê de — ' + connectedLabel) : '○  nenhum nó conectado',
+        genEmpty: false, genResult: false, filled: false, showStatus: false, statusText: '', resultKicker: '', shownLines: [],
+        onDown: (e) => this.nodeDown(e, n.id),
+        onHandleDown: (e) => this.handleDown(e, n.id),
+        onAi: (e) => { this.stop(e); this.openPopover(n.id); },
+        onSkip: () => this.skipTyping(n.id),
+        onRegen: (e) => { this.stop(e); this.regen(n.id); },
+        onOpen: (e) => { if (e) this.stop(e); this.openReading(n.id); },
+        onMaterial: (e) => { this.stop(e); this.openMaterial({ kicker: n.kicker, title: n.titleText, key: n.lessonKey, meta: n.material }); },
+      };
+      if (isGen) {
+        v.genEmpty = !filled && !genHere;
+        v.genResult = genHere || filled;
+        v.filled = filled;
+        v.showStatus = genHere && S.gen.phase === 'reading';
+        v.statusText = genHere ? S.gen.statusText : '';
+        v.resultKicker = filled ? ('Gerado · ' + qs.length + ' quest' + (qs.length === 1 ? 'ão' : 'ões')) : 'Gerando';
+        v.shownLines = filled ? qs.map(q => ({ n: q.n, text: q.text, caret: false })) : (genHere && S.gen.phase === 'typing' ? this.computeShown(S.gen.shown, qs) : []);
+      }
+      return v;
+    });
+
+    // popover position
+    let popover = null;
+    if (S.popover) {
+      const n = byId[S.popover.nodeId];
+      if (n && this.vp) {
+        const r = this.vp.getBoundingClientRect();
+        const sx = S.pan.x + n.x * S.zoom, sy = S.pan.y + n.y * S.zoom, sh = n.h * S.zoom;
+        let left = Math.max(12, Math.min(sx, r.width - 332));
+        let top = 54 + sy + sh + 12;
+        if (top + 210 > r.top + r.height) top = Math.max(64, 54 + sy - 220);
+        const neigh = S.connections.filter(c => c.from === n.id || c.to === n.id).map(c => byId[c.from === n.id ? c.to : c.from]).filter(Boolean);
+        popover = { left, top, text: S.popover.text, chips: neigh.map(x => x.shortLabel), empty: neigh.length === 0 };
+      }
+    }
+
+    // reading (per-node questions)
+    let reading = null, readingQs = [], readProgressW = '0%', readProgressLabel = '0 / 0 resolvidas';
+    let readingKicker = 'Bloco de Questões · gerado', readingTitle = 'Bloco de Questões', readingMeta = '';
+    if (S.reading) {
+      reading = true;
+      const node = byId[S.reading.nodeId];
+      const qs = (node && node.questions) || [];
+      const tot = qs.length || 1;
+      const resCount = S.reading.resolved.filter(Boolean).length;
+      readProgressW = Math.round((resCount / tot) * 100) + '%';
+      readProgressLabel = resCount + ' / ' + qs.length + ' resolvidas';
+      readingTitle = (node && node.blockTitle) || 'Bloco de Questões';
+      readingKicker = readingTitle + ' · gerado';
+      const rneigh = node ? S.connections.filter(c => c.from === node.id || c.to === node.id).map(c => byId[c.from === node.id ? c.to : c.from]).filter(Boolean) : [];
+      const lede = rneigh.length ? ('lê de — ' + rneigh.map(x => x.shortLabel).join(' · ') + '   ·   ') : '';
+      readingMeta = lede + qs.length + ' quest' + (qs.length === 1 ? 'ão' : 'ões');
+      readingQs = qs.map((q, i) => {
+        const resolved = S.reading.resolved[i];
+        const revealed = S.reading.reveal[i];
+        return {
+          num: q.n, text: q.text,
+          resolved, revealed,
+          checkBorder: resolved ? accent : 'rgba(33,30,26,0.3)',
+          checkBg: resolved ? accent : 'transparent',
+          checkMark: resolved ? '✓' : '',
+          resolveColor: resolved ? accent : 'rgba(33,30,26,0.5)',
+          resolveLabel: resolved ? 'resolvida' : 'marcar resolvida',
+          revealLabel: revealed ? 'ocultar resolução' : 'ver resolução',
+          solution: q.solution || [], hasTable: false, answer: q.answer || '',
+          onResolve: () => this.toggleResolve(i),
+          onReveal: () => this.toggleReveal(i),
+        };
+      });
+    }
+
+    // truth table flat cells (kept for the material viewer)
+    const truthHead = this.TRUTH.head;
+    const truthCells = [].concat.apply([], this.TRUTH.rows);
+
+    // material
+    let material = null, matPage = {}, matThumbs = [];
+    if (S.material) {
+      const pages = this.matPages(S.material);
+      const cur = Math.min(S.material.page, pages.length - 1);
+      const p = pages[cur] || {};
+      material = { kicker: S.material.kicker || 'Aula', title: S.material.title || '', meta: 'material · ' + pages.length + ' págs' };
+      matPage = {
+        isDef: p.kind === 'def', isTable: p.kind === 'table', isPlaceholder: p.kind === 'placeholder', isRefs: p.kind === 'refs',
+        eyebrow: p.eyebrow || '', title: p.title || '', intro: p.intro || '', note: p.note || '', caption: p.caption || '',
+        hasTerms: !!p.hasTerms, terms: p.terms || [], hasBullets: !!p.hasBullets, bullets: p.bullets || [],
+        refs: [{ n: '01', text: 'Adicione aqui as referências da aula.' }, { n: '02', text: 'Notas de aula.' }, { n: '03', text: 'Lista de exercícios.' }],
+      };
+      matThumbs = pages.map((pg, i) => ({ n: 'pág ' + (i + 1), active: i === cur, border: i === cur ? accent : 'rgba(33,30,26,0.16)', numColor: i === cur ? accent : 'rgba(33,30,26,0.45)', onPick: () => this.setMatPage(i) }));
+    }
+
+    // search
+    let search = null, searchEmpty = false, searchHasResults = false, searchNoResults = false, searchResults = [], suggestions = [];
+    if (S.search) {
+      search = { q: S.search.q };
+      const q = S.search.q;
+      if (!this.norm(q)) {
+        searchEmpty = true;
+        suggestions = S.disciplines.slice(0, 5).map(d => ({ text: d.name, onPick: () => this.setState({ search: { q: d.name } }) }));
+      } else {
+        const res = this.searchResults(q);
+        searchResults = res.map(r => ({ type: r.type, title: r.title, context: r.context, onPick: r.pick }));
+        searchHasResults = res.length > 0;
+        searchNoResults = res.length === 0;
+      }
+    }
+
+    // accent swatches + serif options
+    const accentSwatches = [
+      { color: '#7A1F2B', label: 'Oxblood' }, { color: '#2E3A2C', label: 'Verde-folha' },
+      { color: '#243043', label: 'Azul-tinta' }, { color: '#5A3A22', label: 'Sépia' },
+    ].map(sw => ({ ...sw, selected: this.curAccent() === sw.color, onPick: () => this.setPref('accent', sw.color) }));
+    const curSerifName = this.curSerif();
+    const serifOptions = [
+      { short: 'Cormorant', full: 'Cormorant Garamond' }, { short: 'Plex Serif', full: 'IBM Plex Serif' },
+    ].map((o, i) => ({ short: o.short, bg: curSerifName === o.full ? accent : 'transparent', fg: curSerifName === o.full ? '#FFFDF8' : 'rgba(33,30,26,0.7)', sep: i === 0 ? 'none' : '1px solid rgba(33,30,26,0.18)', onPick: () => this.setPref('serif', o.full) }));
+
+    // identity
+    const ident = this.IDENT;
+
+    return {
+      accent, serifVar,
+      // masthead
+      showCrumb, crumbName, goHome: this.goHome, openConta: this.openConta, openSearch: this.openSearch,
+      contaBg: S.screen === 'conta' ? accent : '#FFFDF8', contaFg: S.screen === 'conta' ? '#FFFDF8' : '#211E1A',
+      identInitials: ident.initials || '·',
+      // screens
+      showBiblioteca: S.screen === 'biblioteca', showCanvas: S.screen === 'canvas', showConta: S.screen === 'conta',
+      spines, footerStats,
+      shelfName: ident.name, shelfMeta: ident.course ? (ident.course + ' · ' + ident.term) : ident.term,
+      // canvas
+      setVp: this.setVp, stop: this.stop,
+      onBgPointerDown: this.onBgPointerDown, onBgDblClick: this.onBgDblClick,
+      panX: S.pan.x, panY: S.pan.y,
+      worldTransform: 'translate(' + S.pan.x + 'px, ' + S.pan.y + 'px) scale(' + S.zoom + ')',
+      bgImage: grid ? 'radial-gradient(circle, rgba(40,32,24,0.16) 1px, transparent 1.4px)' : 'none',
+      bgSize: Math.max(7, 28 * S.zoom),
+      cursor: S.drag ? 'crosshair' : (S.panning ? 'grabbing' : 'grab'),
+      lines, dragLine, nodes,
+      zoomPct: Math.round(S.zoom * 100) + '%',
+      zoomIn: () => this.zoomBy(1.2), zoomOut: () => this.zoomBy(1 / 1.2), resetView: this.fitView,
+      addNode: this.addNode, cornerAi: this.cornerAi,
+      hintOpen: S.screen === 'canvas' && S.hintOpen && this.curHints(),
+      hintClosed: S.screen === 'canvas' && !(S.hintOpen && this.curHints()),
+      dismissHint: () => this.setState({ hintOpen: false }), openHint: () => this.setState({ hintOpen: true }),
+      // popover
+      popover, setAiInput: this.setAiInput, onPopInput: this.onPopInput, onPopKey: this.onPopKey, closePopover: this.closePopover, submitGen: this.submitGen,
+      // reading
+      reading, readingQs, readProgressW, readProgressLabel, readingKicker, readingTitle, readingMeta, closeReading: this.closeReading,
+      truthHead, truthCells,
+      // material
+      material, matPage, matThumbs, closeMaterial: this.closeMaterial,
+      // search
+      search, searchEmpty, searchHasResults, searchNoResults, searchResults, suggestions,
+      setSearchInput: this.setSearchInput, onSearchInput: this.onSearchInput, onSearchKey: this.onSearchKey, closeSearch: this.closeSearch,
+      // new disc
+      newDisc: S.newDisc ? true : null, closeNewDisc: this.closeNewDisc, createDisc: this.createDisc, onNewKey: this.onNewKey, setNewName: this.setNewName, setNewSem: this.setNewSem,
+      // conta
+      acctName: ident.name, acctInitials: ident.initials || '·',
+      acctEmail: ident.email, acctHasEmail: !!ident.email,
+      acctCourse: ident.course, acctHasCourse: !!ident.course,
+      acctTerm: ident.term,
+      statDisc: String(S.disciplines.length), statNos: String(nodeCount), statGer: String(genCount),
+      accentSwatches, serifOptions,
+      gridTrack: grid ? accent : 'transparent', gridKnob: grid ? '22px' : '2px',
+      hintsTrack: this.curHints() ? accent : 'transparent', hintsKnob: this.curHints() ? '22px' : '2px',
+      toggleGrid: this.toggleGrid, toggleHints: this.toggleHints, resetAll: this.resetAll,
+      // toast
+      toast: S.toast,
+    };
+  }
+}
+
+/* ===== boot ===== */
+(function () {
+  var lite = window.__dcLite;
+  var tplText = document.getElementById("dc-template").textContent;
+  var tpl = lite.compileTemplate(tplText);
+  var Host = lite.makeHost(Component, tpl);
+  // editor prop defaults from the original design's data-props
+  var props = { accent: "#7A1F2B", serifFont: "Cormorant Garamond", paperGrid: true };
+  var mount = document.getElementById("app");
+  if (ReactDOM.createRoot) ReactDOM.createRoot(mount).render(React.createElement(Host, props));
+  else ReactDOM.render(React.createElement(Host, props), mount);
+})();
+</script>
+</body>
+</html>

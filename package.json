@@ -1,0 +1,14 @@
+{
+  "name": "sandbox-de-nos",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Sandbox de Nós — node-based study canvas with AI-generated question blocks.",
+  "scripts": {
+    "build": "python3 build.py",
+    "dev": "node dev-server.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
