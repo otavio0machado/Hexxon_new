@@ -59,7 +59,7 @@ Opcionais:
 
 | Caminho | O que é |
 |---|---|
-| **`index.html`** | App pronto (gerado). Frontend estático: React 18 (CDN) + *dc-lite*. |
+| **`public/index.html`** | App pronto (gerado pelo build). Frontend estático: React 18 (CDN) + *dc-lite*. |
 | **`api/generate.js`** | Função serverless (Vercel/Node) que chama a Claude. **Guarda a chave.** |
 | `app/template.html` | A view (DSL: `{{ }}`, `<sc-if>`, `<sc-for>`, `style-hover`, `ref`). |
 | `app/logic.js` | A lógica (`class Component extends DCLogic`) — estado, IA, persistência. |
@@ -79,7 +79,7 @@ gerado** pela ferramenta de design. É um app real e seu.
 ## Reconstruir / testar
 
 ```bash
-python3 build.py          # regenera index.html a partir de app/  (ou: npm run build)
+python3 build.py          # regenera public/index.html a partir de app/  (ou: npm run build)
 cd test && npm install puppeteer-core && node run.mjs   # 35 verificações
 ```
 

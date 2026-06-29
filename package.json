@@ -6,7 +6,7 @@
   "description": "Sandbox de Nós — node-based study canvas with AI-generated question blocks.",
   "scripts": {
     "build": "python3 build.py",
-    "dev": "node dev-server.mjs"
+    "dev": "python3 build.py && node dev-server.mjs"
   },
   "engines": {
     "node": ">=18"

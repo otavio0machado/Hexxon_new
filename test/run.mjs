@@ -1,5 +1,5 @@
 import puppeteer from 'puppeteer-core';
-import { spawn } from 'node:child_process';
+import { spawn, execSync } from 'node:child_process';
 import { mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -11,7 +11,8 @@ const URL = `http://localhost:${PORT}/index.html`;
 const SHOT = '/tmp/hexxon_shots';
 mkdirSync(SHOT, { recursive: true });
 
-// ---- start the dev server in STUB mode ----
+// ---- build, then start the dev server in STUB mode ----
+execSync('python3 build.py', { cwd: ROOT, stdio: 'ignore' });
 const server = spawn('node', ['dev-server.mjs'], { cwd: ROOT, env: { ...process.env, STUB: '1', PORT: String(PORT) } });
 await new Promise((resolve, reject) => {
   const t = setTimeout(() => reject(new Error('server start timeout')), 8000);

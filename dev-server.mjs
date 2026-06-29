@@ -10,6 +10,7 @@ import { fileURLToPath } from "node:url";
 import { dirname } from "node:path";
 
 const ROOT = dirname(fileURLToPath(import.meta.url));
+const PUB = join(ROOT, "public"); // build output (Vercel's static dir)
 const PORT = Number(process.env.PORT) || 8000;
 const STUB = process.env.STUB === "1";
 
@@ -77,10 +78,10 @@ const server = createServer(async (req, res) => {
     }
   }
 
-  // static
+  // static (served from public/, the build output)
   let rel = path === "/" ? "/index.html" : path;
-  const file = normalize(join(ROOT, rel));
-  if (!file.startsWith(ROOT)) { res.writeHead(403); return res.end("forbidden"); }
+  const file = normalize(join(PUB, rel));
+  if (!file.startsWith(PUB)) { res.writeHead(403); return res.end("forbidden"); }
   try {
     const s = await stat(file);
     if (s.isDirectory()) throw new Error("dir");

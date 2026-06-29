@@ -17,7 +17,7 @@ import pathlib
 
 ROOT = pathlib.Path(__file__).parent
 APP = ROOT / "app"
-OUT = ROOT / "index.html"
+OUT = ROOT / "public" / "index.html"  # Vercel serves this dir statically
 
 template = (APP / "template.html").read_text().strip("\n")
 runtime = (APP / "runtime.js").read_text().strip()
@@ -82,6 +82,7 @@ doc = (
 assert "</script" not in template.lower(), "template contains </script>!"
 assert "</script" not in logic.lower(), "logic contains </script>!"
 
+OUT.parent.mkdir(exist_ok=True)
 OUT.write_text(doc)
 print("wrote", OUT, "—", len(doc), "bytes")
 print("template:", len(template), "| runtime:", len(runtime), "| logic:", len(logic), "| boot:", len(boot))
