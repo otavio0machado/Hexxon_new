@@ -575,6 +575,17 @@ try {
   await page.evaluate(() => { const f = [...document.querySelectorAll('input')].find((i) => /buscar no PDF/.test(i.placeholder || '')); if (f) { f.value = 'Cronograma'; f.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })); } });
   await sleep(300);
   ok('pdf: in-PDF search highlights matches', await page.evaluate(() => [...document.querySelectorAll('.sdn-tl span.sdn-find')].length >= 1));
+  // region crop → image node
+  await page.evaluate(() => { const b = [...document.querySelectorAll('button')].find((x) => /▢ recortar/.test(x.textContent)); if (b) b.click(); });
+  await sleep(80);
+  await page.evaluate(() => {
+    const wrap = [...document.querySelectorAll('div')].find((d) => d.dataset && d.dataset.page);
+    if (!wrap) return; const r = wrap.getBoundingClientRect();
+    const fire = (t, x, y, target) => (target || window).dispatchEvent(new PointerEvent(t, { bubbles: true, cancelable: true, clientX: x, clientY: y, button: 0, pointerId: 7 }));
+    fire('pointerdown', r.left + 20, r.top + 20, wrap); fire('pointermove', r.left + 90, r.top + 90); fire('pointerup', r.left + 90, r.top + 90);
+  });
+  await page.waitForFunction(() => [...document.querySelectorAll('#app input')].some((i) => /Recorte do PDF/.test(i.value || '')), { timeout: 6000 });
+  ok('pdf: region crop creates an image node', await page.evaluate(() => [...document.querySelectorAll('#app input')].some((i) => /Recorte do PDF/.test(i.value || ''))));
   await page.keyboard.press('Escape');
   await sleep(300);
   ok('pdf: viewer closed', await page.evaluate(() => ![...document.querySelectorAll('div')].some((d) => d.style && d.style.zIndex === '100')));

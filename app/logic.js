@@ -724,6 +724,7 @@ class Component extends DCLogic {
       const zr = document.createElement('div'); zr.style.cssText = 'display:flex;border:1px solid rgba(33,30,26,0.2);border-radius:2px;overflow:hidden;';
       const zb = (t, f) => { const b = document.createElement('button'); b.textContent = t; b.style.cssText = 'font-size:14px;color:#211E1A;background:transparent;border:none;padding:3px 9px;cursor:pointer;line-height:1;'; b.onclick = f; return b; };
       zr.appendChild(zb('−', () => this.zoomPdf(1 / 1.15))); zr.appendChild(zb('+', () => this.zoomPdf(1.15))); ctrls.appendChild(zr);
+      const crop = mkHeadBtn('▢ recortar', () => this.toggleCrop(crop)); ctrls.appendChild(crop);
     }
     if (blob) ctrls.appendChild(mkHeadBtn('✦ resumir', () => this.askPdf(this.pdfDocNode, 'Resuma este documento em tópicos curtos e liste os termos-chave.', this.pdfAns)));
     ctrls.appendChild(mkHeadBtn('↧ destaques', () => this.exportHighlights(this.pdfDocNode)));
@@ -753,7 +754,49 @@ class Component extends DCLogic {
     this.renderHlPanel(node);
     if (!blob) { body.innerHTML = '<div style="margin:auto;max-width:420px;text-align:center;color:#FAF8F3;font-size:12px;line-height:1.7;">O arquivo não está neste dispositivo (o PDF fica salvo localmente). O texto extraído continua disponível para a IA.</div>'; return; }
     body.addEventListener('mouseup', () => setTimeout(() => this.onPdfSelect(node), 0));
+    body.addEventListener('pointerdown', this.onCropDown);
+    this.pdfCropMode = false;
     this.renderPdfPages(body, blob, node).then(() => this.renderHlPanel(node)).catch(() => { body.innerHTML = '<div style="margin:auto;color:#FAF8F3;font-size:12px;">Falha ao renderizar o PDF.</div>'; });
+  }
+  // ---- region crop: drag a rectangle over a page → crop the canvas into an image node ----
+  toggleCrop(btn) {
+    this.pdfCropMode = !this.pdfCropMode;
+    if (btn) { btn.style.background = this.pdfCropMode ? this.curAccent() : 'transparent'; btn.style.color = this.pdfCropMode ? '#FFFDF8' : 'rgba(33,30,26,0.6)'; }
+    if (this.pdfBody) { this.pdfBody.style.cursor = this.pdfCropMode ? 'crosshair' : ''; [...this.pdfBody.querySelectorAll('.sdn-tl')].forEach(t => t.style.pointerEvents = this.pdfCropMode ? 'none' : ''); }
+    this.toast(this.pdfCropMode ? 'Recorte ligado — arraste sobre a figura' : 'Recorte desligado');
+  }
+  onCropDown = (e) => {
+    if (!this.pdfCropMode || e.button !== 0) return;
+    let wrap = e.target; while (wrap && !(wrap.dataset && wrap.dataset.page)) wrap = wrap.parentElement;
+    if (!wrap) return;
+    e.preventDefault();
+    this._crop = { wrap, x0: e.clientX, y0: e.clientY, r: wrap.getBoundingClientRect() };
+    const box = document.createElement('div'); box.style.cssText = 'position:fixed;z-index:102;border:1.5px dashed ' + this.curAccent() + ';background:rgba(122,31,43,0.14);pointer-events:none;'; document.body.appendChild(box); this._cropBox = box;
+    this.updateCropBox(e);
+    window.addEventListener('pointermove', this.onCropMove);
+    window.addEventListener('pointerup', this.onCropUp);
+  };
+  onCropMove = (e) => { if (this._crop) this.updateCropBox(e); };
+  updateCropBox(e) { const c = this._crop; if (!c || !this._cropBox) return; const x = Math.min(c.x0, e.clientX), y = Math.min(c.y0, e.clientY), w = Math.abs(e.clientX - c.x0), h = Math.abs(e.clientY - c.y0); this._cropBox.style.left = x + 'px'; this._cropBox.style.top = y + 'px'; this._cropBox.style.width = w + 'px'; this._cropBox.style.height = h + 'px'; }
+  onCropUp = (e) => {
+    window.removeEventListener('pointermove', this.onCropMove); window.removeEventListener('pointerup', this.onCropUp);
+    const c = this._crop; this._crop = null; if (this._cropBox) { this._cropBox.remove(); this._cropBox = null; }
+    if (!c) return;
+    const x = Math.min(c.x0, e.clientX), y = Math.min(c.y0, e.clientY), w = Math.abs(e.clientX - c.x0), h = Math.abs(e.clientY - c.y0);
+    if (w < 8 || h < 8) return;
+    this.cropToImage(c.wrap, x - c.r.left, y - c.r.top, w, h);
+  };
+  cropToImage(wrap, x, y, w, h) {
+    const canvas = wrap.querySelector('canvas'); if (!canvas) return;
+    const ratio = canvas.width / (wrap.clientWidth || canvas.width);
+    const sx = Math.max(0, x * ratio), sy = Math.max(0, y * ratio), sw = Math.min(canvas.width - sx, w * ratio), sh = Math.min(canvas.height - sy, h * ratio);
+    if (sw < 2 || sh < 2) return;
+    const c = document.createElement('canvas'); c.width = Math.round(sw); c.height = Math.round(sh);
+    c.getContext('2d').drawImage(canvas, sx, sy, sw, sh, 0, 0, Math.round(sw), Math.round(sh));
+    const ts = Math.min(1, 360 / Math.max(c.width, c.height));
+    const tc = document.createElement('canvas'); tc.width = Math.round(c.width * ts); tc.height = Math.round(c.height * ts); tc.getContext('2d').drawImage(c, 0, 0, tc.width, tc.height);
+    const thumb = tc.toDataURL('image/jpeg', 0.82);
+    c.toBlob((blob) => { const id = 'n' + (++this.nidc); if (blob) this.idbPut(id, blob).catch(() => {}); this.createImage(id, thumb, c.width, c.height, 'Recorte do PDF'); this.toast('Figura recortada → nó de imagem'); }, 'image/jpeg', 0.85);
   }
   esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
   async renderPdfPages(body, blob, node) {
