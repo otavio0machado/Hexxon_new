@@ -161,6 +161,11 @@ try {
   ok('action: "marcar resolvida"', await clickByText('marcar resolvida'));
   await sleep(250);
   ok('reading: progress 1 / 3', /1 \/ 3 resolvidas/.test(await txt()));
+  // write a resolution into Q1 — must persist
+  await page.focus('textarea[placeholder*="resolução"]');
+  await page.type('textarea[placeholder*="resolução"]', 'MINHA_RESOLUCAO_123');
+  await sleep(250);
+  ok('reading: written resolution kept', inc(await page.evaluate(() => document.querySelector('textarea[placeholder*="resolução"]').value), 'MINHA_RESOLUCAO_123'));
   await page.screenshot({ path: `${SHOT}/r05-reading-solved.png` });
 
   // ---- Milestone C: export to PDF (opens a print window) ----
@@ -215,6 +220,7 @@ try {
   await page.waitForFunction(() => /resolvidas/.test(document.body.innerText), { timeout: 5000 });
   await sleep(250);
   ok('persist: resolved progress survived reload', /1 \/ 3 resolvidas/.test(await txt()));
+  ok('persist: written resolution survived reload', inc(await page.evaluate(() => { const t = document.querySelector('textarea[placeholder*="resolução"]'); return t ? t.value : ''; }), 'MINHA_RESOLUCAO_123'));
   await page.click('button[title="Remover questão"]');
   await sleep(300);
   ok('edit: question deleted (2 left)', /0 \/ 2 resolvidas/.test(await txt()));

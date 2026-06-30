@@ -808,6 +808,11 @@ class Component extends DCLogic {
     });
   };
   toggleReveal = (i) => { const r = this.state.reading; if (!r) return; const rv = r.reveal.slice(); rv[i] = !rv[i]; this.setState({ reading: { ...r, reveal: rv } }); };
+  // persist the student's written work / margin note onto the question itself
+  updateQ(i, field, val) {
+    const r = this.state.reading; if (!r) return;
+    this.setState({ nodes: this.state.nodes.map(n => n.id === r.nodeId ? { ...n, questions: (n.questions || []).map((q, idx) => idx === i ? { ...q, [field]: val } : q) } : n) });
+  }
   deleteQuestion(i) {
     const r = this.state.reading;
     if (!r) return;
@@ -861,6 +866,7 @@ class Component extends DCLogic {
     const disc = this.disc(this.state.activeDisc);
     const esc = (s) => String(s == null ? '' : s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
     const rows = qs.map(q => '<div class="q"><div class="qh"><span class="n">' + esc(q.n) + '</span><span class="t">' + esc(q.text) + '</span></div>' +
+      ((q.work && q.work.trim()) ? '<div class="work"><div class="lbl2">Sua resolução</div><p>' + esc(q.work).replace(/\n/g, '<br>') + '</p></div>' : '') +
       ((q.solution && q.solution.length) ? '<div class="sol"><div class="lbl">Resolução</div>' + q.solution.map(s => '<p>' + esc(s) + '</p>').join('') + '<p class="ans">→ ' + esc(q.answer) + '</p></div>' : '') + '</div>').join('');
     const title = esc(node.blockTitle || 'Bloco de Questões');
     const html = '<!doctype html><html><head><meta charset="utf-8"><title>' + title + '</title><style>' +
@@ -868,7 +874,8 @@ class Component extends DCLogic {
       'h1{font-size:28px;margin:0 0 4px}.meta{font-family:ui-monospace,monospace;font-size:11px;color:#666;margin-bottom:24px;text-transform:uppercase;letter-spacing:.08em}' +
       '.q{padding:16px 0;border-bottom:1px solid #ddd;break-inside:avoid}.qh{display:flex;gap:12px}.n{color:#7A1F2B;font-weight:bold;font-size:18px}.t{font-size:15px}' +
       '.sol{margin:10px 0 0 34px;padding:10px 14px;background:#f6f4ef;border-left:2px solid #7A1F2B}.lbl{font-family:ui-monospace,monospace;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:#7A1F2B;margin-bottom:6px}' +
-      '.sol p{margin:0 0 6px;font-size:13px}.ans{color:#7A1F2B;font-weight:bold}@media print{body{margin:0}}' +
+      '.sol p{margin:0 0 6px;font-size:13px}.ans{color:#7A1F2B;font-weight:bold}' +
+      '.work{margin:10px 0 0 34px;padding:10px 14px;background:#fbfaf6;border-left:2px solid #999}.lbl2{font-family:ui-monospace,monospace;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:#666;margin-bottom:6px}.work p{margin:0;font-size:13px;white-space:pre-wrap}@media print{body{margin:0}}' +
       '</style></head><body><h1>' + title + '</h1><div class="meta">' + esc(disc ? disc.name : '') + ' · ' + qs.length + ' questões</div>' + rows +
       '<scr' + 'ipt>window.onload=function(){setTimeout(function(){window.print()},250)}</scr' + 'ipt></body></html>';
     const w = window.open('', '_blank');
@@ -1253,9 +1260,12 @@ class Component extends DCLogic {
           resolveLabel: resolved ? 'resolvida' : 'marcar resolvida',
           revealLabel: revealed ? 'ocultar resolução' : 'ver resolução',
           solution: q.solution || [], hasTable: false, answer: q.answer || '',
+          work: q.work || '', margin: q.margin || '',
           onResolve: () => this.toggleResolve(i),
           onReveal: () => this.toggleReveal(i),
           onDelete: () => this.deleteQuestion(i),
+          onWork: (e) => this.updateQ(i, 'work', e.target.value),
+          onMargin: (e) => this.updateQ(i, 'margin', e.target.value),
         };
       });
     }

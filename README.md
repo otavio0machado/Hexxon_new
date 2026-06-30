@@ -55,7 +55,7 @@ Opcionais:
    escreva o pedido (ex.: *"5 questões de derivadas, nível intermediário"*) → ↵.
 4. O navegador chama `/api/generate`, que chama a Claude com **saída estruturada**
    (JSON garantido), enviando o material conectado como contexto. O nó "digita" o resultado.
-5. **Abrir leitura** → resolva, marque como resolvida, veja a resolução. O progresso é salvo.
+5. **Abrir leitura** → escreva sua resolução (é salva), marque como resolvida, veja a resolução e a margem. Tudo persiste.
 6. **Revisar** (flashcards) → vire o cartão, marque *Eu sei* / *Revisar de novo*.
    **↓ PDF** exporta o bloco para impressão/PDF. No quadro, **↻ revisar tudo** junta as
    questões de **todos** os blocos gerados num único baralho.
@@ -117,7 +117,7 @@ Sem essas variáveis, a sincronização fica desativada e o app segue só com lo
 | `build.py` | Monta o `index.html` a partir de `app/`. |
 | `dev-server.mjs` | Servidor local (estático + `/api/*`), igual à Vercel. `STUB=1` usa IA falsa. |
 | `design/` | Importação original do Claude Design (referência). |
-| `test/run.mjs` | Suíte headless (Chrome) — 91 verificações do fluxo real. |
+| `test/run.mjs` | Suíte headless (Chrome) — 93 verificações do fluxo real. |
 
 O `index.html` mantém **template e lógica como arquivos editáveis** e os renderiza
 com um runtime aberto de ~250 linhas (*dc-lite*) — **sem depender do `support.js`
@@ -129,7 +129,7 @@ gerado** pela ferramenta de design. É um app real e seu.
 
 ```bash
 python3 build.py          # regenera public/index.html a partir de app/  (ou: npm run build)
-npm install puppeteer-core && node test/run.mjs         # 91 verificações
+npm install puppeteer-core && node test/run.mjs         # 93 verificações
 ```
 
 Se você puxar uma versão nova de `design/Sandbox de Nós.dc.html` do Claude Design,

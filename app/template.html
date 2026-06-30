@@ -470,7 +470,7 @@
                   <div style="flex:1;">
                     <div style="font-family:'IBM Plex Mono',monospace;font-size:14px;line-height:1.62;color:#211E1A;">{{ q.text }}</div>
 
-                    <textarea placeholder="sua resolução…" style="width:100%;margin-top:16px;min-height:74px;resize:vertical;font-family:'IBM Plex Mono',monospace;font-size:12.5px;line-height:25px;color:#211E1A;background:linear-gradient(transparent 24px, rgba(33,30,26,0.1) 25px);background-size:100% 25px;border:none;border-top:1px solid rgba(33,30,26,0.12);border-bottom:1px solid rgba(33,30,26,0.12);padding:6px 2px;outline:none;"></textarea>
+                    <textarea value="{{ q.work }}" onInput="{{ q.onWork }}" placeholder="sua resolução…" style="width:100%;margin-top:16px;min-height:74px;resize:vertical;font-family:'IBM Plex Mono',monospace;font-size:12.5px;line-height:25px;color:#211E1A;background:linear-gradient(transparent 24px, rgba(33,30,26,0.1) 25px);background-size:100% 25px;border:none;border-top:1px solid rgba(33,30,26,0.12);border-bottom:1px solid rgba(33,30,26,0.12);padding:6px 2px;outline:none;"></textarea>
 
                     <div style="display:flex;gap:18px;align-items:center;margin-top:14px;">
                       <button onClick="{{ q.onResolve }}" style="display:flex;align-items:center;gap:9px;background:none;border:none;cursor:pointer;padding:0;">
@@ -506,7 +506,7 @@
 
               <div style="border-left:1px solid rgba(33,30,26,0.1);padding-left:24px;">
                 <div style="font-family:'IBM Plex Mono',monospace;font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:rgba(33,30,26,0.4);margin-bottom:10px;">Margem</div>
-                <textarea placeholder="anotação…" style="width:100%;min-height:60px;resize:vertical;font-family:var(--serif);font-style:italic;font-size:15px;line-height:1.45;color:rgba(33,30,26,0.72);background:transparent;border:none;outline:none;padding:0;"></textarea>
+                <textarea value="{{ q.margin }}" onInput="{{ q.onMargin }}" placeholder="anotação…" style="width:100%;min-height:60px;resize:vertical;font-family:var(--serif);font-style:italic;font-size:15px;line-height:1.45;color:rgba(33,30,26,0.72);background:transparent;border:none;outline:none;padding:0;"></textarea>
               </div>
             </div>
           </sc-for>
