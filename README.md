@@ -101,6 +101,10 @@ Para salvar e sincronizar entre dispositivos com login por e-mail (sem senha):
 
 Sem essas variáveis, a sincronização fica desativada e o app segue só com localStorage.
 
+**Sincronizar os arquivos (PDF/imagem) também:** rode `supabase/migrations/0002_sdn_files_bucket.sql`
+(cria um bucket privado `sdn-files` com RLS por usuário). Logado, os arquivos sobem para o
+Storage e baixam automaticamente em outro dispositivo quando faltam localmente.
+
 **Backup:** em **Conta** há **↓ Exportar** / **↥ Importar** (arquivo `.json` com tudo). Se o
 armazenamento local encher, o app avisa para exportar e liberar espaço.
 
@@ -113,6 +117,7 @@ armazenamento local encher, o app avisa para exportar e liberar espaço.
 | **`public/index.html`** | App pronto (gerado pelo build). Frontend estático: React 18 (CDN) + *dc-lite*. |
 | **`api/generate.js`** | Função serverless (Vercel/Node) que chama a Claude. **Guarda a chave.** |
 | `api/outline.js` | Serverless: transforma o cronograma/ementa em lista de matérias (pré-canvas). |
+| `api/ask.js` | Serverless: Q&A fundamentado no texto **e/ou imagens** de um PDF ("Pergunte ao PDF" / 👁 visão). |
 | `api/config.js` | Devolve ao navegador a config **pública** do Supabase (URL + anon key), se houver. |
 | `supabase/migrations/` | SQL da tabela `sdn_state` (estado na nuvem, com RLS por usuário). |
 | `app/template.html` | A view (DSL: `{{ }}`, `<sc-if>`, `<sc-for>`, `style-hover`, `ref`). |

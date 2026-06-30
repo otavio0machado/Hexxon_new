@@ -619,9 +619,21 @@ class Component extends DCLogic {
     });
     return this._idb;
   }
-  async idbPut(key, blob) { const db = await this.idb(); return new Promise((res, rej) => { const tx = db.transaction('files', 'readwrite'); tx.objectStore('files').put(blob, key); tx.oncomplete = () => res(); tx.onerror = () => rej(tx.error); }); }
-  async idbGet(key) { try { const db = await this.idb(); return await new Promise((res) => { const tx = db.transaction('files', 'readonly'); const r = tx.objectStore('files').get(key); r.onsuccess = () => res(r.result || null); r.onerror = () => res(null); }); } catch (e) { return null; } }
-  async idbDel(key) { try { const db = await this.idb(); const tx = db.transaction('files', 'readwrite'); tx.objectStore('files').delete(key); } catch (e) {} }
+  async idbPutLocal(key, blob) { const db = await this.idb(); return new Promise((res, rej) => { const tx = db.transaction('files', 'readwrite'); tx.objectStore('files').put(blob, key); tx.oncomplete = () => res(); tx.onerror = () => rej(tx.error); }); }
+  async idbPut(key, blob) { await this.idbPutLocal(key, blob); this.cloudPutFile(key, blob); }
+  async idbGet(key) {
+    let local = null;
+    try { const db = await this.idb(); local = await new Promise((res) => { const tx = db.transaction('files', 'readonly'); const r = tx.objectStore('files').get(key); r.onsuccess = () => res(r.result || null); r.onerror = () => res(null); }); } catch (e) {}
+    if (local) return local;
+    const remote = await this.cloudGetFile(key);            // fall back to cloud (other device)
+    if (remote) { this.idbPutLocal(key, remote).catch(() => {}); return remote; }
+    return null;
+  }
+  // optional file sync via Supabase Storage (bucket 'sdn-files', folder = user id) — no-op without cloud
+  async cloudPutFile(key, blob) { if (!this.sb || !this.session || !blob) return; try { await this.sb.storage.from('sdn-files').upload(this.session.user.id + '/' + key, blob, { upsert: true, contentType: blob.type || 'application/octet-stream' }); } catch (e) {} }
+  async cloudGetFile(key) { if (!this.sb || !this.session) return null; try { const { data } = await this.sb.storage.from('sdn-files').download(this.session.user.id + '/' + key); return data || null; } catch (e) { return null; } }
+  async cloudDelFile(key) { if (!this.sb || !this.session) return; try { await this.sb.storage.from('sdn-files').remove([this.session.user.id + '/' + key]); } catch (e) {} }
+  async idbDel(key) { try { const db = await this.idb(); const tx = db.transaction('files', 'readwrite'); tx.objectStore('files').delete(key); } catch (e) {} this.cloudDelFile(key); }
   async idbClear() { try { const db = await this.idb(); const tx = db.transaction('files', 'readwrite'); tx.objectStore('files').clear(); } catch (e) {} }
   delBoardFiles(board) { try { (board && board.nodes || []).forEach(n => { if (n.type === 'pdf' || n.type === 'image') this.idbDel(n.id); }); } catch (e) {} }
 
