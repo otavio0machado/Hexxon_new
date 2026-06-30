@@ -819,27 +819,36 @@ class Component extends DCLogic {
     this.toast('Questão removida');
   }
 
-  // ---------- flashcards / review (Leitner box 1-3) ----------
+  // ---------- flashcards / review (Leitner box 1-3) — deck can span many blocks ----------
+  // a deck is [{ nodeId, qi }] so "Revisar tudo" mixes every generated block
   openFlash = (id) => {
     const node = this.byId()[id];
-    if (!node || !((node.questions || []).length)) { this.toast('Gere questões primeiro'); return; }
-    this.setState({ flash: { nodeId: id, idx: 0, flipped: false } });
+    const qs = (node && node.questions) || [];
+    if (!qs.length) { this.toast('Gere questões primeiro'); return; }
+    this.setState({ flash: { deck: qs.map((q, qi) => ({ nodeId: id, qi })), idx: 0, flipped: false, title: node.blockTitle || 'Bloco de Questões' } });
+  };
+  reviewAll = () => {
+    const deck = [];
+    this.state.nodes.forEach(n => {
+      if (n.type === 'generated' && n.filled) (n.questions || []).forEach((q, qi) => deck.push({ nodeId: n.id, qi }));
+    });
+    if (!deck.length) { this.toast('Nenhuma questão gerada ainda neste quadro'); return; }
+    this.setState({ flash: { deck, idx: 0, flipped: false, title: 'Revisão geral' } });
   };
   closeFlash = () => this.setState({ flash: null });
   flipCard = () => { const f = this.state.flash; if (f) this.setState({ flash: { ...f, flipped: !f.flipped } }); };
   flashGo = (d) => {
     const f = this.state.flash; if (!f) return;
-    const node = this.byId()[f.nodeId]; const len = (node && node.questions ? node.questions.length : 0);
-    let idx = f.idx + d; if (idx < 0) idx = 0; if (idx >= len) idx = len - 1;
+    let idx = f.idx + d; if (idx < 0) idx = 0; if (idx >= f.deck.length) idx = f.deck.length - 1;
     this.setState({ flash: { ...f, idx, flipped: false } });
   };
   markCard = (know) => {
     const f = this.state.flash; if (!f) return;
-    const node = this.byId()[f.nodeId]; const qs = (node && node.questions) || [];
-    const i = f.idx; const q = qs[i]; if (!q) return;
+    const ref = f.deck[f.idx]; if (!ref) return;
+    const node = this.byId()[ref.nodeId]; const q = node && (node.questions || [])[ref.qi]; if (!q) return;
     const box = know ? Math.min(3, (q.box || 1) + 1) : 1;
-    this.setState({ nodes: this.state.nodes.map(n => n.id === f.nodeId ? { ...n, questions: n.questions.map((x, idx) => idx === i ? { ...x, box, resolved: know ? true : x.resolved } : x) } : n) });
-    if (i + 1 < qs.length) this.setState({ flash: { ...f, idx: i + 1, flipped: false } });
+    this.setState({ nodes: this.state.nodes.map(n => n.id === ref.nodeId ? { ...n, questions: n.questions.map((x, idx) => idx === ref.qi ? { ...x, box, resolved: know ? true : x.resolved } : x) } : n) });
+    if (f.idx + 1 < f.deck.length) this.setState({ flash: { ...f, idx: f.idx + 1, flipped: false } });
     else { this.toast('Revisão concluída'); this.setState({ flash: null }); }
   };
 
@@ -1244,16 +1253,18 @@ class Component extends DCLogic {
       });
     }
 
-    // flashcards / review
-    let flash = null, flashNum = '', flashText = '', flashSolution = [], flashAnswer = '', flashFront = true, flashBack = false, flashCount = '';
+    // flashcards / review (deck may span multiple blocks)
+    let flash = null, flashNum = '', flashText = '', flashSolution = [], flashAnswer = '', flashFront = true, flashBack = false, flashCount = '', flashFrom = '';
     if (S.flash) {
-      const fnode = byId[S.flash.nodeId]; const fqs = (fnode && fnode.questions) || [];
-      const fq = fqs[S.flash.idx];
+      const ref = S.flash.deck[S.flash.idx];
+      const fnode = ref ? byId[ref.nodeId] : null;
+      const fq = fnode ? (fnode.questions || [])[ref.qi] : null;
       if (fq) {
         flash = true;
         flashNum = fq.n; flashText = fq.text; flashSolution = fq.solution || []; flashAnswer = fq.answer || '';
         flashFront = !S.flash.flipped; flashBack = !!S.flash.flipped;
-        flashCount = (S.flash.idx + 1) + ' / ' + fqs.length;
+        flashCount = (S.flash.idx + 1) + ' / ' + S.flash.deck.length;
+        flashFrom = (S.flash.title === 'Revisão geral' && fnode) ? (fnode.blockTitle || 'Bloco de Questões') : '';
       }
     }
 
@@ -1396,9 +1407,10 @@ class Component extends DCLogic {
       exportReadingPdf: this.exportReadingPdf,
       openFlashReading: () => { const r = this.state.reading; if (r) this.openFlash(r.nodeId); },
       // flashcards / review
-      flash, flashNum, flashText, flashSolution, flashAnswer, flashFront, flashBack, flashCount,
+      flash, flashNum, flashText, flashSolution, flashAnswer, flashFront, flashBack, flashCount, flashFrom,
       closeFlash: this.closeFlash, flipCard: this.flipCard,
       flashPrev: () => this.flashGo(-1), markKnow: () => this.markCard(true), markReview: () => this.markCard(false),
+      reviewAll: this.reviewAll, hasReview: S.nodes.some(n => n.type === 'generated' && n.filled),
       truthHead, truthCells,
       // material
       material, matPage, matThumbs, closeMaterial: this.closeMaterial,

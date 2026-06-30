@@ -54,7 +54,7 @@ try {
   await page.setViewport({ width: 1440, height: 900, deviceScaleFactor: 1 });
   page.on('console', (m) => { if (m.type() === 'error' && !/Failed to load resource/.test(m.text())) consoleErrors.push(m.text()); });
   page.on('pageerror', (e) => pageErrors.push(String(e)));
-  page.on('requestfailed', (r) => { const u = r.url(); if (!u.startsWith('data:') && !/favicon/.test(u)) failedReq.push(u + ' :: ' + (r.failure()?.errorText || '')); });
+  page.on('requestfailed', (r) => { const u = r.url(); if (!u.startsWith('data:') && !u.startsWith('blob:') && !/favicon/.test(u)) failedReq.push(u + ' :: ' + (r.failure()?.errorText || '')); });
   let lastGenBody = null;
   page.on('request', (r) => { if (r.method() === 'POST' && /\/api\/generate$/.test(r.url())) { try { lastGenBody = JSON.parse(r.postData() || '{}'); } catch {} } });
   page.on('dialog', (d) => { d.accept().catch(() => {}); }); // auto-accept the delete-discipline confirm
@@ -318,6 +318,13 @@ try {
   await sleep(250);
   ok('canvas: undo removes the duplicate', (await blockCount()) === before);
   await page.screenshot({ path: `${SHOT}/r07b-canvas-edit.png` });
+
+  // ---- integrated flashcards: "revisar tudo" combines every block's questions ----
+  ok('action: "↻ revisar tudo"', await clickByText('revisar tudo'));
+  await page.waitForFunction(() => /Eu sei/i.test(document.body.innerText) && /1 \/ 2/.test(document.body.innerText), { timeout: 5000 });
+  ok('review-all: combined deck opened', inc(await txt(), 'Eu sei') && /1 \/ 2/.test(await txt()) && /Revis/i.test(await txt()));
+  await page.keyboard.press('Escape');
+  await sleep(200);
 
   ok('action: "excluir disciplina"', await clickByText('excluir disciplina'));
   await page.waitForFunction(() => /0 disciplinas · 0 aulas · 0 nós/.test(document.body.innerText), { timeout: 5000 });
