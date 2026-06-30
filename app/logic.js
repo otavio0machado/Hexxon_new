@@ -752,7 +752,16 @@ class Component extends DCLogic {
     ov.appendChild(panel); document.body.appendChild(ov);
     this.pdfEl = ov; this.pdfBody = body; this.pdfSide = side; this.pdfAns = ans; this._pdfBlob = blob;
     this.renderHlPanel(node);
-    if (!blob) { body.innerHTML = '<div style="margin:auto;max-width:420px;text-align:center;color:#FAF8F3;font-size:12px;line-height:1.7;">O arquivo não está neste dispositivo (o PDF fica salvo localmente). O texto extraído continua disponível para a IA.</div>'; return; }
+    if (!blob) {
+      const box = document.createElement('div'); box.style.cssText = 'margin:auto;max-width:440px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:16px;';
+      box.innerHTML = '<div style="color:#FAF8F3;font-size:12px;line-height:1.7;">O arquivo não está neste dispositivo (o PDF fica salvo localmente). Os destaques e o texto estão preservados — re-anexe o mesmo PDF para vê-lo de novo.</div>';
+      const fi = document.createElement('input'); fi.type = 'file'; fi.accept = 'application/pdf,.pdf'; fi.style.display = 'none';
+      fi.onchange = (e) => { const f = e.target.files && e.target.files[0]; if (f) this.reattachPdf(node.id, f); };
+      const btn = document.createElement('button'); btn.textContent = '↥ re-anexar este PDF';
+      btn.style.cssText = 'font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#211E1A;background:#FAF8F3;border:none;border-radius:2px;padding:11px 18px;cursor:pointer;';
+      btn.onclick = () => fi.click();
+      box.appendChild(btn); box.appendChild(fi); body.appendChild(box); return;
+    }
     body.addEventListener('mouseup', () => setTimeout(() => this.onPdfSelect(node), 0));
     body.addEventListener('pointerdown', this.onCropDown);
     this.pdfCropMode = false;
@@ -868,6 +877,14 @@ class Component extends DCLogic {
     this.toast('Nota criada a partir da seleção — conecte (●) a um nó de IA');
   }
   openPdfAt = (id, page) => { this._pdfGoto = page || 1; this.openPdf(id); };
+  reattachPdf(id, file) {
+    this.toast('Re-anexando…');
+    this.idbPut(id, file).then(() => {
+      this.processPdf(file).then((r) => { this.setState({ nodes: this.state.nodes.map(n => n.id === id ? { ...n, content: r.text || n.content, thumb: r.thumb || n.thumb, pages: r.pages || n.pages } : n) }); }).catch(() => {});
+      this.toast('PDF re-anexado');
+      this.closePdf(); setTimeout(() => this.openPdf(id), 80);
+    }).catch(() => this.toast('Falha ao re-anexar'));
+  }
   zoomPdf(f) { this.userZoom = Math.max(0.6, Math.min(2.6, (this.userZoom || 1) * f)); if (this.pdfBody && this._pdfBlob) { const sc = this.pdfBody.scrollTop; this.pageWraps = {}; this.pdfBody.innerHTML = ''; this.renderPdfPages(this.pdfBody, this._pdfBlob, this.pdfDocNode).then(() => { try { this.pdfBody.scrollTop = sc * 1; } catch (e) {} }).catch(() => {}); } }
   searchPdf(query) {
     query = (query || '').trim().toLowerCase(); if (!query || !this.pdfBody) return;

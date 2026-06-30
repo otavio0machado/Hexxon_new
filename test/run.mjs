@@ -592,6 +592,19 @@ try {
   // the note created from the PDF links back to its source page
   ok('pdf: note links back to its source page', !!(await page.$('button[title="Abrir o PDF na fonte"]')));
 
+  // re-attach a missing file restores the viewer (cross-device case)
+  const pdfId = await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('sandbox-de-nos:v1') || '{}'); for (const b of Object.values(s.boards || {})) for (const n of (b.nodes || [])) if (n.type === 'pdf') return n.id; return null; });
+  await page.evaluate((id) => new Promise((res) => { const r = indexedDB.open('sdn-files', 1); r.onsuccess = () => { const tx = r.result.transaction('files', 'readwrite'); tx.objectStore('files').delete(id); tx.oncomplete = () => res(); tx.onerror = () => res(); }; r.onerror = () => res(); }), pdfId);
+  ok('action: reopen PDF (file now missing)', await clickByText('abrir PDF'));
+  await page.waitForFunction(() => /re-anexar este PDF/.test(document.body.textContent), { timeout: 6000 });
+  ok('pdf: missing file offers re-attach', await page.evaluate(() => /re-anexar este PDF/.test(document.body.textContent)));
+  const reInput = await page.evaluateHandle(() => { const ov = [...document.querySelectorAll('div')].find((d) => d.style && d.style.zIndex === '100'); return ov ? ov.querySelector('input[type="file"]') : null; });
+  await reInput.asElement().uploadFile(pdfPath);
+  await page.waitForFunction(() => [...document.querySelectorAll('.sdn-tl span')].some((s) => /Cronograma/.test(s.textContent || '')), { timeout: 12000 });
+  ok('pdf: re-attach restores the viewer', await page.evaluate(() => [...document.querySelectorAll('.sdn-tl span')].some((s) => /Cronograma/.test(s.textContent || ''))));
+  await page.keyboard.press('Escape');
+  await sleep(300);
+
   // ---- search now indexes PDFs and images, with keyboard navigation ----
   await page.keyboard.down('Control'); await page.keyboard.press('k'); await page.keyboard.up('Control');
   await page.waitForFunction(() => !!document.querySelector('input[placeholder*="Buscar disciplinas"]'), { timeout: 5000 });
