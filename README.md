@@ -71,7 +71,7 @@ Opcionais:
   grandes ganham rolagem interna.
 - **Imagens:** **+ Imagem** (ou **cole com ⌘V**) cria um nó de imagem. A imagem fica salva no
   navegador (IndexedDB) e o nó guarda só uma miniatura leve; **⤢** abre em tela cheia. Dá pra pôr legenda e redimensionar.
-- **PDFs:** **↥ PDF** cria um nó de PDF → **abrir PDF** abre o visualizador (o arquivo fica
+- **PDFs:** **↥ PDF** cria um nó de PDF com **miniatura da 1ª página** e nº de páginas → **abrir PDF** abre o visualizador (o arquivo fica
   salvo localmente no navegador via IndexedDB; o texto extraído vai para a IA). Em outro
   dispositivo o texto sincroniza, mas o arquivo em si fica no aparelho de origem.
 - **Notas estilo Notion:** **⤢ editar** abre o editor em tela cheia com formatação
@@ -118,7 +118,7 @@ Sem essas variáveis, a sincronização fica desativada e o app segue só com lo
 | `build.py` | Monta o `index.html` a partir de `app/`. |
 | `dev-server.mjs` | Servidor local (estático + `/api/*`), igual à Vercel. `STUB=1` usa IA falsa. |
 | `design/` | Importação original do Claude Design (referência). |
-| `test/run.mjs` | Suíte headless (Chrome) — 111 verificações do fluxo real. |
+| `test/run.mjs` | Suíte headless (Chrome) — 113 verificações do fluxo real. |
 
 O `index.html` mantém **template e lógica como arquivos editáveis** e os renderiza
 com um runtime aberto de ~250 linhas (*dc-lite*) — **sem depender do `support.js`
@@ -130,7 +130,7 @@ gerado** pela ferramenta de design. É um app real e seu.
 
 ```bash
 python3 build.py          # regenera public/index.html a partir de app/  (ou: npm run build)
-npm install puppeteer-core && node test/run.mjs         # 111 verificações
+npm install puppeteer-core && node test/run.mjs         # 113 verificações
 ```
 
 Se você puxar uma versão nova de `design/Sandbox de Nós.dc.html` do Claude Design,

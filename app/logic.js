@@ -554,17 +554,44 @@ class Component extends DCLogic {
     this.createPdfNode(id, file.name, '');        // node appears immediately (viewable)
     this.idbPut(id, file).catch(() => {});         // store the file locally
     this.toast('PDF adicionado — abra para ver ou conecte (●) à IA');
-    // extract text in the background so the AI can use it as context
-    this.extractPdf(file)
-      .then((text) => { if (text) this.setState({ nodes: this.state.nodes.map(n => n.id === id ? { ...n, content: text } : n) }); })
+    // in the background: extract text (for the AI), render a 1st-page thumbnail, count pages
+    this.processPdf(file)
+      .then((r) => { this.setState({ nodes: this.state.nodes.map(n => n.id === id ? { ...n, content: r.text || n.content, thumb: r.thumb || n.thumb, pages: r.pages || n.pages } : n) }); })
       .catch(() => {});
   };
+  // single pass: text + 1st-page thumbnail + page count
+  async processPdf(file) {
+    const lib = await this.loadPdfJs();
+    const data = new Uint8Array(await file.arrayBuffer());
+    const pdf = await lib.getDocument({ data }).promise;
+    const pages = pdf.numPages;
+    let text = '';
+    const maxPages = Math.min(pages, 50);
+    for (let p = 1; p <= maxPages; p++) {
+      const pg = await pdf.getPage(p);
+      const tc = await pg.getTextContent();
+      text += tc.items.map(i => i.str).join(' ') + '\n';
+      if (text.length > 24000) break;
+    }
+    text = text.replace(/[ \t]+/g, ' ').slice(0, 24000).trim();
+    let thumb = '';
+    try {
+      const page = await pdf.getPage(1);
+      const v0 = page.getViewport({ scale: 1 });
+      const scale = Math.min(1.4, 360 / v0.width);
+      const vp = page.getViewport({ scale });
+      const c = document.createElement('canvas'); c.width = Math.round(vp.width); c.height = Math.round(vp.height);
+      await page.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise;
+      thumb = c.toDataURL('image/jpeg', 0.7);
+    } catch (e) {}
+    return { text, thumb, pages };
+  }
   createPdfNode(id, filename, text) {
     const r = this.vp.getBoundingClientRect();
     const j = (this.nidc % 4) * 24;
     const w = this.screenToWorld(r.left + r.width * 0.4 + j, r.top + r.height * 0.42 + j);
     this.pushHist();
-    const node = { id, type: 'pdf', x: w.x - 150, y: w.y - 72, w: 300, h: 150, filename: filename || 'documento.pdf', content: text || '', source: 'pdf', hasFile: true, shortLabel: (filename || 'PDF').replace(/\.pdf$/i, '').slice(0, 18) };
+    const node = { id, type: 'pdf', x: w.x - 150, y: w.y - 72, w: 300, h: 150, filename: filename || 'documento.pdf', content: text || '', source: 'pdf', hasFile: true, thumb: '', pages: 0, shortLabel: (filename || 'PDF').replace(/\.pdf$/i, '').slice(0, 18) };
     this.setState({ nodes: [...this.state.nodes, node], selectedId: id, selectedConnId: null });
   }
   openPdf = async (id) => {
@@ -1280,7 +1307,8 @@ class Component extends DCLogic {
         isImage, imgSrc: n.src || '', imgCaption: n.caption || '',
         imgAreaH: Math.max(60, (n.h || 220) - 42),
         isPdf: n.type === 'pdf', pdfName: n.filename || 'documento.pdf',
-        pdfMeta: (n.content || '').trim() ? 'PDF · texto disponível para a IA' : 'PDF · documento',
+        pdfMeta: (n.pages ? (n.pages + (n.pages === 1 ? ' página' : ' páginas')) : 'documento') + ((n.content || '').trim() ? ' · texto para a IA' : ''),
+        pdfThumb: n.thumb || '', pdfHasThumb: !!n.thumb,
         onOpenPdf: (e) => { this.stop(e); this.openPdf(n.id); },
         genBodyCss, cardCss,
         resizable,

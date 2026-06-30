@@ -505,6 +505,10 @@ try {
   await pdfInput.uploadFile(pdfPath);
   await page.waitForFunction(() => /abrir pdf/i.test(document.body.innerText), { timeout: 8000 });
   ok('pdf: node created with filename', inc(await txt(), 'cronograma.pdf'));
+  // background processing renders a 1st-page thumbnail + page count
+  await page.waitForFunction(() => /página/.test(document.body.innerText), { timeout: 9000 }).catch(() => {});
+  ok('pdf: page count shown', inc(await txt(), 'página'));
+  ok('pdf: thumbnail rendered', await page.evaluate(() => [...document.querySelectorAll('#app img[src^="data:image/jpeg"]')].length >= 1));
   ok('action: "abrir PDF"', await clickByText('abrir PDF'));
   await page.waitForFunction(() => { const f = document.querySelector('iframe'); return !!(f && /^blob:/.test(f.src)); }, { timeout: 6000 });
   ok('pdf: viewer opened with blob iframe', await page.evaluate(() => { const f = document.querySelector('iframe'); return !!(f && /^blob:/.test(f.src)); }));

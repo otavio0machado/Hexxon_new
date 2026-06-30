@@ -214,7 +214,12 @@
               <div style="background:#FFFDF8;border:1px solid rgba(33,30,26,0.28);border-radius:3px;padding:17px 18px;box-shadow:0 1px 0 rgba(33,30,26,0.04);{{ n.cardCss }}">
                 <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--ox);margin-bottom:11px;">PDF · documento</div>
                 <div style="display:flex;gap:11px;align-items:flex-start;margin-bottom:13px;">
-                  <span style="flex:none;width:30px;height:38px;border:1px solid rgba(33,30,26,0.3);border-radius:2px;background:#FCFAF4;display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px;font-family:'IBM Plex Mono',monospace;font-size:7.5px;letter-spacing:.06em;color:var(--ox);">PDF</span>
+                  <sc-if value="{{ n.pdfHasThumb }}" hint-placeholder-val="{{ false }}">
+                    <img src="{{ n.pdfThumb }}" draggable="false" style="flex:none;width:46px;height:60px;object-fit:cover;object-position:top;border:1px solid rgba(33,30,26,0.2);border-radius:2px;background:#fff;" />
+                  </sc-if>
+                  <sc-if value="{{ !n.pdfHasThumb }}" hint-placeholder-val="{{ true }}">
+                    <span style="flex:none;width:30px;height:38px;border:1px solid rgba(33,30,26,0.3);border-radius:2px;background:#FCFAF4;display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px;font-family:'IBM Plex Mono',monospace;font-size:7.5px;letter-spacing:.06em;color:var(--ox);">PDF</span>
+                  </sc-if>
                   <div style="flex:1;min-width:0;">
                     <div style="font-family:var(--serif);font-size:17px;line-height:1.2;color:#211E1A;font-weight:600;word-break:break-word;">{{ n.pdfName }}</div>
                     <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.04em;color:rgba(33,30,26,0.45);margin-top:3px;">{{ n.pdfMeta }}</div>
