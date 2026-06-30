@@ -270,6 +270,15 @@ try {
   const ox = (await page.evaluate(() => { const el = [...document.querySelectorAll('*')].find((e) => getComputedStyle(e).getPropertyValue('--ox').trim()); return el ? getComputedStyle(el).getPropertyValue('--ox').trim() : ''; })).toLowerCase();
   ok('conta: accent updates --ox', picked && ox === '#2e3a2c', `--ox=${ox}`);
 
+  // ---- edit profile (name + initials) updates the masthead live ----
+  await page.click('input[placeholder="Seu nome"]', { clickCount: 3 });
+  await page.type('input[placeholder="Seu nome"]', 'Otavio Machado');
+  await page.click('input[placeholder="AB"]', { clickCount: 3 });
+  await page.type('input[placeholder="AB"]', 'OM');
+  await sleep(300);
+  ok('conta: profile name editable', inc(await txt(), 'Otavio Machado'));
+  ok('conta: avatar reflects edited initials', await page.evaluate(() => { const b = document.querySelector('button[title="Conta"]'); return b ? /OM/.test(b.textContent) : false; }));
+
   // ---- Milestone B: delete discipline ----
   ok('action: Voltar à estante', await clickByText('Voltar à estante'));
   await page.waitForFunction(() => /Suas disciplinas/.test(document.body.innerText), { timeout: 5000 });

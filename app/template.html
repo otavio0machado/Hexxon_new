@@ -379,6 +379,32 @@
           </sc-if>
         </div>
 
+        <!-- editable profile -->
+        <div style="background:#FFFDF8;border:1px solid rgba(33,30,26,0.18);border-radius:3px;padding:22px 24px;margin-bottom:36px;">
+          <div style="display:flex;align-items:center;gap:9px;margin-bottom:16px;">
+            <span style="width:6px;height:6px;background:var(--ox);display:inline-block;"></span>
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--ox);">Perfil</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 110px;gap:14px 18px;">
+            <div>
+              <label style="display:block;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:rgba(33,30,26,0.5);margin-bottom:6px;">Nome</label>
+              <input value="{{ editName }}" onInput="{{ onEditName }}" placeholder="Seu nome" style="width:100%;font-family:var(--serif);font-size:20px;color:#211E1A;background:#FCFAF4;border:1px solid rgba(33,30,26,0.2);border-radius:2px;padding:9px 11px;outline:none;" style-focus="border-color:var(--ox);" />
+            </div>
+            <div>
+              <label style="display:block;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:rgba(33,30,26,0.5);margin-bottom:6px;">Iniciais</label>
+              <input value="{{ editInitials }}" onInput="{{ onEditInitials }}" placeholder="AB" maxlength="3" style="width:100%;font-family:'IBM Plex Mono',monospace;font-size:15px;letter-spacing:.06em;color:#211E1A;background:#FCFAF4;border:1px solid rgba(33,30,26,0.2);border-radius:2px;padding:11px;outline:none;text-align:center;" style-focus="border-color:var(--ox);" />
+            </div>
+            <div>
+              <label style="display:block;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:rgba(33,30,26,0.5);margin-bottom:6px;">Curso</label>
+              <input value="{{ editCourse }}" onInput="{{ onEditCourse }}" placeholder="ex.: Ciência da Computação" style="width:100%;font-family:'IBM Plex Mono',monospace;font-size:13px;color:#211E1A;background:#FCFAF4;border:1px solid rgba(33,30,26,0.2);border-radius:2px;padding:11px;outline:none;" style-focus="border-color:var(--ox);" />
+            </div>
+            <div>
+              <label style="display:block;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:rgba(33,30,26,0.5);margin-bottom:6px;">Semestre</label>
+              <input value="{{ editTerm }}" onInput="{{ onEditTerm }}" placeholder="2026.1" style="width:100%;font-family:'IBM Plex Mono',monospace;font-size:13px;color:#211E1A;background:#FCFAF4;border:1px solid rgba(33,30,26,0.2);border-radius:2px;padding:11px;outline:none;" style-focus="border-color:var(--ox);" />
+            </div>
+          </div>
+        </div>
+
         <div style="display:grid;grid-template-columns:260px 1fr;gap:48px;align-items:start;">
           <!-- identity -->
           <div>

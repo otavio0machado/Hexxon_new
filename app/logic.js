@@ -1016,7 +1016,7 @@ class Component extends DCLogic {
     const nd = this.state.newDisc || {};
     if (nd.busy) return;
     const name = (this.newNameEl && this.newNameEl.value.trim()) || 'Nova disciplina';
-    const sem = (this.newSemEl && this.newSemEl.value.trim()) || this.IDENT.term;
+    const sem = (this.newSemEl && this.newSemEl.value.trim()) || this.curIdent().term;
     const syllabus = (nd.syllabus || '').trim();
     let lessons = [];
     if (syllabus && nd.useAI !== false) {
@@ -1051,6 +1051,13 @@ class Component extends DCLogic {
   curSerif() { return this.state.prefs.serif ?? this.props.serifFont ?? 'Cormorant Garamond'; }
   curGrid() { const p = this.state.prefs.grid; return p === null ? (this.props.paperGrid ?? true) : p; }
   curHints() { return this.state.prefs.showHints; }
+  // editable identity (persisted in prefs.ident, overrides the IDENT defaults)
+  curIdent() {
+    const id = { ...this.IDENT, ...(this.state.prefs.ident || {}) };
+    if (!id.initials && id.name) id.initials = id.name.trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+    return id;
+  }
+  setIdent(field, val) { this.setState({ prefs: { ...this.state.prefs, ident: { ...(this.state.prefs.ident || {}), [field]: val } } }); }
 
   // ---------- view ----------
   applyZoom(cx, cy, f) {
@@ -1458,7 +1465,7 @@ class Component extends DCLogic {
     const cloudNeedsAuth = !!(S.cloud && !S.session);
 
     // identity
-    const ident = this.IDENT;
+    const ident = this.curIdent();
 
     return {
       accent, serifVar,
@@ -1521,6 +1528,12 @@ class Component extends DCLogic {
       acctEmail: ident.email, acctHasEmail: !!ident.email,
       acctCourse: ident.course, acctHasCourse: !!ident.course,
       acctTerm: ident.term,
+      // editable profile
+      editName: ident.name || '', editInitials: ident.initials || '', editCourse: ident.course || '', editTerm: ident.term || '',
+      onEditName: (e) => this.setIdent('name', e.target.value),
+      onEditInitials: (e) => this.setIdent('initials', (e.target.value || '').slice(0, 3).toUpperCase()),
+      onEditCourse: (e) => this.setIdent('course', e.target.value),
+      onEditTerm: (e) => this.setIdent('term', e.target.value),
       statDisc: String(S.disciplines.length), statNos: String(nodeCount), statGer: String(genCount),
       accentSwatches, serifOptions,
       gridTrack: grid ? accent : 'transparent', gridKnob: grid ? '22px' : '2px',
