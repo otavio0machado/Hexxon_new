@@ -432,6 +432,16 @@ try {
   ok('syllabus: discipline name is exactly the typed name', discName === 'Lógica II', `name=${JSON.stringify(discName)}`);
   await page.screenshot({ path: `${SHOT}/r09-precanvas.png` });
 
+  // ---- edit a lesson's material (real, editable, persisted) ----
+  ok('action: open lesson material', await clickByText('material'));
+  await page.waitForFunction(() => !!document.querySelector('textarea[placeholder*="conteúdo desta aula"]'), { timeout: 5000 });
+  await page.type('textarea[placeholder*="conteúdo desta aula"]', 'CONTEUDO_AULA_XYZ definicao importante');
+  await sleep(250);
+  ok('material: content editable', inc(await page.evaluate(() => document.querySelector('textarea[placeholder*="conteúdo desta aula"]').value), 'CONTEUDO_AULA_XYZ'));
+  await page.keyboard.press('Escape');
+  await sleep(600);
+  ok('material: persisted on the lesson node', await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('sandbox-de-nos:v1') || '{}'); return Object.values(s.boards || {}).some((b) => (b.nodes || []).some((n) => n.type === 'lesson' && /CONTEUDO_AULA_XYZ/.test(n.materialText || ''))); }));
+
   // ---- image node from upload (downscaled to a data URL) ----
   const pngPath = `${SHOT}/tiny.png`;
   writeFileSync(pngPath, Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64'));

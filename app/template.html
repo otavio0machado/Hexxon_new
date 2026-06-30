@@ -621,88 +621,11 @@
           </div>
         </div>
 
-        <div style="flex:1;display:flex;min-height:0;">
-          <div class="ox-scroll" style="width:128px;flex:none;border-right:1px solid rgba(33,30,26,0.12);padding:16px 14px;overflow:auto;display:flex;flex-direction:column;gap:12px;">
-            <sc-for list="{{ matThumbs }}" as="t" hint-placeholder-count="3">
-              <button onClick="{{ t.onPick }}" style="background:#FFFDF8;border:1px solid {{ t.border }};cursor:pointer;padding:0;text-align:left;box-shadow:0 1px 0 rgba(33,30,26,0.04);">
-                <div style="height:74px;padding:9px 9px 0;overflow:hidden;">
-                  <div style="height:3px;width:60%;background:rgba(33,30,26,0.3);margin-bottom:5px;"></div>
-                  <div style="height:2px;width:90%;background:rgba(33,30,26,0.12);margin-bottom:4px;"></div>
-                  <div style="height:2px;width:82%;background:rgba(33,30,26,0.12);margin-bottom:4px;"></div>
-                  <div style="height:2px;width:88%;background:rgba(33,30,26,0.12);"></div>
-                </div>
-                <div style="font-family:'IBM Plex Mono',monospace;font-size:8.5px;letter-spacing:.08em;color:{{ t.numColor }};padding:5px 9px 8px;border-top:1px solid rgba(33,30,26,0.08);">{{ t.n }}</div>
-              </button>
-            </sc-for>
-          </div>
-
-          <div class="ox-scroll" style="flex:1;overflow:auto;padding:46px 60px;">
-            <sc-if value="{{ matPage.isDef }}" hint-placeholder-val="{{ true }}">
-              <div style="max-width:560px;">
-                <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:var(--ox);margin-bottom:14px;">{{ matPage.eyebrow }}</div>
-                <h3 style="font-family:var(--serif);font-size:34px;line-height:1.04;color:#211E1A;font-weight:600;margin:0 0 18px;">{{ matPage.title }}</h3>
-                <p style="font-family:'IBM Plex Serif',Georgia,serif;font-size:15px;line-height:1.7;color:rgba(33,30,26,0.82);margin:0 0 26px;">{{ matPage.intro }}</p>
-                <sc-if value="{{ matPage.hasTerms }}" hint-placeholder-val="{{ false }}">
-                  <div style="border-top:1px solid rgba(33,30,26,0.16);">
-                    <sc-for list="{{ matPage.terms }}" as="tm" hint-placeholder-count="5">
-                      <div style="display:grid;grid-template-columns:48px 150px 1fr;gap:16px;align-items:baseline;padding:11px 0;border-bottom:1px solid rgba(33,30,26,0.09);">
-                        <span style="font-family:var(--serif);font-size:24px;color:var(--ox);">{{ tm.sym }}</span>
-                        <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#211E1A;">{{ tm.name }}</span>
-                        <span style="font-family:'IBM Plex Serif',Georgia,serif;font-style:italic;font-size:14px;color:rgba(33,30,26,0.65);">{{ tm.read }}</span>
-                      </div>
-                    </sc-for>
-                  </div>
-                </sc-if>
-                <sc-if value="{{ matPage.hasBullets }}" hint-placeholder-val="{{ false }}">
-                  <div>
-                    <sc-for list="{{ matPage.bullets }}" as="b" hint-placeholder-count="3">
-                      <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:12px;">
-                        <span style="width:5px;height:5px;background:var(--ox);margin-top:8px;flex:none;"></span>
-                        <span style="font-family:'IBM Plex Serif',Georgia,serif;font-size:15px;line-height:1.6;color:rgba(33,30,26,0.82);">{{ b }}</span>
-                      </div>
-                    </sc-for>
-                  </div>
-                </sc-if>
-              </div>
-            </sc-if>
-
-            <sc-if value="{{ matPage.isTable }}" hint-placeholder-val="{{ false }}">
-              <div style="max-width:560px;">
-                <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:var(--ox);margin-bottom:14px;">{{ matPage.eyebrow }}</div>
-                <h3 style="font-family:var(--serif);font-size:34px;line-height:1.04;color:#211E1A;font-weight:600;margin:0 0 22px;">{{ matPage.title }}</h3>
-                <div style="display:inline-grid;grid-template-columns:repeat(5,auto);border:1px solid rgba(33,30,26,0.24);">
-                  <sc-for list="{{ truthHead }}" as="h" hint-placeholder-count="5">
-                    <div style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--ox);padding:9px 20px;text-align:center;border-bottom:1px solid rgba(33,30,26,0.24);background:rgba(33,30,26,0.03);">{{ h }}</div>
-                  </sc-for>
-                  <sc-for list="{{ truthCells }}" as="c" hint-placeholder-count="20">
-                    <div style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:#211E1A;padding:8px 20px;text-align:center;border-bottom:1px solid rgba(33,30,26,0.09);">{{ c }}</div>
-                  </sc-for>
-                </div>
-                <p style="font-family:'IBM Plex Serif',Georgia,serif;font-size:14px;line-height:1.65;color:rgba(33,30,26,0.7);margin:24px 0 0;max-width:440px;">{{ matPage.note }}</p>
-              </div>
-            </sc-if>
-
-            <sc-if value="{{ matPage.isPlaceholder }}" hint-placeholder-val="{{ false }}">
-              <div style="max-width:600px;">
-                <div style="width:100%;height:380px;border:1px solid rgba(33,30,26,0.2);background-image:repeating-linear-gradient(45deg, rgba(33,30,26,0.05) 0, rgba(33,30,26,0.05) 1px, transparent 1px, transparent 9px);display:flex;align-items:center;justify-content:center;">
-                  <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;color:rgba(33,30,26,0.4);background:#FFFDF8;padding:8px 16px;border:1px solid rgba(33,30,26,0.16);">slide digitalizado</span>
-                </div>
-                <div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.06em;color:rgba(33,30,26,0.5);margin-top:14px;">{{ matPage.caption }}</div>
-              </div>
-            </sc-if>
-
-            <sc-if value="{{ matPage.isRefs }}" hint-placeholder-val="{{ false }}">
-              <div style="max-width:560px;">
-                <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:var(--ox);margin-bottom:14px;">Referências</div>
-                <h3 style="font-family:var(--serif);font-size:34px;line-height:1.04;color:#211E1A;font-weight:600;margin:0 0 22px;">Leituras &amp; exercícios</h3>
-                <sc-for list="{{ matPage.refs }}" as="r" hint-placeholder-count="3">
-                  <div style="display:flex;gap:16px;align-items:baseline;padding:13px 0;border-bottom:1px solid rgba(33,30,26,0.1);">
-                    <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--ox);">{{ r.n }}</span>
-                    <span style="font-family:'IBM Plex Serif',Georgia,serif;font-size:15px;line-height:1.5;color:rgba(33,30,26,0.82);">{{ r.text }}</span>
-                  </div>
-                </sc-for>
-              </div>
-            </sc-if>
+        <div class="ox-scroll" style="flex:1;overflow:auto;padding:30px 48px;">
+          <div style="max-width:680px;margin:0 auto;">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:rgba(33,30,26,0.4);margin-bottom:8px;">Conteúdo da aula</div>
+            <textarea value="{{ material.text }}" onInput="{{ material.onText }}" placeholder="Cole/escreva aqui o conteúdo desta aula (slides, definições, exercícios…). Conecte esta aula a um nó de geração para a IA usar este material." class="ox-scroll" style="width:100%;min-height:420px;resize:vertical;font-family:'IBM Plex Serif',Georgia,serif;font-size:15px;line-height:1.7;color:#211E1A;background:#FCFAF4;border:1px solid rgba(33,30,26,0.16);border-radius:2px;padding:16px 18px;outline:none;" style-focus="border-color:var(--ox);"></textarea>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:rgba(33,30,26,0.45);margin-top:10px;">Conecte (●) esta aula a um nó de geração — o conteúdo entra como contexto da IA.</div>
           </div>
         </div>
       </div>

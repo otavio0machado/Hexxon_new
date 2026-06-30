@@ -790,7 +790,7 @@ class Component extends DCLogic {
     neigh.forEach(n => {
       if ((n.type === 'note' || n.type === 'pdf') && (n.content || '').trim()) { const lbl = n.title || n.filename; out.push('Material' + (lbl ? ' [' + lbl + ']' : '') + ':\n' + n.content.trim().slice(0, 12000)); }
       else if (n.type === 'image' && (n.caption || '').trim()) out.push('Imagem [' + n.caption.trim() + ']');
-      else if (n.type === 'lesson') out.push((n.kicker ? n.kicker + ': ' : '') + (n.titleText || ''));
+      else if (n.type === 'lesson') out.push((n.kicker ? n.kicker + ': ' : '') + (n.titleText || '') + ((n.materialText || '').trim() ? ('\n' + n.materialText.trim().slice(0, 8000)) : ''));
       else if (n.type === 'title') out.push('Disciplina: ' + (n.titleBig || ''));
       else if (n.type === 'generated' && n.filled && n.questions) out.push('Questões já geradas: ' + n.questions.map(q => q.text).join(' | '));
     });
@@ -979,17 +979,9 @@ class Component extends DCLogic {
   }
 
   // ---------- material ----------
-  openMaterial = (info) => { this.setState({ material: { ...info, page: 0 } }); };
+  openMaterial = (info) => { this.setState({ material: { ...info } }); };
   closeMaterial = () => this.setState({ material: null });
-  setMatPage = (i) => { const m = this.state.material; if (m) this.setState({ material: { ...m, page: i } }); };
-
-  matPages(m) {
-    return [
-      { kind: 'def', eyebrow: 'Visão geral', title: m.title, intro: 'Material da aula. Conecte este nó a um nó de geração para usá-lo como contexto para a IA.', hasBullets: true, bullets: ['Definições e notação', 'Exemplos resolvidos', 'Exercícios propostos'] },
-      { kind: 'placeholder', caption: 'slide · anotações de aula' },
-      { kind: 'refs' },
-    ];
-  }
+  setMaterialText(id, val) { this.setState({ nodes: this.state.nodes.map(n => n.id === id ? { ...n, materialText: val } : n) }); }
 
   // ---------- search ----------
   openSearch = () => this.setState({ search: { q: '', sel: 0 } });
@@ -1325,7 +1317,7 @@ class Component extends DCLogic {
         onRegen: (e) => { this.stop(e); this.regen(n.id); },
         onOpen: (e) => { if (e) this.stop(e); this.openReading(n.id); },
         onFlash: (e) => { if (e) this.stop(e); this.openFlash(n.id); },
-        onMaterial: (e) => { this.stop(e); this.openMaterial({ kicker: n.kicker, title: n.titleText, key: n.lessonKey, meta: n.material }); },
+        onMaterial: (e) => { this.stop(e); this.openMaterial({ id: n.id, kicker: n.kicker, title: n.titleText }); },
         onNoteInput: (e) => this.setNoteContent(n.id, e.target.value),
         onNoteTitleInput: (e) => this.setNoteTitle(n.id, e.target.value),
         onExpandNote: (e) => { this.stop(e); this.openNoteEditor(n.id); },
@@ -1437,19 +1429,15 @@ class Component extends DCLogic {
     const truthCells = [].concat.apply([], this.TRUTH.rows);
 
     // material
-    let material = null, matPage = {}, matThumbs = [];
+    let material = null;
     if (S.material) {
-      const pages = this.matPages(S.material);
-      const cur = Math.min(S.material.page, pages.length - 1);
-      const p = pages[cur] || {};
-      material = { kicker: S.material.kicker || 'Aula', title: S.material.title || '', meta: 'material · ' + pages.length + ' págs' };
-      matPage = {
-        isDef: p.kind === 'def', isTable: p.kind === 'table', isPlaceholder: p.kind === 'placeholder', isRefs: p.kind === 'refs',
-        eyebrow: p.eyebrow || '', title: p.title || '', intro: p.intro || '', note: p.note || '', caption: p.caption || '',
-        hasTerms: !!p.hasTerms, terms: p.terms || [], hasBullets: !!p.hasBullets, bullets: p.bullets || [],
-        refs: [{ n: '01', text: 'Adicione aqui as referências da aula.' }, { n: '02', text: 'Notas de aula.' }, { n: '03', text: 'Lista de exercícios.' }],
+      const node = byId[S.material.id];
+      const txt = (node && node.materialText) || '';
+      material = {
+        kicker: S.material.kicker || 'Aula', title: S.material.title || '',
+        meta: txt.trim() ? (txt.length + ' caracteres') : 'sem conteúdo ainda',
+        text: txt, onText: (e) => this.setMaterialText(S.material.id, e.target.value),
       };
-      matThumbs = pages.map((pg, i) => ({ n: 'pág ' + (i + 1), active: i === cur, border: i === cur ? accent : 'rgba(33,30,26,0.16)', numColor: i === cur ? accent : 'rgba(33,30,26,0.45)', onPick: () => this.setMatPage(i) }));
     }
 
     // search
@@ -1595,7 +1583,7 @@ class Component extends DCLogic {
       reviewAll: this.reviewAll, hasReview: S.nodes.some(n => n.type === 'generated' && n.filled),
       truthHead, truthCells,
       // material
-      material, matPage, matThumbs, closeMaterial: this.closeMaterial,
+      material, closeMaterial: this.closeMaterial,
       // search
       search, searchEmpty, searchHasResults, searchNoResults, searchResults, suggestions,
       setSearchInput: this.setSearchInput, onSearchInput: this.onSearchInput, onSearchKey: this.onSearchKey, closeSearch: this.closeSearch,
