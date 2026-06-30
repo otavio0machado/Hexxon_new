@@ -43,7 +43,7 @@ const QUESTION_SCHEMA = {
 const SYSTEM = [
   "Você gera blocos de questões de estudo para estudantes universitários brasileiros.",
   "A partir da disciplina, do contexto conectado e do pedido do aluno, crie questões de prova claras, com resolução passo a passo e resposta final.",
-  "Escreva em português do Brasil. Use notação matemática em texto simples (->, <->, ^, /, ¬, ∧, ∨, raiz, etc.).",
+  "Escreva em português do Brasil. Para QUALQUER matemática use LaTeX: expressões na linha entre $...$ e equações destacadas entre $$...$$ (ex.: $x^2+1=0$, $\\neg p \\lor q$, $$\\int_0^1 x\\,dx$$).",
   "Gere de 3 a 5 questões, a menos que o pedido especifique outra quantidade.",
   "Cada resolução deve ter de 1 a 4 passos curtos. A resposta final deve ser objetiva.",
   "Numere as questões como 01, 02, 03…",

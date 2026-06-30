@@ -68,7 +68,7 @@ async function stubGenerate(req, res) {
     title: "Bloco de Teste",
     questions: [
       { n: "01", text: "Questão de teste 1 — " + (body.prompt || "sem prompt"), solution: ["Passo 1 da resolução.", "Passo 2 da resolução."], answer: "Resposta 1." },
-      { n: "02", text: "Questão de teste 2 sobre tabelas-verdade.", solution: ["Único passo da resolução."], answer: "Resposta 2." },
+      { n: "02", text: "Questão de teste 2 sobre tabelas-verdade. Resolva $x^2 + 1 = 0$.", solution: ["Único passo: $x = \\pm i$."], answer: "Resposta 2." },
       { n: "03", text: "Questão de teste 3 sobre equivalências.", solution: ["Passo único."], answer: "Resposta 3." },
     ],
     model: "stub",

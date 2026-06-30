@@ -62,7 +62,56 @@ class Component extends DCLogic {
     window.addEventListener('keydown', this.onKey);
     window.addEventListener('resize', this.onResize);
     window.addEventListener('paste', this.onPaste);
+    this.loadKatex();
     this.initCloud();
+  }
+
+  // ---------- math (KaTeX) — render $...$ and $$...$$ across the app ----------
+  loadKatex() {
+    if (window.katex || this._katexLoading) return;
+    this._katexLoading = true;
+    try {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet'; link.href = 'https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css';
+      document.head.appendChild(link);
+      const s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js';
+      s.onload = () => { try { this.forceUpdate(); } catch (e) {} };
+      document.head.appendChild(s);
+    } catch (e) {}
+  }
+  mathToHtml(tex, display) {
+    if (!window.katex) return null;
+    try { return window.katex.renderToString(tex, { displayMode: !!display, throwOnError: false, output: 'html' }); } catch (e) { return null; }
+  }
+  splitMath(text) {
+    const out = []; const re = /\$\$([^$]+)\$\$|\$([^$\n]+)\$/g; let last = 0, m;
+    while ((m = re.exec(text))) {
+      if (m.index > last) out.push({ math: false, value: text.slice(last, m.index) });
+      if (m[1] != null) out.push({ math: true, display: true, value: m[1] });
+      else out.push({ math: true, display: false, value: m[2] });
+      last = m.index + m[0].length;
+    }
+    if (last < text.length) out.push({ math: false, value: text.slice(last) });
+    return out;
+  }
+  // returns a plain string (fast path) or an array of keyed React elements
+  richInline(text, withMd) {
+    text = text || '';
+    if (text.indexOf('$') < 0) return withMd ? this.mdInline(text) : text;
+    const R = window.React; const toks = this.splitMath(text); const out = []; let k = 0;
+    toks.forEach(tk => {
+      if (tk.math) {
+        const html = this.mathToHtml(tk.value, tk.display);
+        if (html) out.push(R.createElement(tk.display ? 'div' : 'span', { key: 'm' + (k++), style: tk.display ? { margin: '6px 0' } : null, dangerouslySetInnerHTML: { __html: html } }));
+        else { const d = tk.display ? '$$' : '$'; out.push(R.createElement('span', { key: 'm' + (k++) }, d + tk.value + d)); }
+      } else {
+        const seg = withMd ? this.mdInline(tk.value) : tk.value;
+        if (typeof seg === 'string') out.push(R.createElement('span', { key: 't' + (k++) }, seg));
+        else out.push(R.createElement(R.Fragment, { key: 't' + (k++) }, seg));
+      }
+    });
+    return out;
   }
   componentWillUnmount() {
     window.removeEventListener('pointermove', this.onMove);
@@ -529,7 +578,7 @@ class Component extends DCLogic {
       else if (/^\d+\.\s+/.test(t)) { kind = 'ol'; num = (t.match(/^(\d+)\./) || [])[1] || ''; body = t.replace(/^\d+\.\s+/, ''); }
       else if (/^[-*]\s+/.test(t)) { kind = 'li'; body = t.replace(/^[-*]\s+/, ''); }
       else if (t.trim() === '') kind = 'sp';
-      return { key: idx, kind, num: num + '.', content: this.mdInline(body), isH1: kind === 'h1', isH2: kind === 'h2', isH3: kind === 'h3', isLi: kind === 'li', isOl: kind === 'ol', isQuote: kind === 'quote', isHr: kind === 'hr', isP: kind === 'p', isSp: kind === 'sp' };
+      return { key: idx, kind, num: num + '.', content: this.richInline(body, true), isH1: kind === 'h1', isH2: kind === 'h2', isH3: kind === 'h3', isLi: kind === 'li', isOl: kind === 'ol', isQuote: kind === 'quote', isHr: kind === 'hr', isP: kind === 'p', isSp: kind === 'sp' };
     });
   }
   loadPdfJs() {
@@ -1362,7 +1411,7 @@ class Component extends DCLogic {
         v.showStatus = genHere && S.gen.phase === 'reading';
         v.statusText = genHere ? S.gen.statusText : '';
         v.resultKicker = filled ? ('Gerado · ' + qs.length + ' quest' + (qs.length === 1 ? 'ão' : 'ões')) : 'Gerando';
-        v.shownLines = filled ? qs.map(q => ({ n: q.n, text: q.text, caret: false })) : (genHere && S.gen.phase === 'typing' ? this.computeShown(S.gen.shown, qs) : []);
+        v.shownLines = filled ? qs.map(q => ({ n: q.n, text: this.richInline(q.text, false), caret: false })) : (genHere && S.gen.phase === 'typing' ? this.computeShown(S.gen.shown, qs) : []);
       }
       return v;
     });
@@ -1420,7 +1469,7 @@ class Component extends DCLogic {
         const resolved = S.reading.resolved[i];
         const revealed = S.reading.reveal[i];
         return {
-          num: q.n, text: q.text,
+          num: q.n, text: this.richInline(q.text, false),
           resolved, revealed,
           checkBorder: resolved ? accent : 'rgba(33,30,26,0.3)',
           checkBg: resolved ? accent : 'transparent',
@@ -1428,7 +1477,7 @@ class Component extends DCLogic {
           resolveColor: resolved ? accent : 'rgba(33,30,26,0.5)',
           resolveLabel: resolved ? 'resolvida' : 'marcar resolvida',
           revealLabel: revealed ? 'ocultar resolução' : 'ver resolução',
-          solution: q.solution || [], hasTable: false, answer: q.answer || '',
+          solution: (q.solution || []).map(s => this.richInline(s, false)), hasTable: false, answer: this.richInline(q.answer || '', false),
           work: q.work || '', margin: q.margin || '',
           onResolve: () => this.toggleResolve(i),
           onReveal: () => this.toggleReveal(i),
@@ -1447,7 +1496,7 @@ class Component extends DCLogic {
       const fq = fnode ? (fnode.questions || [])[ref.qi] : null;
       if (fq) {
         flash = true;
-        flashNum = fq.n; flashText = fq.text; flashSolution = fq.solution || []; flashAnswer = fq.answer || '';
+        flashNum = fq.n; flashText = this.richInline(fq.text, false); flashSolution = (fq.solution || []).map(s => this.richInline(s, false)); flashAnswer = this.richInline(fq.answer || '', false);
         flashFront = !S.flash.flipped; flashBack = !!S.flash.flipped;
         flashCount = (S.flash.idx + 1) + ' / ' + S.flash.deck.length;
         flashFrom = (S.flash.title === 'Revisão geral' && fnode) ? (fnode.blockTitle || 'Bloco de Questões') : '';

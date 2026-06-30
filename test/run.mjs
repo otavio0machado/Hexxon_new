@@ -159,6 +159,9 @@ try {
   ok('reading: title = block title', inc(t, 'Bloco de Teste'));
   ok('reading: 0 / 3 resolvidas', /0 \/ 3 resolvidas/.test(t));
   ok('reading: shows generated questions', inc(t, 'Questão de teste 2 sobre tabelas-verdade'));
+  // KaTeX renders the LaTeX in the question ($x^2 + 1 = 0$)
+  await page.waitForFunction(() => !!document.querySelector('#app .katex'), { timeout: 9000 }).catch(() => {});
+  ok('math: KaTeX renders LaTeX in questions', await page.evaluate(() => !!document.querySelector('#app .katex')));
   ok('action: "ver resolução"', await clickByText('ver resolução'));
   await sleep(250);
   ok('reading: reveals solution', inc(await txt(), 'Passo 1 da resolução'));
@@ -480,12 +483,14 @@ try {
   await page.waitForFunction(() => !!document.querySelector('textarea[placeholder*="anotações"]'), { timeout: 5000 });
   ok('action: open note editor', await clickByText('editar'));
   await page.waitForFunction(() => !!document.querySelector('textarea[placeholder*="Escreva aqui"]'), { timeout: 5000 });
-  await page.type('textarea[placeholder*="Escreva aqui"]', '# Titulo da nota\n### SubSub\n1. primeiro\n- bullet\n> citacao aqui\n*ital* e `codigo` e [meulink](http://x)\n---\ntexto com **negrito**');
+  await page.type('textarea[placeholder*="Escreva aqui"]', '# Titulo da nota\n### SubSub\n1. primeiro\n- bullet\n> citacao aqui\n*ital* e `codigo` e [meulink](http://x)\n---\ntexto com **negrito** e $E=mc^2$');
   await sleep(200);
   ok('note editor: toggle "Pré-visualizar"', await clickByText('Pré-visualizar'));
   await sleep(300);
   const pv = await txt();
   ok('note editor: preview renders markdown', inc(pv, 'Titulo da nota') && inc(pv, 'SubSub') && inc(pv, 'primeiro') && inc(pv, 'bullet') && inc(pv, 'citacao') && inc(pv, 'ital') && inc(pv, 'codigo') && inc(pv, 'meulink') && inc(pv, 'negrito'));
+  await page.waitForFunction(() => !!document.querySelector('#app .katex'), { timeout: 9000 }).catch(() => {});
+  ok('note editor: KaTeX renders math in preview', await page.evaluate(() => !!document.querySelector('#app .katex')));
   await page.screenshot({ path: `${SHOT}/r10-note-editor.png` });
   // ⌘B inserts bold markers in the editor
   ok('action: back to "Editar"', await clickByText('Editar'));
