@@ -1155,7 +1155,23 @@ class Component extends DCLogic {
         if (this.state.selectedConnId) { e.preventDefault(); this.deleteConn(this.state.selectedConnId); return; }
         if (this.state.selectedId) { e.preventDefault(); this.deleteNode(this.state.selectedId); return; }
       }
+      // zoom & framing
+      if (e.key === '+' || e.key === '=') { e.preventDefault(); this.zoomBy(1.2); return; }
+      if (e.key === '-' || e.key === '_') { e.preventDefault(); this.zoomBy(1 / 1.2); return; }
+      if (e.key === '0') { e.preventDefault(); this.fitView(); return; }
+      if (e.key === 'f' || e.key === 'F') { e.preventDefault(); this.frameSelection(); return; }
     }
+  };
+  // zoom to fit the selected node (or the whole board if none selected)
+  frameSelection = () => {
+    const n = this.byId()[this.state.selectedId];
+    if (!n || !this.vp) { this.fitView(); return; }
+    const r = this.vp.getBoundingClientRect();
+    if (r.width < 2) return;
+    const pad = 120;
+    const z = Math.max(0.5, Math.min((r.width - 2 * pad) / Math.max(1, n.w), (r.height - 2 * pad) / Math.max(1, n.h), 1.6));
+    const cx = n.x + n.w / 2, cy = n.y + n.h / 2;
+    this.setState({ zoom: z, pan: { x: r.width / 2 - cx * z, y: r.height / 2 - cy * z } });
   };
 
   renderVals() {

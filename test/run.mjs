@@ -306,6 +306,17 @@ try {
   await page.waitForFunction(() => /\d+%/.test(document.body.innerText), { timeout: 6000 });
   await sleep(400);
 
+  // ---- canvas keyboard zoom (+ / 0) ----
+  const zoomPct = () => page.evaluate(() => { const m = document.body.innerText.match(/(\d+)%/); return m ? parseInt(m[1], 10) : 0; });
+  const z0 = await zoomPct();
+  await page.keyboard.press('+');
+  await sleep(150);
+  const z1 = await zoomPct();
+  ok('canvas: "+" zooms in', z1 > z0, `z0=${z0} z1=${z1}`);
+  await page.keyboard.press('0');
+  await sleep(150);
+  ok('canvas: "0" fits the view', (await zoomPct()) !== z1);
+
   // ---- Milestone D: search finds note content ----
   ok('action: open search', await clickByText('Buscar'));
   await page.waitForFunction(() => !!document.querySelector('input[placeholder*="Buscar disciplinas"]'), { timeout: 5000 });
