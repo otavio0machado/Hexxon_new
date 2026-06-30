@@ -364,8 +364,8 @@ class Component extends DCLogic {
     this.g = { type: 'conn', fromId: id, moved: false };
     this.setState({ drag: { fromId: id, cur: w, overId: null } });
   };
-  MIN_W = { note: 200, image: 130, generated: 220 };
-  MIN_H = { note: 150, image: 110, generated: 130 };
+  MIN_W = { note: 200, image: 130, generated: 220, pdf: 230, lesson: 190 };
+  MIN_H = { note: 150, image: 110, generated: 150, pdf: 120, lesson: 96 };
   resizeDown = (e, id) => {
     e.stopPropagation();
     this.selectNode(id);
@@ -391,7 +391,8 @@ class Component extends DCLogic {
       const n0 = this.byId()[g.id]; const t = n0 ? n0.type : 'note';
       const minW = this.MIN_W[t] || 160, minH = this.MIN_H[t] || 100;
       const w = Math.round(Math.max(minW, g.ow + dx)), h = Math.round(Math.max(minH, g.oh + dy));
-      this.setState({ nodes: this.state.nodes.map(n => n.id === g.id ? { ...n, w, h } : n) });
+      // userSized marks the node so (re)generation never clobbers the chosen size
+      this.setState({ nodes: this.state.nodes.map(n => n.id === g.id ? { ...n, w, h, userSized: true } : n) });
     } else if (g.type === 'conn') {
       const w = this.screenToWorld(e.clientX, e.clientY);
       const over = this.nodeAt(w.x, w.y, g.fromId);
@@ -771,6 +772,7 @@ class Component extends DCLogic {
     this.setState({
       nodes: this.state.nodes.map(n => {
         if (n.id !== id) return n;
+        if (n.userSized) return { ...n, filled: true };            // keep the size the user set
         const cnt = (n.questions || []).length;
         return { ...n, filled: true, w: 364, h: Math.max(220, 150 + cnt * 72) };
       }),
@@ -780,7 +782,7 @@ class Component extends DCLogic {
   regen(id) {
     const node = this.byId()[id];
     const prompt = (node && node.lastPrompt) || '';
-    this.setState({ nodes: this.state.nodes.map(n => n.id === id ? { ...n, filled: false, w: 300, h: 156 } : n) });
+    this.setState({ nodes: this.state.nodes.map(n => n.id === id ? (n.userSized ? { ...n, filled: false } : { ...n, filled: false, w: 300, h: 156 }) : n) });
     this.startGen(id, prompt);
   }
   skipTyping = (id) => {
@@ -1136,7 +1138,12 @@ class Component extends DCLogic {
       const isGen = n.type === 'generated';
       const qs = n.questions || [];
       const isNote = n.type === 'note', isImage = n.type === 'image';
-      const resizable = isNote || isImage || isGen;
+      const resizable = isNote || isImage || isGen || n.type === 'pdf' || n.type === 'lesson';
+      // generated body: when the user resized, honor an explicit height with scroll;
+      // otherwise let it grow with content (min-height)
+      let genBodyCss = '';
+      if (isGen && n.h) genBodyCss = n.userSized ? ('height:' + Math.max(90, n.h - 4) + 'px;overflow:auto;') : ('min-height:' + Math.max(0, n.h - 40) + 'px;');
+      const cardCss = ((n.type === 'lesson' || n.type === 'pdf') && n.userSized && n.h) ? ('min-height:' + Math.max(60, n.h - 2) + 'px;') : '';
       const v = {
         id: n.id, x: n.x, y: n.y, w: n.w, h: n.h || 0,
         isTitle: n.type === 'title', isLesson: n.type === 'lesson',
@@ -1153,7 +1160,7 @@ class Component extends DCLogic {
         isPdf: n.type === 'pdf', pdfName: n.filename || 'documento.pdf',
         pdfMeta: (n.content || '').trim() ? 'PDF · texto disponível para a IA' : 'PDF · documento',
         onOpenPdf: (e) => { this.stop(e); this.openPdf(n.id); },
-        genBodyMinH: (isGen && n.h) ? Math.max(0, n.h - 40) : 0,
+        genBodyCss, cardCss,
         resizable,
         selected: S.selectedId === n.id,
         isOver: !!(S.drag && S.drag.overId === n.id),

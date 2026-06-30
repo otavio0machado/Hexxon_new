@@ -134,7 +134,7 @@
             </sc-if>
 
             <sc-if value="{{ n.isLesson }}" hint-placeholder-val="{{ true }}">
-              <div style="background:#FFFDF8;border:1px solid rgba(33,30,26,0.24);border-radius:3px;padding:19px 21px;box-shadow:0 1px 0 rgba(33,30,26,0.04);">
+              <div style="background:#FFFDF8;border:1px solid rgba(33,30,26,0.24);border-radius:3px;padding:19px 21px;box-shadow:0 1px 0 rgba(33,30,26,0.04);{{ n.cardCss }}">
                 <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.28em;color:rgba(33,30,26,0.42);text-transform:uppercase;margin-bottom:9px;">{{ n.kicker }}</div>
                 <div style="font-family:var(--serif);font-size:22px;line-height:1.1;color:#211E1A;font-weight:600;">{{ n.titleText }}</div>
                 <button onPointerDown="{{ stop }}" onClick="{{ n.onMaterial }}" style="display:flex;align-items:center;gap:8px;margin-top:15px;background:none;border:none;padding:0;cursor:pointer;width:100%;text-align:left;" style-hover="opacity:0.7;">
@@ -157,7 +157,7 @@
             </sc-if>
 
             <sc-if value="{{ n.genResult }}" hint-placeholder-val="{{ false }}">
-              <div onClick="{{ n.onSkip }}" onDoubleClick="{{ n.onOpen }}" style="background:#FFFDF8;border:1px solid rgba(33,30,26,0.26);border-radius:3px;padding:20px 22px;box-shadow:0 1px 0 rgba(33,30,26,0.05);min-height:{{ n.genBodyMinH }}px;">
+              <div onClick="{{ n.onSkip }}" onDoubleClick="{{ n.onOpen }}" class="ox-scroll" style="background:#FFFDF8;border:1px solid rgba(33,30,26,0.26);border-radius:3px;padding:20px 22px;box-shadow:0 1px 0 rgba(33,30,26,0.05);{{ n.genBodyCss }}">
                 <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.24em;color:var(--ox);text-transform:uppercase;margin-bottom:5px;">{{ n.resultKicker }}</div>
                 <div style="font-family:var(--serif);font-size:25px;line-height:1.04;color:#211E1A;font-weight:600;margin-bottom:7px;">{{ n.blockTitle }}</div>
                 <div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.08em;color:rgba(33,30,26,0.45);text-transform:uppercase;margin-bottom:15px;">lê de — {{ n.connectedLabel }}</div>
@@ -207,7 +207,7 @@
             </sc-if>
 
             <sc-if value="{{ n.isPdf }}" hint-placeholder-val="{{ false }}">
-              <div style="background:#FFFDF8;border:1px solid rgba(33,30,26,0.28);border-radius:3px;padding:17px 18px;box-shadow:0 1px 0 rgba(33,30,26,0.04);">
+              <div style="background:#FFFDF8;border:1px solid rgba(33,30,26,0.28);border-radius:3px;padding:17px 18px;box-shadow:0 1px 0 rgba(33,30,26,0.04);{{ n.cardCss }}">
                 <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--ox);margin-bottom:11px;">PDF · documento</div>
                 <div style="display:flex;gap:11px;align-items:flex-start;margin-bottom:13px;">
                   <span style="flex:none;width:30px;height:38px;border:1px solid rgba(33,30,26,0.3);border-radius:2px;background:#FCFAF4;display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px;font-family:'IBM Plex Mono',monospace;font-size:7.5px;letter-spacing:.06em;color:var(--ox);">PDF</span>

@@ -326,6 +326,33 @@ try {
   await page.keyboard.press('Escape');
   await sleep(200);
 
+  // ---- resize a generated block, then regenerate — chosen size must be preserved ----
+  const genWidth = () => page.evaluate(() => {
+    const wraps = [...document.querySelectorAll('#app div')].filter((d) => d.style && d.style.cursor === 'grab' && d.style.pointerEvents === 'auto');
+    const g = wraps.find((w) => /Bloco de Teste/.test(w.innerText || ''));
+    return g ? Math.round(g.getBoundingClientRect().width) : 0;
+  });
+  const genResized = await page.evaluate(() => {
+    const wraps = [...document.querySelectorAll('#app div')].filter((d) => d.style && d.style.cursor === 'grab' && d.style.pointerEvents === 'auto');
+    const g = wraps.find((w) => /Bloco de Teste/.test(w.innerText || ''));
+    if (!g) return false;
+    const h = g.querySelector('div[title="Redimensionar"]'); if (!h) return false;
+    const r = h.getBoundingClientRect(); const cx = r.x + r.width / 2, cy = r.y + r.height / 2;
+    const fire = (t, x, y) => window.dispatchEvent(new PointerEvent(t, { bubbles: true, cancelable: true, clientX: x, clientY: y, button: 0, pointerId: 1 }));
+    h.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true, clientX: cx, clientY: cy, button: 0, pointerId: 1 }));
+    fire('pointermove', cx + 130, cy + 40); fire('pointermove', cx + 170, cy + 60); fire('pointerup', cx + 170, cy + 60);
+    return true;
+  });
+  ok('resize: generated block resized', genResized);
+  await sleep(200);
+  const gw1 = await genWidth();
+  ok('resize: generated block grew wider', gw1 > 380, `gw1=${gw1}`);
+  ok('action: "↺ regenerar"', await clickByText('regenerar'));
+  await page.waitForFunction(() => /abrir leitura/i.test(document.body.innerText), { timeout: 12000 });
+  await sleep(400);
+  const gw2 = await genWidth();
+  ok('resize: size preserved after regenerate', Math.abs(gw2 - gw1) <= 6, `gw1=${gw1} gw2=${gw2}`);
+
   ok('action: "excluir disciplina"', await clickByText('excluir disciplina'));
   await page.waitForFunction(() => /0 disciplinas · 0 aulas · 0 nós/.test(document.body.innerText), { timeout: 5000 });
   ok('edit: discipline deleted (shelf empty)', inc(await txt(), '0 disciplinas · 0 aulas · 0 nós'));
