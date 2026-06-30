@@ -533,7 +533,10 @@
       <div onClick="{{ stop }}" style="width:100%;max-width:560px;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
           <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#FAF8F3;">Revisão · {{ flashCount }}</span>
-          <button onClick="{{ closeFlash }}" style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:#FAF8F3;background:none;border:1px solid rgba(250,248,243,0.4);border-radius:2px;width:30px;height:30px;cursor:pointer;">✕</button>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <button onClick="{{ shuffleFlash }}" title="Embaralhar" style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#FAF8F3;background:none;border:1px solid rgba(250,248,243,0.4);border-radius:2px;padding:7px 11px;cursor:pointer;" style-hover="border-color:#FAF8F3;">↬ embaralhar</button>
+            <button onClick="{{ closeFlash }}" style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:#FAF8F3;background:none;border:1px solid rgba(250,248,243,0.4);border-radius:2px;width:30px;height:30px;cursor:pointer;">✕</button>
+          </div>
         </div>
         <div onClick="{{ flipCard }}" style="background:#FFFDF8;border:1px solid rgba(33,30,26,0.3);box-shadow:0 18px 60px rgba(33,30,26,0.3);min-height:300px;padding:40px;display:flex;flex-direction:column;cursor:pointer;">
           <sc-if value="{{ flashFront }}" hint-placeholder-val="{{ true }}">

@@ -833,22 +833,41 @@ class Component extends DCLogic {
 
   // ---------- flashcards / review (Leitner box 1-3) — deck can span many blocks ----------
   // a deck is [{ nodeId, qi }] so "Revisar tudo" mixes every generated block
+  // order weakest-first: lower Leitner box and unresolved come first (spaced-repetition-ish)
+  orderDeck(refs) {
+    const byId = this.byId();
+    // weakest-first by Leitner box; stable sort keeps same-box cards in natural order
+    return refs.slice().sort((a, b) => {
+      const qa = (byId[a.nodeId] && byId[a.nodeId].questions[a.qi]) || {};
+      const qb = (byId[b.nodeId] && byId[b.nodeId].questions[b.qi]) || {};
+      return (qa.box || 1) - (qb.box || 1);
+    });
+  }
   openFlash = (id) => {
     const node = this.byId()[id];
     const qs = (node && node.questions) || [];
     if (!qs.length) { this.toast('Gere questões primeiro'); return; }
-    this.setState({ flash: { deck: qs.map((q, qi) => ({ nodeId: id, qi })), idx: 0, flipped: false, title: node.blockTitle || 'Bloco de Questões' } });
+    const deck = this.orderDeck(qs.map((q, qi) => ({ nodeId: id, qi })));
+    this.setState({ flash: { deck, idx: 0, flipped: false, title: node.blockTitle || 'Bloco de Questões' } });
   };
   reviewAll = () => {
-    const deck = [];
+    let deck = [];
     this.state.nodes.forEach(n => {
       if (n.type === 'generated' && n.filled) (n.questions || []).forEach((q, qi) => deck.push({ nodeId: n.id, qi }));
     });
     if (!deck.length) { this.toast('Nenhuma questão gerada ainda neste quadro'); return; }
+    deck = this.orderDeck(deck);
     this.setState({ flash: { deck, idx: 0, flipped: false, title: 'Revisão geral' } });
   };
   closeFlash = () => this.setState({ flash: null });
   flipCard = () => { const f = this.state.flash; if (f) this.setState({ flash: { ...f, flipped: !f.flipped } }); };
+  shuffleFlash = () => {
+    const f = this.state.flash; if (!f) return;
+    const d = f.deck.slice();
+    for (let i = d.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); const t = d[i]; d[i] = d[j]; d[j] = t; }
+    this.setState({ flash: { ...f, deck: d, idx: 0, flipped: false } });
+    this.toast('Baralho embaralhado');
+  };
   flashGo = (d) => {
     const f = this.state.flash; if (!f) return;
     let idx = f.idx + d; if (idx < 0) idx = 0; if (idx >= f.deck.length) idx = f.deck.length - 1;
@@ -1073,6 +1092,15 @@ class Component extends DCLogic {
       if (this.state.popover) return this.closePopover();
       if (this.state.selectedConnId) return this.setState({ selectedConnId: null });
       if (this.state.selectedId) return this.setState({ selectedId: null });
+      return;
+    }
+    // flashcard keyboard (overlay is on top → capture even if a background field has focus)
+    if (this.state.flash) {
+      if (e.key === ' ' || e.key === 'Spacebar' || e.key === 'Enter') { e.preventDefault(); return this.flipCard(); }
+      if (e.key === 'ArrowLeft') { e.preventDefault(); return this.flashGo(-1); }
+      if (e.key === 'ArrowRight') { e.preventDefault(); return this.flashGo(1); }
+      if (e.key === '1') { e.preventDefault(); return this.markCard(true); }
+      if (e.key === '2') { e.preventDefault(); return this.markCard(false); }
       return;
     }
     if (typing) return;
@@ -1453,6 +1481,7 @@ class Component extends DCLogic {
       flash, flashNum, flashText, flashSolution, flashAnswer, flashFront, flashBack, flashCount, flashFrom,
       closeFlash: this.closeFlash, flipCard: this.flipCard,
       flashPrev: () => this.flashGo(-1), markKnow: () => this.markCard(true), markReview: () => this.markCard(false),
+      shuffleFlash: this.shuffleFlash,
       reviewAll: this.reviewAll, hasReview: S.nodes.some(n => n.type === 'generated' && n.filled),
       truthHead, truthCells,
       // material

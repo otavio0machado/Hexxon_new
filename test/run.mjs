@@ -191,10 +191,23 @@ try {
   ok('flash: shows card 1 of 3', /1 \/ 3/.test(t) && inc(t, 'Eu sei') && inc(t, 'Questão de teste'));
   await page.evaluate(() => { const c = [...document.querySelectorAll('#app div')].find((d) => /toque no cart/i.test(d.innerText || '')); if (c) c.click(); });
   await sleep(250);
-  ok('flash: flip reveals solution', inc(await txt(), 'Passo 1 da'));
+  ok('flash: flip reveals solution', inc(await txt(), 'Resposta') && /Resolu/i.test(await txt()));
   ok('action: "Eu sei"', await clickByText('Eu sei'));
   await sleep(250);
-  ok('flash: advanced to card 2', /2 \/ 3/.test(await txt()));
+  // read the flashcard counter specifically (reading modal behind shares "x / 3" text)
+  const fcount = () => page.evaluate(() => { const el = [...document.querySelectorAll('#app span')].find((s) => /Revis[ãa]o ·/.test(s.textContent || '')); return el ? el.textContent : ''; });
+  ok('flash: advanced to card 2', /2 \/ 3/.test(await fcount()));
+  // keyboard: space flips, arrows navigate
+  await page.keyboard.press(' ');
+  await sleep(200);
+  ok('flash: spacebar flips card', await page.evaluate(() => { const c = [...document.querySelectorAll('#app div')].find((d) => /toque para virar/i.test(d.innerText || '')); return !!c; }));
+  await page.keyboard.press('ArrowRight');
+  await sleep(200);
+  ok('flash: arrow key navigates', /3 \/ 3/.test(await fcount()));
+  // shuffle resets to the first card
+  ok('action: "↬ embaralhar"', await clickByText('embaralhar'));
+  await sleep(250);
+  ok('flash: shuffle restarts deck', /1 \/ 3/.test(await fcount()));
   await page.keyboard.press('Escape');
   await sleep(250);
   ok('flash: closed (back to reading)', inc(await txt(), 'resolvidas') && !/Eu sei/i.test(await txt()));
