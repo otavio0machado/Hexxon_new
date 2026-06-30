@@ -429,13 +429,20 @@ try {
   await page.waitForFunction(() => !!document.querySelector('textarea[placeholder*="anotações"]'), { timeout: 5000 });
   ok('action: open note editor', await clickByText('editar'));
   await page.waitForFunction(() => !!document.querySelector('textarea[placeholder*="Escreva aqui"]'), { timeout: 5000 });
-  await page.type('textarea[placeholder*="Escreva aqui"]', '# Titulo da nota\n- primeiro item\ntexto com **negrito** aqui');
+  await page.type('textarea[placeholder*="Escreva aqui"]', '# Titulo da nota\n### SubSub\n1. primeiro\n- bullet\n> citacao aqui\n*ital* e `codigo` e [meulink](http://x)\n---\ntexto com **negrito**');
   await sleep(200);
   ok('note editor: toggle "Pré-visualizar"', await clickByText('Pré-visualizar'));
   await sleep(300);
   const pv = await txt();
-  ok('note editor: preview renders markdown', inc(pv, 'Titulo da nota') && inc(pv, 'primeiro item') && inc(pv, 'negrito'));
+  ok('note editor: preview renders markdown', inc(pv, 'Titulo da nota') && inc(pv, 'SubSub') && inc(pv, 'primeiro') && inc(pv, 'bullet') && inc(pv, 'citacao') && inc(pv, 'ital') && inc(pv, 'codigo') && inc(pv, 'meulink') && inc(pv, 'negrito'));
   await page.screenshot({ path: `${SHOT}/r10-note-editor.png` });
+  // ⌘B inserts bold markers in the editor
+  ok('action: back to "Editar"', await clickByText('Editar'));
+  await page.waitForFunction(() => !!document.querySelector('textarea[placeholder*="Escreva aqui"]'), { timeout: 5000 });
+  await page.focus('textarea[placeholder*="Escreva aqui"]');
+  await page.keyboard.down('Control'); await page.keyboard.press('b'); await page.keyboard.up('Control');
+  await sleep(150);
+  ok('note editor: ⌘B inserts bold markers', inc(await page.evaluate(() => document.querySelector('textarea[placeholder*="Escreva aqui"]').value), '**negrito**'));
   await page.keyboard.press('Escape');
   await sleep(200);
 

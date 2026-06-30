@@ -805,7 +805,7 @@
         </div>
 
         <sc-if value="{{ noteEdit.isEdit }}" hint-placeholder-val="{{ true }}">
-          <textarea ref="{{ setNoteBodyRef }}" value="{{ noteEdit.content }}" onInput="{{ noteEdit.onBody }}" placeholder="Escreva aqui…  ( # título · ## subtítulo · - lista · **negrito** )" class="ox-scroll" style="flex:1;width:100%;min-height:300px;resize:none;font-family:'IBM Plex Serif',Georgia,serif;font-size:16px;line-height:1.7;color:#211E1A;background:transparent;border:none;outline:none;padding:8px 48px 44px;"></textarea>
+          <textarea ref="{{ setNoteBodyRef }}" value="{{ noteEdit.content }}" onInput="{{ noteEdit.onBody }}" onKeyDown="{{ noteEdit.onBodyKey }}" placeholder="Escreva aqui…  ( # ## ### títulos · - / 1. listas · &gt; citação · --- linha · **negrito** *itálico* `código` [link](url) · ⌘B/⌘I )" class="ox-scroll" style="flex:1;width:100%;min-height:300px;resize:none;font-family:'IBM Plex Serif',Georgia,serif;font-size:16px;line-height:1.7;color:#211E1A;background:transparent;border:none;outline:none;padding:8px 48px 44px;"></textarea>
         </sc-if>
 
         <sc-if value="{{ noteEdit.isPreview }}" hint-placeholder-val="{{ false }}">
@@ -813,7 +813,11 @@
             <sc-for list="{{ noteEdit.blocks }}" as="b" hint-placeholder-count="3">
               <sc-if value="{{ b.isH1 }}" hint-placeholder-val="{{ false }}"><h2 style="font-family:var(--serif);font-size:30px;line-height:1.15;color:#211E1A;font-weight:600;margin:18px 0 8px;">{{ b.content }}</h2></sc-if>
               <sc-if value="{{ b.isH2 }}" hint-placeholder-val="{{ false }}"><h3 style="font-family:var(--serif);font-size:23px;line-height:1.2;color:#211E1A;font-weight:600;margin:16px 0 6px;">{{ b.content }}</h3></sc-if>
+              <sc-if value="{{ b.isH3 }}" hint-placeholder-val="{{ false }}"><h4 style="font-family:var(--serif);font-size:19px;line-height:1.25;color:#211E1A;font-weight:600;margin:14px 0 5px;">{{ b.content }}</h4></sc-if>
               <sc-if value="{{ b.isLi }}" hint-placeholder-val="{{ false }}"><div style="display:flex;gap:11px;align-items:flex-start;margin:5px 0;"><span style="width:5px;height:5px;background:var(--ox);margin-top:9px;flex:none;"></span><span style="font-family:'IBM Plex Serif',Georgia,serif;font-size:16px;line-height:1.65;color:rgba(33,30,26,0.85);">{{ b.content }}</span></div></sc-if>
+              <sc-if value="{{ b.isOl }}" hint-placeholder-val="{{ false }}"><div style="display:flex;gap:11px;align-items:flex-start;margin:5px 0;"><span style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--ox);margin-top:2px;flex:none;min-width:20px;">{{ b.num }}</span><span style="font-family:'IBM Plex Serif',Georgia,serif;font-size:16px;line-height:1.65;color:rgba(33,30,26,0.85);">{{ b.content }}</span></div></sc-if>
+              <sc-if value="{{ b.isQuote }}" hint-placeholder-val="{{ false }}"><div style="border-left:3px solid var(--ox);padding:2px 0 2px 16px;margin:8px 0;font-family:'IBM Plex Serif',Georgia,serif;font-style:italic;font-size:16px;line-height:1.6;color:rgba(33,30,26,0.7);">{{ b.content }}</div></sc-if>
+              <sc-if value="{{ b.isHr }}" hint-placeholder-val="{{ false }}"><div style="height:1px;background:rgba(33,30,26,0.16);margin:18px 0;"></div></sc-if>
               <sc-if value="{{ b.isP }}" hint-placeholder-val="{{ false }}"><p style="font-family:'IBM Plex Serif',Georgia,serif;font-size:16px;line-height:1.7;color:rgba(33,30,26,0.85);margin:0 0 10px;">{{ b.content }}</p></sc-if>
               <sc-if value="{{ b.isSp }}" hint-placeholder-val="{{ false }}"><div style="height:10px;"></div></sc-if>
             </sc-for>

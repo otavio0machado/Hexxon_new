@@ -455,28 +455,51 @@ class Component extends DCLogic {
   openNoteEditor = (id) => { const n = this.byId()[id]; if (!n || n.type !== 'note') return; this.setState({ noteEdit: { id, mode: 'edit' }, selectedId: id }); };
   closeNoteEditor = () => this.setState({ noteEdit: null });
   toggleNotePreview = () => { const e = this.state.noteEdit; if (e) this.setState({ noteEdit: { ...e, mode: e.mode === 'preview' ? 'edit' : 'preview' } }); };
-  setNoteBodyRef = (el) => { this.autoFocus(el); };
-  // tiny markdown: # / ## headings, - bullets, **bold** inline
+  setNoteBodyRef = (el) => { this.noteBodyEl = el; this.autoFocus(el); };
+  // ⌘B / ⌘I wrap the selection in the editor; ⌘K makes a link
+  onNoteEditorKey = (e) => {
+    if (!(e.metaKey || e.ctrlKey)) return;
+    const k = e.key.toLowerCase();
+    if (k !== 'b' && k !== 'i') return;
+    e.preventDefault();
+    const ta = e.target; const mark = k === 'b' ? '**' : '*';
+    const s = ta.selectionStart, en = ta.selectionEnd, v = ta.value;
+    const sel = v.slice(s, en) || (k === 'b' ? 'negrito' : 'itálico');
+    const nv = v.slice(0, s) + mark + sel + mark + v.slice(en);
+    const ne = this.state.noteEdit; if (ne) this.setNoteContent(ne.id, nv);
+    setTimeout(() => { try { ta.focus(); ta.selectionStart = s + mark.length; ta.selectionEnd = s + mark.length + sel.length; } catch (er) {} }, 0);
+  };
+  // markdown: #/##/### headings, > quote, - / 1. lists, --- rule; **bold** *italic* `code` [link](url)
   mdInline(text) {
     text = text || '';
-    if (text.indexOf('**') < 0) return text; // plain string (no key warnings)
-    const R = window.React; const out = []; const re = /\*\*([^*]+)\*\*/g; let m, last = 0, k = 0;
+    if (!/[*`\[]/.test(text)) return text; // plain string (no key warnings)
+    const R = window.React; const out = []; let k = 0, last = 0, m;
+    const re = /(\*\*([^*]+)\*\*)|(\*([^*]+)\*)|(`([^`]+)`)|(\[([^\]]+)\]\(([^)\s]+)\))/g;
+    const push = (s) => { if (s) out.push(R.createElement('span', { key: 't' + (k++) }, s)); };
     while ((m = re.exec(text))) {
-      if (m.index > last) out.push(R.createElement('span', { key: 't' + (k++) }, text.slice(last, m.index)));
-      out.push(R.createElement('strong', { key: 'b' + (k++) }, m[1])); last = m.index + m[0].length;
+      if (m.index > last) push(text.slice(last, m.index));
+      if (m[2] != null) out.push(R.createElement('strong', { key: 'b' + (k++) }, m[2]));
+      else if (m[4] != null) out.push(R.createElement('em', { key: 'i' + (k++) }, m[4]));
+      else if (m[6] != null) out.push(R.createElement('code', { key: 'c' + (k++), style: { fontFamily: "'IBM Plex Mono',monospace", background: 'rgba(33,30,26,0.06)', padding: '1px 5px', borderRadius: '2px', fontSize: '0.9em' } }, m[6]));
+      else if (m[8] != null) out.push(R.createElement('a', { key: 'a' + (k++), href: m[9], target: '_blank', rel: 'noopener noreferrer', style: { color: 'var(--ox)', textDecoration: 'underline' } }, m[8]));
+      last = m.index + m[0].length;
     }
-    if (last < text.length) out.push(R.createElement('span', { key: 't' + (k++) }, text.slice(last)));
-    return out;
+    if (last < text.length) push(text.slice(last));
+    return out.length ? out : text;
   }
   mdBlocks(text) {
     return (text || '').split('\n').map((raw, idx) => {
       const t = raw.replace(/\s+$/, '');
-      let kind = 'p', body = t;
+      let kind = 'p', body = t, num = '';
       if (/^#\s+/.test(t)) { kind = 'h1'; body = t.replace(/^#\s+/, ''); }
       else if (/^##\s+/.test(t)) { kind = 'h2'; body = t.replace(/^##\s+/, ''); }
+      else if (/^###\s+/.test(t)) { kind = 'h3'; body = t.replace(/^###\s+/, ''); }
+      else if (/^>\s?/.test(t)) { kind = 'quote'; body = t.replace(/^>\s?/, ''); }
+      else if (/^(-{3,}|\*{3,}|_{3,})$/.test(t)) { kind = 'hr'; body = ''; }
+      else if (/^\d+\.\s+/.test(t)) { kind = 'ol'; num = (t.match(/^(\d+)\./) || [])[1] || ''; body = t.replace(/^\d+\.\s+/, ''); }
       else if (/^[-*]\s+/.test(t)) { kind = 'li'; body = t.replace(/^[-*]\s+/, ''); }
       else if (t.trim() === '') kind = 'sp';
-      return { key: idx, kind, content: this.mdInline(body), isH1: kind === 'h1', isH2: kind === 'h2', isLi: kind === 'li', isP: kind === 'p', isSp: kind === 'sp' };
+      return { key: idx, kind, num: num + '.', content: this.mdInline(body), isH1: kind === 'h1', isH2: kind === 'h2', isH3: kind === 'h3', isLi: kind === 'li', isOl: kind === 'ol', isQuote: kind === 'quote', isHr: kind === 'hr', isP: kind === 'p', isSp: kind === 'sp' };
     });
   }
   loadPdfJs() {
@@ -1384,6 +1407,7 @@ class Component extends DCLogic {
           blocks: isPreview ? this.mdBlocks(n.content || '') : [],
           onTitle: (e) => this.setNoteTitle(n.id, e.target.value),
           onBody: (e) => this.setNoteContent(n.id, e.target.value),
+          onBodyKey: this.onNoteEditorKey,
         };
       } else { noteEdit = null; }
     }
