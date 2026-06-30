@@ -45,13 +45,20 @@ Opcionais:
 ## Como funciona o fluxo
 
 1. **Nova disciplina** na estante → abre um quadro vazio.
-2. **Toque duplo** no papel cria um nó. (Opcional: arraste a alça ● para conectar nós e dar contexto.)
-3. Selecione o nó → **Invocar IA** → escreva o que quer (ex.: *"5 questões de
-   derivadas, nível intermediário"*) → ↵.
+2. **Material:** crie uma **Nota** (`+ Nota`) e cole seu conteúdo, ou importe um **PDF**
+   (`↥ PDF`, texto extraído no navegador). Arraste a alça ● para **conectar** o material a um nó.
+3. **Toque duplo** no papel cria um nó de geração. Selecione → **Invocar IA** →
+   escreva o pedido (ex.: *"5 questões de derivadas, nível intermediário"*) → ↵.
 4. O navegador chama `/api/generate`, que chama a Claude com **saída estruturada**
-   (JSON garantido) e devolve as questões. O nó "digita" o resultado.
-5. **Abrir leitura** → resolva, marque como resolvida, veja a resolução.
-6. Tudo é salvo automaticamente (localStorage). **Apagar tudo** está em *Conta*.
+   (JSON garantido), enviando o material conectado como contexto. O nó "digita" o resultado.
+5. **Abrir leitura** → resolva, marque como resolvida, veja a resolução. O progresso é salvo.
+6. **Revisar** (flashcards) → vire o cartão, marque *Eu sei* / *Revisar de novo*.
+   **↓ PDF** exporta o bloco para impressão/PDF.
+7. Tudo é salvo automaticamente (localStorage). Renomear/excluir disciplina e
+   excluir questões estão na própria tela; **Apagar tudo** está em *Conta*.
+
+> Os dados ficam **só neste navegador** (sem nuvem/login ainda — planejado para um
+> projeto Supabase dedicado, separado do seu sistema do laboratório).
 
 ---
 

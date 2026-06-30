@@ -28,7 +28,7 @@ class Component extends DCLogic {
     pan: { x: 0, y: 0 }, zoom: 0.95, panning: false,
     selectedId: null, drag: null, gen: null, popover: null,
     hintOpen: true,
-    reading: null, material: null, search: null, newDisc: null, toast: null,
+    reading: null, material: null, search: null, newDisc: null, toast: null, flash: null,
     disciplines: this.DISCIPLINES.slice(),
     boards: {},
     nodes: [], connections: [],
@@ -248,6 +248,61 @@ class Component extends DCLogic {
     const w = this.screenToWorld(r.left + r.width * 0.5 + j, r.top + r.height * 0.7 + j);
     this.createNodeAt(w.x, w.y);
   };
+
+  // ---------- material / note nodes (your own study content for the AI) ----------
+  addNoteNode = () => this.createNote('Nota', '', 'texto');
+  pickPdf = () => { if (this.fileInput) this.fileInput.click(); };
+  setFileInput = (el) => { this.fileInput = el; };
+  createNote(title, content, source) {
+    if (this.state.screen !== 'canvas' || !this.vp) return;
+    const r = this.vp.getBoundingClientRect();
+    const j = (this.nidc % 4) * 24;
+    const w = this.screenToWorld(r.left + r.width * 0.34 + j, r.top + r.height * 0.42 + j);
+    const id = 'n' + (++this.nidc);
+    const node = { id, type: 'note', x: w.x - 140, y: w.y - 96, w: 280, h: 196, title: title || 'Nota', content: content || '', source: source || 'texto', shortLabel: (title || 'Nota').slice(0, 18) };
+    this.setState({ nodes: [...this.state.nodes, node], selectedId: id });
+    return id;
+  }
+  setNoteContent(id, val) { this.setState({ nodes: this.state.nodes.map(n => n.id === id ? { ...n, content: val } : n) }); }
+  setNoteTitle(id, val) { this.setState({ nodes: this.state.nodes.map(n => n.id === id ? { ...n, title: val, shortLabel: (val || 'Nota').slice(0, 18) } : n) }); }
+  loadPdfJs() {
+    if (window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
+    if (this._pdfP) return this._pdfP;
+    this._pdfP = new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = 'https://unpkg.com/pdfjs-dist@3.11.174/legacy/build/pdf.min.js';
+      s.onload = () => { try { window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@3.11.174/legacy/build/pdf.worker.min.js'; resolve(window.pdfjsLib); } catch (e) { reject(e); } };
+      s.onerror = () => reject(new Error('cdn'));
+      document.head.appendChild(s);
+    });
+    return this._pdfP;
+  }
+  async extractPdf(file) {
+    const lib = await this.loadPdfJs();
+    const data = new Uint8Array(await file.arrayBuffer());
+    const pdf = await lib.getDocument({ data }).promise;
+    const maxPages = Math.min(pdf.numPages, 50);
+    let text = '';
+    for (let p = 1; p <= maxPages; p++) {
+      const page = await pdf.getPage(p);
+      const tc = await page.getTextContent();
+      text += tc.items.map(i => i.str).join(' ') + '\n';
+      if (text.length > 24000) break;
+    }
+    return text.replace(/[ \t]+/g, ' ').slice(0, 24000).trim();
+  }
+  onPdfPick = async (e) => {
+    const file = e.target && e.target.files && e.target.files[0];
+    if (e.target) e.target.value = '';
+    if (!file) return;
+    this.toast('Lendo "' + file.name + '"…');
+    try {
+      const text = await this.extractPdf(file);
+      if (!text) { this.toast('Sem texto extraível (PDF digitalizado?).'); return; }
+      this.createNote(file.name.replace(/\.pdf$/i, ''), text, 'pdf');
+      this.toast('PDF importado como nota — conecte a um nó');
+    } catch (err) { this.toast('Falha ao ler o PDF'); }
+  };
   deleteNode(id) {
     const n = this.byId()[id];
     if (!n || n.locked) return;
@@ -259,6 +314,27 @@ class Component extends DCLogic {
     if (this.state.gen && this.state.gen.nodeId === id) { this.clearGenTimers(); patch.gen = null; }
     this.setState(patch);
   }
+  // rename the open discipline (via its editable title node)
+  renameTitle(nodeId, val) {
+    const name = val;
+    this.setState({
+      nodes: this.state.nodes.map(n => n.id === nodeId ? { ...n, titleBig: name, shortLabel: name } : n),
+      disciplines: this.state.disciplines.map(d => d.id === this.state.activeDisc ? { ...d, name } : d),
+    });
+  }
+  // delete the open discipline and its whole board
+  deleteDiscipline = () => {
+    const id = this.state.activeDisc;
+    if (!id) return;
+    const d = this.disc(id);
+    if (typeof window !== 'undefined' && window.confirm && !window.confirm('Excluir a disciplina "' + (d ? d.name : '') + '" e todo o quadro? Isso não pode ser desfeito.')) return;
+    const disciplines = this.state.disciplines.filter(x => x.id !== id);
+    const boards = { ...this.state.boards };
+    delete boards[id];
+    this.clearGenTimers();
+    this.setState({ disciplines, boards, screen: 'biblioteca', activeDisc: null, nodes: [], connections: [], selectedId: null, popover: null, gen: null, reading: null });
+    this.toast('Disciplina excluída');
+  };
   cornerAi = () => {
     const sel = this.state.selectedId;
     if (sel) {
@@ -289,7 +365,8 @@ class Component extends DCLogic {
     const neigh = this.state.connections.filter(c => c.from === id || c.to === id).map(c => byId[c.from === id ? c.to : c.from]).filter(Boolean);
     const out = [];
     neigh.forEach(n => {
-      if (n.type === 'lesson') out.push((n.kicker ? n.kicker + ': ' : '') + (n.titleText || ''));
+      if (n.type === 'note' && (n.content || '').trim()) out.push('Material' + (n.title ? ' [' + n.title + ']' : '') + ':\n' + n.content.trim().slice(0, 12000));
+      else if (n.type === 'lesson') out.push((n.kicker ? n.kicker + ': ' : '') + (n.titleText || ''));
       else if (n.type === 'title') out.push('Disciplina: ' + (n.titleBig || ''));
       else if (n.type === 'generated' && n.filled && n.questions) out.push('Questões já geradas: ' + n.questions.map(q => q.text).join(' | '));
     });
@@ -369,12 +446,77 @@ class Component extends DCLogic {
   // ---------- reading ----------
   openReading = (id) => {
     const node = this.byId()[id];
-    const cnt = (node && node.questions) ? node.questions.length : 0;
-    this.setState({ reading: { nodeId: id, resolved: Array(cnt).fill(false), reveal: Array(cnt).fill(false) } });
+    const qs = (node && node.questions) || [];
+    this.setState({ reading: { nodeId: id, resolved: qs.map(q => !!q.resolved), reveal: qs.map(() => false) } });
   };
   closeReading = () => this.setState({ reading: null });
-  toggleResolve = (i) => { const r = this.state.reading; if (!r) return; const res = r.resolved.slice(); res[i] = !res[i]; this.setState({ reading: { ...r, resolved: res } }); };
+  toggleResolve = (i) => {
+    const r = this.state.reading; if (!r) return;
+    const res = r.resolved.slice(); res[i] = !res[i];
+    this.setState({
+      reading: { ...r, resolved: res },
+      nodes: this.state.nodes.map(n => n.id === r.nodeId ? { ...n, questions: (n.questions || []).map((q, idx) => idx === i ? { ...q, resolved: res[i] } : q) } : n),
+    });
+  };
   toggleReveal = (i) => { const r = this.state.reading; if (!r) return; const rv = r.reveal.slice(); rv[i] = !rv[i]; this.setState({ reading: { ...r, reveal: rv } }); };
+  deleteQuestion(i) {
+    const r = this.state.reading;
+    if (!r) return;
+    const node = this.byId()[r.nodeId];
+    if (!node || !node.questions) return;
+    const questions = node.questions.filter((_, idx) => idx !== i);
+    this.setState({
+      nodes: this.state.nodes.map(n => n.id === r.nodeId ? { ...n, questions } : n),
+      reading: { ...r, resolved: r.resolved.filter((_, idx) => idx !== i), reveal: r.reveal.filter((_, idx) => idx !== i) },
+    });
+    this.toast('Questão removida');
+  }
+
+  // ---------- flashcards / review (Leitner box 1-3) ----------
+  openFlash = (id) => {
+    const node = this.byId()[id];
+    if (!node || !((node.questions || []).length)) { this.toast('Gere questões primeiro'); return; }
+    this.setState({ flash: { nodeId: id, idx: 0, flipped: false } });
+  };
+  closeFlash = () => this.setState({ flash: null });
+  flipCard = () => { const f = this.state.flash; if (f) this.setState({ flash: { ...f, flipped: !f.flipped } }); };
+  flashGo = (d) => {
+    const f = this.state.flash; if (!f) return;
+    const node = this.byId()[f.nodeId]; const len = (node && node.questions ? node.questions.length : 0);
+    let idx = f.idx + d; if (idx < 0) idx = 0; if (idx >= len) idx = len - 1;
+    this.setState({ flash: { ...f, idx, flipped: false } });
+  };
+  markCard = (know) => {
+    const f = this.state.flash; if (!f) return;
+    const node = this.byId()[f.nodeId]; const qs = (node && node.questions) || [];
+    const i = f.idx; const q = qs[i]; if (!q) return;
+    const box = know ? Math.min(3, (q.box || 1) + 1) : 1;
+    this.setState({ nodes: this.state.nodes.map(n => n.id === f.nodeId ? { ...n, questions: n.questions.map((x, idx) => idx === i ? { ...x, box, resolved: know ? true : x.resolved } : x) } : n) });
+    if (i + 1 < qs.length) this.setState({ flash: { ...f, idx: i + 1, flipped: false } });
+    else { this.toast('Revisão concluída'); this.setState({ flash: null }); }
+  };
+
+  // ---------- export to PDF (print window) ----------
+  exportReadingPdf = () => { const r = this.state.reading; if (r) { const n = this.byId()[r.nodeId]; if (n) this.exportBlockPdf(n); } };
+  exportBlockPdf(node) {
+    const qs = node.questions || [];
+    const disc = this.disc(this.state.activeDisc);
+    const esc = (s) => String(s == null ? '' : s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+    const rows = qs.map(q => '<div class="q"><div class="qh"><span class="n">' + esc(q.n) + '</span><span class="t">' + esc(q.text) + '</span></div>' +
+      ((q.solution && q.solution.length) ? '<div class="sol"><div class="lbl">Resolução</div>' + q.solution.map(s => '<p>' + esc(s) + '</p>').join('') + '<p class="ans">→ ' + esc(q.answer) + '</p></div>' : '') + '</div>').join('');
+    const title = esc(node.blockTitle || 'Bloco de Questões');
+    const html = '<!doctype html><html><head><meta charset="utf-8"><title>' + title + '</title><style>' +
+      '*{box-sizing:border-box}body{font-family:Georgia,serif;color:#211E1A;max-width:720px;margin:32px auto;padding:0 24px;line-height:1.5}' +
+      'h1{font-size:28px;margin:0 0 4px}.meta{font-family:ui-monospace,monospace;font-size:11px;color:#666;margin-bottom:24px;text-transform:uppercase;letter-spacing:.08em}' +
+      '.q{padding:16px 0;border-bottom:1px solid #ddd;break-inside:avoid}.qh{display:flex;gap:12px}.n{color:#7A1F2B;font-weight:bold;font-size:18px}.t{font-size:15px}' +
+      '.sol{margin:10px 0 0 34px;padding:10px 14px;background:#f6f4ef;border-left:2px solid #7A1F2B}.lbl{font-family:ui-monospace,monospace;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:#7A1F2B;margin-bottom:6px}' +
+      '.sol p{margin:0 0 6px;font-size:13px}.ans{color:#7A1F2B;font-weight:bold}@media print{body{margin:0}}' +
+      '</style></head><body><h1>' + title + '</h1><div class="meta">' + esc(disc ? disc.name : '') + ' · ' + qs.length + ' questões</div>' + rows +
+      '<scr' + 'ipt>window.onload=function(){setTimeout(function(){window.print()},250)}</scr' + 'ipt></body></html>';
+    const w = window.open('', '_blank');
+    if (!w) { this.toast('Permita pop-ups para exportar o PDF'); return; }
+    w.document.open(); w.document.write(html); w.document.close();
+  }
 
   // ---------- material ----------
   openMaterial = (info) => { this.setState({ material: { ...info, page: 0 } }); };
@@ -500,6 +642,7 @@ class Component extends DCLogic {
     if (e.key === 'Escape') {
       if (this.state.search) return this.closeSearch();
       if (this.state.newDisc) return this.closeNewDisc();
+      if (this.state.flash) return this.closeFlash();
       if (this.state.material) return this.closeMaterial();
       if (this.state.reading) return this.closeReading();
       if (this.state.popover) return this.closePopover();
@@ -541,6 +684,7 @@ class Component extends DCLogic {
       (allBoards[k].nodes || []).forEach(n => {
         if (n.type === 'lesson') { lessonCount++; nodeCount++; }
         else if (n.type === 'generated') { nodeCount++; if (n.filled) genCount++; }
+        else if (n.type === 'note') { nodeCount++; }
       });
     });
     const footerStats = S.disciplines.length + ' disciplinas · ' + lessonCount + ' aulas · ' + nodeCount + ' nós';
@@ -580,6 +724,10 @@ class Component extends DCLogic {
         kicker: n.kicker, titleText: n.titleText, material: n.material,
         kickerLabel: n.kickerLabel, titleBig: n.titleBig, titleMeta: n.titleMeta,
         blockTitle: n.blockTitle || 'Bloco de Questões',
+        isNote: n.type === 'note',
+        noteTitle: n.title || 'Nota',
+        noteContent: n.content || '',
+        noteSource: n.source === 'pdf' ? 'PDF · material' : 'Nota · material',
         selected: S.selectedId === n.id,
         isOver: !!(S.drag && S.drag.overId === n.id),
         connectedLabel,
@@ -591,7 +739,11 @@ class Component extends DCLogic {
         onSkip: () => this.skipTyping(n.id),
         onRegen: (e) => { this.stop(e); this.regen(n.id); },
         onOpen: (e) => { if (e) this.stop(e); this.openReading(n.id); },
+        onFlash: (e) => { if (e) this.stop(e); this.openFlash(n.id); },
         onMaterial: (e) => { this.stop(e); this.openMaterial({ kicker: n.kicker, title: n.titleText, key: n.lessonKey, meta: n.material }); },
+        onNoteInput: (e) => this.setNoteContent(n.id, e.target.value),
+        onNoteTitleInput: (e) => this.setNoteTitle(n.id, e.target.value),
+        onTitleRename: (e) => this.renameTitle(n.id, e.target.value),
       };
       if (isGen) {
         v.genEmpty = !filled && !genHere;
@@ -651,8 +803,22 @@ class Component extends DCLogic {
           solution: q.solution || [], hasTable: false, answer: q.answer || '',
           onResolve: () => this.toggleResolve(i),
           onReveal: () => this.toggleReveal(i),
+          onDelete: () => this.deleteQuestion(i),
         };
       });
+    }
+
+    // flashcards / review
+    let flash = null, flashNum = '', flashText = '', flashSolution = [], flashAnswer = '', flashFront = true, flashBack = false, flashCount = '';
+    if (S.flash) {
+      const fnode = byId[S.flash.nodeId]; const fqs = (fnode && fnode.questions) || [];
+      const fq = fqs[S.flash.idx];
+      if (fq) {
+        flash = true;
+        flashNum = fq.n; flashText = fq.text; flashSolution = fq.solution || []; flashAnswer = fq.answer || '';
+        flashFront = !S.flash.flipped; flashBack = !!S.flash.flipped;
+        flashCount = (S.flash.idx + 1) + ' / ' + fqs.length;
+      }
     }
 
     // truth table flat cells (kept for the material viewer)
@@ -726,6 +892,7 @@ class Component extends DCLogic {
       zoomPct: Math.round(S.zoom * 100) + '%',
       zoomIn: () => this.zoomBy(1.2), zoomOut: () => this.zoomBy(1 / 1.2), resetView: this.fitView,
       addNode: this.addNode, cornerAi: this.cornerAi,
+      addNoteNode: this.addNoteNode, pickPdf: this.pickPdf, setFileInput: this.setFileInput, onPdfPick: this.onPdfPick,
       hintOpen: S.screen === 'canvas' && S.hintOpen && this.curHints(),
       hintClosed: S.screen === 'canvas' && !(S.hintOpen && this.curHints()),
       dismissHint: () => this.setState({ hintOpen: false }), openHint: () => this.setState({ hintOpen: true }),
@@ -733,6 +900,12 @@ class Component extends DCLogic {
       popover, setAiInput: this.setAiInput, onPopInput: this.onPopInput, onPopKey: this.onPopKey, closePopover: this.closePopover, submitGen: this.submitGen,
       // reading
       reading, readingQs, readProgressW, readProgressLabel, readingKicker, readingTitle, readingMeta, closeReading: this.closeReading,
+      exportReadingPdf: this.exportReadingPdf,
+      openFlashReading: () => { const r = this.state.reading; if (r) this.openFlash(r.nodeId); },
+      // flashcards / review
+      flash, flashNum, flashText, flashSolution, flashAnswer, flashFront, flashBack, flashCount,
+      closeFlash: this.closeFlash, flipCard: this.flipCard,
+      flashPrev: () => this.flashGo(-1), markKnow: () => this.markCard(true), markReview: () => this.markCard(false),
       truthHead, truthCells,
       // material
       material, matPage, matThumbs, closeMaterial: this.closeMaterial,
@@ -751,6 +924,7 @@ class Component extends DCLogic {
       gridTrack: grid ? accent : 'transparent', gridKnob: grid ? '22px' : '2px',
       hintsTrack: this.curHints() ? accent : 'transparent', hintsKnob: this.curHints() ? '22px' : '2px',
       toggleGrid: this.toggleGrid, toggleHints: this.toggleHints, resetAll: this.resetAll,
+      deleteDiscipline: this.deleteDiscipline,
       // toast
       toast: S.toast,
     };

@@ -78,9 +78,12 @@ export default async function handler(req, res) {
   const body = await readJson(req);
   const discipline = (body.discipline || "").toString().slice(0, 200);
   const prompt = (body.prompt || "").toString().slice(0, 4000);
-  const context = Array.isArray(body.context)
-    ? body.context.map((c) => String(c).slice(0, 2000)).filter(Boolean).slice(0, 30)
+  let context = Array.isArray(body.context)
+    ? body.context.map((c) => String(c).slice(0, 12000)).filter(Boolean).slice(0, 30)
     : [];
+  // Bound total context length to keep token cost predictable.
+  let acc = 0;
+  context = context.filter((c) => { acc += c.length; return acc <= 32000; });
 
   if (!prompt.trim() && !context.length) {
     return res.status(400).json({

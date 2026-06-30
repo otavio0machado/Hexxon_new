@@ -35,6 +35,9 @@ try {
   page.on('console', (m) => { if (m.type() === 'error' && !/Failed to load resource/.test(m.text())) consoleErrors.push(m.text()); });
   page.on('pageerror', (e) => pageErrors.push(String(e)));
   page.on('requestfailed', (r) => { const u = r.url(); if (!u.startsWith('data:') && !/favicon/.test(u)) failedReq.push(u + ' :: ' + (r.failure()?.errorText || '')); });
+  let lastGenBody = null;
+  page.on('request', (r) => { if (r.method() === 'POST' && /\/api\/generate$/.test(r.url())) { try { lastGenBody = JSON.parse(r.postData() || '{}'); } catch {} } });
+  page.on('dialog', (d) => { d.accept().catch(() => {}); }); // auto-accept the delete-discipline confirm
 
   const txt = () => page.evaluate(() => document.body.innerText);
   const inc = (t, s) => t.toLowerCase().includes(s.toLowerCase());
@@ -74,23 +77,54 @@ try {
   ok('canvas: title node shows discipline', inc(t, 'Lógica de Teste') && inc(t, 'Disciplina'));
   ok('canvas: hint panel', inc(t, 'Como funciona'));
 
-  // ---- create an empty node + generate via stubbed AI ----
+  // ---- create an empty node ----
   await page.mouse.click(360, 700, { clickCount: 2, delay: 50 });
   await sleep(300);
   ok('canvas: empty node created', inc(await txt(), 'Nó vazio'));
+
+  // ---- Material: create a Nota, type content, connect it to the node ----
+  ok('action: "+ Nota"', await clickByText('+ Nota'));
+  await page.waitForFunction(() => !!document.querySelector('textarea[placeholder*="anotações"]'), { timeout: 5000 });
+  const MARK = 'DEFINICAO_MATERIAL_XYZ contrapositiva equivale a p->q';
+  await page.focus('textarea[placeholder*="anotações"]');
+  await page.keyboard.type(MARK);
+  await sleep(200);
+  ok('note: content is editable/kept', inc(await page.evaluate(() => document.querySelector('textarea[placeholder*="anotações"]').value), 'DEFINICAO_MATERIAL_XYZ'));
+  await page.screenshot({ path: `${SHOT}/r03a-note.png` });
+  // connect the note's handle (●) to the empty node via dispatched PointerEvents
+  const connected = await page.evaluate(() => {
+    const wraps = [...document.querySelectorAll('#app div')].filter((d) => d.style && d.style.cursor === 'grab' && d.style.pointerEvents === 'auto');
+    const noteW = wraps.find((w) => w.querySelector('textarea[placeholder*="anotações"]'));
+    const genW = wraps.find((w) => /n[óo] vazio/i.test(w.innerText || ''));
+    if (!noteW || !genW) return false;
+    const handle = noteW.querySelector('div[title="arraste para conectar"]');
+    const hr = handle.getBoundingClientRect(), gr = genW.getBoundingClientRect();
+    const hx = hr.x + hr.width / 2, hy = hr.y + hr.height / 2, gx = gr.x + gr.width / 2, gy = gr.y + gr.height / 2;
+    const fire = (el, type, x, y) => el.dispatchEvent(new PointerEvent(type, { bubbles: true, cancelable: true, clientX: x, clientY: y, button: 0, pointerId: 1 }));
+    fire(handle, 'pointerdown', hx, hy);
+    fire(window, 'pointermove', (hx + gx) / 2, (hy + gy) / 2);
+    fire(window, 'pointermove', gx, gy);
+    fire(window, 'pointerup', gx, gy);
+    return true;
+  });
+  ok('note: connect gesture dispatched', connected);
+  await sleep(300);
+  ok('note: connection formed (lê de)', inc(await txt(), 'lê de'));
+
+  // ---- generate, capturing the request payload ----
   ok('action: node "Invocar IA"', await clickByText('Invocar IA'));
   await page.waitForFunction(() => !!document.querySelector('textarea[placeholder*="bloco de questões"]'), { timeout: 5000 });
   await page.focus('textarea[placeholder*="bloco de questões"]');
   await page.keyboard.type('logica de teste');
+  lastGenBody = null;
   await page.keyboard.press('Enter');
-  // generation: stub waits 500ms (reading phase), then frontend types the result
   await page.waitForFunction(() => /Bloco de Teste/.test(document.body.innerText), { timeout: 10000 });
   await sleep(2500);
   await page.screenshot({ path: `${SHOT}/r03-generated.png` });
   t = await txt();
   ok('gen: node filled "Bloco de Teste"', inc(t, 'Bloco de Teste'));
   ok('gen: prompt reached the API (echoed in Q1)', inc(t, 'Questão de teste 1 — logica de teste'));
-  ok('gen: kicker "Gerado · 3 questões"', inc(t, 'Gerado · 3 questões') || inc(t, 'regenerar'));
+  ok('gen: connected note sent as context', !!lastGenBody && JSON.stringify(lastGenBody.context || []).includes('DEFINICAO_MATERIAL_XYZ'), lastGenBody ? JSON.stringify(lastGenBody.context).slice(0, 90) : 'no body');
 
   // ---- reading modal ----
   ok('action: "abrir leitura"', await clickByText('abrir leitura'));
@@ -108,6 +142,38 @@ try {
   await sleep(250);
   ok('reading: progress 1 / 3', /1 \/ 3 resolvidas/.test(await txt()));
   await page.screenshot({ path: `${SHOT}/r05-reading-solved.png` });
+
+  // ---- Milestone C: export to PDF (opens a print window) ----
+  const [popup] = await Promise.all([
+    new Promise((res) => page.once('popup', res)),
+    clickByText('↓ PDF'),
+  ]);
+  ok('export: PDF window opened', !!popup);
+  if (popup) {
+    try { await popup.evaluate(() => { window.print = () => {}; }); } catch {}
+    await sleep(400);
+    const pcontent = await popup.evaluate(() => (document.body ? document.body.innerText : '')).catch(() => '');
+    ok('export: PDF has block content', inc(pcontent, 'Bloco de Teste') && inc(pcontent, 'Questão de teste'));
+    await popup.close().catch(() => {});
+  }
+
+  // ---- Milestone C: flashcards / review ----
+  ok('action: open flashcards (↻ Revisar)', await clickByText('↻ Revisar'));
+  await page.waitForFunction(() => /Eu sei/i.test(document.body.innerText), { timeout: 5000 });
+  await sleep(250);
+  await page.screenshot({ path: `${SHOT}/r05b-flashcard.png` });
+  t = await txt();
+  ok('flash: shows card 1 of 3', /1 \/ 3/.test(t) && inc(t, 'Eu sei') && inc(t, 'Questão de teste'));
+  await page.evaluate(() => { const c = [...document.querySelectorAll('#app div')].find((d) => /toque no cart/i.test(d.innerText || '')); if (c) c.click(); });
+  await sleep(250);
+  ok('flash: flip reveals solution', inc(await txt(), 'Passo 1 da'));
+  ok('action: "Eu sei"', await clickByText('Eu sei'));
+  await sleep(250);
+  ok('flash: advanced to card 2', /2 \/ 3/.test(await txt()));
+  await page.keyboard.press('Escape');
+  await sleep(250);
+  ok('flash: closed (back to reading)', inc(await txt(), 'resolvidas') && !/Eu sei/i.test(await txt()));
+
   ok('action: "Concluir"', await clickByText('Concluir'));
   await sleep(700); // let debounced persist flush
 
@@ -123,6 +189,22 @@ try {
   await sleep(500);
   ok('persist: generated node survived', inc(await txt(), 'Bloco de Teste'));
   await page.screenshot({ path: `${SHOT}/r06-after-reload.png` });
+
+  // ---- Milestone B: edit & organize ----
+  ok('action: reopen reading', await clickByText('abrir leitura'));
+  await page.waitForFunction(() => /resolvidas/.test(document.body.innerText), { timeout: 5000 });
+  await sleep(250);
+  ok('persist: resolved progress survived reload', /1 \/ 3 resolvidas/.test(await txt()));
+  await page.click('button[title="Remover questão"]');
+  await sleep(300);
+  ok('edit: question deleted (2 left)', /0 \/ 2 resolvidas/.test(await txt()));
+  ok('action: close reading', await clickByText('Concluir'));
+  await sleep(300);
+  await page.click('input[title="renomear disciplina"]', { clickCount: 3 });
+  await page.keyboard.type('Renomeada');
+  await sleep(350);
+  ok('edit: discipline renamed (breadcrumb + title)', inc(await txt(), 'Renomeada'));
+  await page.screenshot({ path: `${SHOT}/r06b-edited.png` });
 
   // ---- account screen + accent ----
   await page.click('button[title="Conta"]');
@@ -149,13 +231,27 @@ try {
   const ox = (await page.evaluate(() => { const el = [...document.querySelectorAll('*')].find((e) => getComputedStyle(e).getPropertyValue('--ox').trim()); return el ? getComputedStyle(el).getPropertyValue('--ox').trim() : ''; })).toLowerCase();
   ok('conta: accent updates --ox', picked && ox === '#2e3a2c', `--ox=${ox}`);
 
-  // ---- reset all ----
-  ok('action: "Apagar tudo"', await clickByText('Apagar tudo'));
+  // ---- Milestone B: delete discipline ----
+  ok('action: Voltar à estante', await clickByText('Voltar à estante'));
+  await page.waitForFunction(() => /Suas disciplinas/.test(document.body.innerText), { timeout: 5000 });
+  await sleep(300);
+  ok('shelf: renamed discipline present', inc(await txt(), 'Renomeada'));
+  ok('action: reopen renamed', await clickByText('Renomeada'));
+  await page.waitForFunction(() => /\d+%/.test(document.body.innerText), { timeout: 6000 });
+  await sleep(400);
+  ok('action: "excluir disciplina"', await clickByText('excluir disciplina'));
   await page.waitForFunction(() => /0 disciplinas · 0 aulas · 0 nós/.test(document.body.innerText), { timeout: 5000 });
-  ok('reset: back to empty', inc(await txt(), '0 disciplinas · 0 aulas · 0 nós'));
+  ok('edit: discipline deleted (shelf empty)', inc(await txt(), '0 disciplinas · 0 aulas · 0 nós'));
+  await page.screenshot({ path: `${SHOT}/r08-deleted.png` });
+
+  // ---- reset all (clears localStorage) ----
+  await page.click('button[title="Conta"]');
+  await page.waitForFunction(() => /acento/i.test(document.body.innerText), { timeout: 5000 });
+  ok('action: "Apagar tudo"', await clickByText('Apagar tudo'));
+  await page.waitForFunction(() => /Suas disciplinas/.test(document.body.innerText), { timeout: 5000 });
+  await sleep(300);
   const cleared = await page.evaluate(() => localStorage.getItem('sandbox-de-nos:v1'));
   ok('reset: localStorage cleared', cleared === null);
-  await page.screenshot({ path: `${SHOT}/r08-reset.png` });
 
 } catch (e) {
   results.push(['FAIL', 'EXCEPTION', String((e && e.stack) || e)]);
