@@ -538,12 +538,26 @@ try {
   ok('pdf: page count shown', inc(await txt(), 'página'));
   ok('pdf: thumbnail rendered', await page.evaluate(() => [...document.querySelectorAll('#app img[src^="data:image/jpeg"]')].length >= 1));
   ok('action: "abrir PDF"', await clickByText('abrir PDF'));
-  await page.waitForFunction(() => { const f = document.querySelector('iframe'); return !!(f && /^blob:/.test(f.src)); }, { timeout: 6000 });
-  ok('pdf: viewer opened with blob iframe', await page.evaluate(() => { const f = document.querySelector('iframe'); return !!(f && /^blob:/.test(f.src)); }));
+  // pdf.js renders a selectable text layer (PDF++ style) — wait for the text
+  await page.waitForFunction(() => { const t = [...document.querySelectorAll('.sdn-tl span')].map((s) => s.textContent).join(' '); return /Cronograma/.test(t); }, { timeout: 12000 });
+  ok('pdf: viewer renders selectable text (pdf.js)', await page.evaluate(() => /Cronograma/.test([...document.querySelectorAll('.sdn-tl span')].map((s) => s.textContent).join(' '))));
   await page.screenshot({ path: `${SHOT}/r11-pdf-viewer.png` });
+  // select the PDF text → toolbar → create a note from the selection
+  const pdfSelected = await page.evaluate(() => {
+    const tl = document.querySelector('.sdn-tl'); if (!tl) return false;
+    const range = document.createRange(); range.selectNodeContents(tl);
+    const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+    tl.closest('.sdn-pdf-scroll').dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+    return true;
+  });
+  await sleep(120);
+  ok('pdf: selecting text shows the toolbar', pdfSelected && await page.evaluate(() => [...document.querySelectorAll('button')].some((b) => /Nota/.test(b.textContent) && b.parentElement && b.parentElement.style.position === 'fixed')));
+  await page.evaluate(() => { const b = [...document.querySelectorAll('button')].find((x) => /✚ Nota/.test(x.textContent)); if (b) b.click(); });
+  await sleep(300);
+  ok('pdf: "Nota" creates a note from the selection', await page.evaluate(() => /Do PDF/.test(document.body.innerText) || [...document.querySelectorAll('#app input[value^="Do PDF"]')].length > 0 || [...document.querySelectorAll('#app input')].some((i) => /Do PDF/.test(i.value || ''))));
   await page.keyboard.press('Escape');
-  await sleep(200);
-  ok('pdf: viewer closed', await page.evaluate(() => !document.querySelector('iframe')));
+  await sleep(300);
+  ok('pdf: viewer closed', await page.evaluate(() => ![...document.querySelectorAll('div')].some((d) => d.style && d.style.zIndex === '100')));
 
   // ---- search now indexes PDFs and images, with keyboard navigation ----
   await page.keyboard.down('Control'); await page.keyboard.press('k'); await page.keyboard.up('Control');
