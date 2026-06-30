@@ -84,13 +84,38 @@ class Component extends DCLogic {
     const S = this.state;
     const boards = { ...S.boards };
     if (S.screen === 'canvas' && S.activeDisc) boards[S.activeDisc] = { nodes: S.nodes, connections: S.connections };
-    return { v: 1, disciplines: S.disciplines, boards, prefs: S.prefs, counters: { nidc: this.nidc, cid: this.cid } };
+    return { v: 1, savedAt: Date.now(), disciplines: S.disciplines, boards, prefs: S.prefs, counters: { nidc: this.nidc, cid: this.cid } };
   }
   persist() {
     const snap = this.snapshot();
-    try { localStorage.setItem(this.STORAGE_KEY, JSON.stringify(snap)); } catch (e) {}
+    try { localStorage.setItem(this.STORAGE_KEY, JSON.stringify(snap)); this._quotaWarned = false; }
+    catch (e) { if (!this._quotaWarned) { this._quotaWarned = true; this.toast('Armazenamento local cheio — exporte um backup e remova conteúdo (imagens/PDF pesam).'); } }
     if (this.state.cloud && this.session && this.sb) this.pushCloud(snap);
   }
+  // ---------- export / import (JSON backup of everything in localStorage) ----------
+  exportData = () => {
+    try {
+      const blob = new Blob([JSON.stringify(this.snapshot(), null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = 'sandbox-de-nos-backup.json'; a.click();
+      setTimeout(() => { try { URL.revokeObjectURL(url); } catch (e) {} }, 1500);
+      this.toast('Backup exportado');
+    } catch (e) { this.toast('Falha ao exportar'); }
+  };
+  setImportInput = (el) => { this.importInput = el; };
+  pickImport = () => { if (this.importInput) this.importInput.click(); };
+  onImportFile = async (e) => {
+    const file = e.target && e.target.files && e.target.files[0];
+    if (e.target) e.target.value = '';
+    if (!file) return;
+    try {
+      const d = JSON.parse(await file.text());
+      if (!d || d.v !== 1) { this.toast('Arquivo de backup inválido'); return; }
+      this.clearGenTimers();
+      this.applySnapshot(d);
+      this.toast('Backup importado');
+    } catch (er) { this.toast('Falha ao importar o backup'); }
+  };
   applySnapshot(d) {
     if (!d) return;
     if (d.counters) { this.nidc = d.counters.nidc || 0; this.cid = d.counters.cid || 2; }
@@ -146,13 +171,18 @@ class Component extends DCLogic {
   }
   async loadCloud() {
     if (!this.sb || !this.session) return;
-    let row = null;
-    try { const { data } = await this.sb.from('sdn_state').select('data').eq('user_id', this.session.user.id).maybeSingle(); row = data; } catch (e) {}
-    if (row && row.data && row.data.v === 1) { this.applySnapshot(row.data); return; }
-    // no cloud row yet — migrate local data if present, else start empty
+    let remote = null;
+    try { const { data } = await this.sb.from('sdn_state').select('data').eq('user_id', this.session.user.id).maybeSingle(); remote = data && data.data; } catch (e) {}
     let local = null;
-    try { const raw = localStorage.getItem(this.STORAGE_KEY); if (raw) { const d = JSON.parse(raw); if (d && d.v === 1 && (d.disciplines || []).length) local = d; } } catch (e) {}
-    if (local) { this.applySnapshot(local); this.pushCloud(local); this.toast('Seus dados locais foram enviados para a nuvem'); }
+    try { const raw = localStorage.getItem(this.STORAGE_KEY); if (raw) { const d = JSON.parse(raw); if (d && d.v === 1) local = d; } } catch (e) {}
+    const remoteOk = remote && remote.v === 1;
+    const localHas = local && (local.disciplines || []).length;
+    if (remoteOk && localHas) {
+      // newest wins (avoids clobbering unsynced local edits)
+      if ((local.savedAt || 0) > (remote.savedAt || 0)) { this.applySnapshot(local); this.pushCloud(local); this.toast('Enviei suas mudanças locais mais recentes para a nuvem'); }
+      else this.applySnapshot(remote);
+    } else if (remoteOk) { this.applySnapshot(remote); }
+    else if (localHas) { this.applySnapshot(local); this.pushCloud(local); this.toast('Seus dados locais foram enviados para a nuvem'); }
     else { this.applySnapshot({ disciplines: [], boards: {}, prefs: {}, counters: {} }); }
   }
   pushCloud(snap) {
@@ -1606,6 +1636,7 @@ class Component extends DCLogic {
       gridTrack: grid ? accent : 'transparent', gridKnob: grid ? '22px' : '2px',
       hintsTrack: this.curHints() ? accent : 'transparent', hintsKnob: this.curHints() ? '22px' : '2px',
       toggleGrid: this.toggleGrid, toggleHints: this.toggleHints, resetAll: this.resetAll,
+      exportData: this.exportData, pickImport: this.pickImport, setImportInput: this.setImportInput, onImportFile: this.onImportFile,
       deleteDiscipline: this.deleteDiscipline,
       // shelf: discipline menu + rename
       discMenu, closeDiscMenu: this.closeDiscMenu,

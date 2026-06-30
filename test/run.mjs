@@ -414,6 +414,19 @@ try {
   const cleared = await page.evaluate(() => localStorage.getItem('sandbox-de-nos:v1'));
   ok('reset: localStorage cleared', cleared === null);
 
+  // ---- import a backup restores everything ----
+  await page.click('button[title="Conta"]');
+  await page.waitForFunction(() => /acento/i.test(document.body.innerText), { timeout: 5000 });
+  const backupPath = `${SHOT}/backup.json`;
+  writeFileSync(backupPath, JSON.stringify({ v: 1, savedAt: 1, disciplines: [{ id: 'imp1', name: 'Importada', num: 'I', semester: '2026.1', aulas: 0, h: 350, lessons: [] }], boards: {}, prefs: {}, counters: { nidc: 0, cid: 2 } }));
+  const impInput = await page.$('input[accept="application/json,.json"]');
+  await impInput.uploadFile(backupPath);
+  await page.waitForFunction(() => /Importada/.test(document.body.innerText), { timeout: 5000 });
+  ok('import: backup restores a discipline', inc(await txt(), 'Importada'));
+  // clean slate again for Batch 2
+  await page.evaluate(() => localStorage.clear());
+  await page.reload({ waitUntil: 'networkidle2' });
+
   // ============ Batch 2: syllabus pre-canvas · image · note editor · resize ============
   await page.waitForFunction(() => /Suas disciplinas/.test(document.body.innerText), { timeout: 5000 });
 
