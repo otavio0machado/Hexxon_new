@@ -902,10 +902,17 @@ class Component extends DCLogic {
   }
 
   // ---------- search ----------
-  openSearch = () => this.setState({ search: { q: '' } });
+  openSearch = () => this.setState({ search: { q: '', sel: 0 } });
   closeSearch = () => this.setState({ search: null });
-  onSearchInput = (e) => this.setState({ search: { q: e.target.value } });
-  onSearchKey = (e) => { if (e.key === 'Escape') this.closeSearch(); else if (e.key === 'Enter') { const r = this.searchResults(this.state.search.q); if (r[0]) r[0].pick(); } };
+  onSearchInput = (e) => this.setState({ search: { q: e.target.value, sel: 0 } });
+  onSearchKey = (e) => {
+    const s = this.state.search; if (!s) return;
+    if (e.key === 'Escape') return this.closeSearch();
+    const res = this.searchResults(s.q);
+    if (e.key === 'ArrowDown') { e.preventDefault(); this.setState({ search: { ...s, sel: Math.min((s.sel || 0) + 1, Math.max(0, res.length - 1)) } }); return; }
+    if (e.key === 'ArrowUp') { e.preventDefault(); this.setState({ search: { ...s, sel: Math.max((s.sel || 0) - 1, 0) } }); return; }
+    if (e.key === 'Enter') { const r = res[s.sel || 0] || res[0]; if (r) r.pick(); }
+  };
   norm(s) { return (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
 
   searchItems() {
@@ -922,6 +929,12 @@ class Component extends DCLogic {
       });
       board.nodes.filter(n => n.type === 'note').forEach(nt => {
         items.push({ type: 'NOTA', title: nt.title || 'Nota', context: d.name + ' · nota', body: nt.content || '', pick: () => { this.closeSearch(); this.openDiscipline(d.id); } });
+      });
+      board.nodes.filter(n => n.type === 'image' && (n.caption || '').trim()).forEach(im => {
+        items.push({ type: 'IMG', title: im.caption || 'Imagem', context: d.name + ' · imagem', body: im.caption || '', pick: () => { this.closeSearch(); this.openDiscipline(d.id); } });
+      });
+      board.nodes.filter(n => n.type === 'pdf').forEach(pf => {
+        items.push({ type: 'PDF', title: pf.filename || 'documento.pdf', context: d.name + ' · pdf', body: pf.content || '', pick: () => { this.closeSearch(); this.openDiscipline(d.id); } });
       });
       board.nodes.filter(n => n.type === 'generated' && n.filled).forEach(gn => {
         items.push({ type: 'NÓ', title: gn.blockTitle || 'Bloco de Questões', context: d.name + ' · gerado', body: (gn.questions || []).map(q => q.text).join(' '), pick: () => { this.closeSearch(); this.openDiscipline(d.id); setTimeout(() => this.openReading(gn.id), 140); } });
@@ -1319,10 +1332,11 @@ class Component extends DCLogic {
       const q = S.search.q;
       if (!this.norm(q)) {
         searchEmpty = true;
-        suggestions = S.disciplines.slice(0, 5).map(d => ({ text: d.name, onPick: () => this.setState({ search: { q: d.name } }) }));
+        suggestions = S.disciplines.slice(0, 5).map(d => ({ text: d.name, onPick: () => this.setState({ search: { q: d.name, sel: 0 } }) }));
       } else {
         const res = this.searchResults(q);
-        searchResults = res.map(r => ({ type: r.type, title: r.title, context: r.context, onPick: r.pick }));
+        const sel = Math.max(0, Math.min(S.search.sel || 0, res.length - 1));
+        searchResults = res.map((r, i) => ({ type: r.type, title: r.title, context: r.context, onPick: r.pick, selected: i === sel, rowBg: i === sel ? '#FAF8F3' : 'transparent' }));
         searchHasResults = res.length > 0;
         searchNoResults = res.length === 0;
       }

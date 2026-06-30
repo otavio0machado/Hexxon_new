@@ -699,7 +699,7 @@
           <sc-if value="{{ searchHasResults }}" hint-placeholder-val="{{ false }}">
             <div style="padding:8px 0 12px;">
               <sc-for list="{{ searchResults }}" as="r" hint-placeholder-count="4">
-                <button onClick="{{ r.onPick }}" style="display:flex;align-items:center;gap:16px;width:100%;padding:13px 22px;background:none;border:none;border-bottom:1px solid rgba(33,30,26,0.07);cursor:pointer;text-align:left;" style-hover="background:#FAF8F3;">
+                <button onClick="{{ r.onPick }}" style="display:flex;align-items:center;gap:16px;width:100%;padding:13px 22px;background:{{ r.rowBg }};border:none;border-bottom:1px solid rgba(33,30,26,0.07);cursor:pointer;text-align:left;" style-hover="background:#FAF8F3;">
                   <span style="font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.14em;color:var(--ox);border:1px solid rgba(122,31,43,0.4);padding:3px 6px;width:46px;text-align:center;flex:none;">{{ r.type }}</span>
                   <span style="flex:1;min-width:0;">
                     <span style="font-family:var(--serif);font-size:18px;color:#211E1A;display:block;line-height:1.2;">{{ r.title }}</span>

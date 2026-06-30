@@ -465,6 +465,22 @@ try {
   await sleep(200);
   ok('pdf: viewer closed', await page.evaluate(() => !document.querySelector('iframe')));
 
+  // ---- search now indexes PDFs and images, with keyboard navigation ----
+  await page.keyboard.down('Control'); await page.keyboard.press('k'); await page.keyboard.up('Control');
+  await page.waitForFunction(() => !!document.querySelector('input[placeholder*="Buscar disciplinas"]'), { timeout: 5000 });
+  await page.type('input[placeholder*="Buscar disciplinas"]', 'cronograma');
+  await sleep(300);
+  ok('search: indexes PDF by filename', inc(await txt(), 'cronograma') && inc(await txt(), 'PDF'));
+  await page.click('input[placeholder*="Buscar disciplinas"]', { clickCount: 3 });
+  await page.type('input[placeholder*="Buscar disciplinas"]', 'tiny');
+  await sleep(300);
+  ok('search: indexes image by caption', inc(await txt(), 'IMG'));
+  // keyboard: ArrowDown then Enter opens a result (closes search)
+  await page.keyboard.press('ArrowDown');
+  await page.keyboard.press('Enter');
+  await sleep(300);
+  ok('search: keyboard Enter opens result', !(await page.$('input[placeholder*="Buscar disciplinas"]')));
+
 } catch (e) {
   results.push(['FAIL', 'EXCEPTION', String((e && e.stack) || e)]);
 } finally {

@@ -78,7 +78,7 @@ Opcionais:
   (`# título`, `## subtítulo`, `- lista`, `**negrito**`) e alternância **Editar / Pré-visualizar**.
 - **Desfazer / refazer:** `⌘/Ctrl+Z` e `⌘/Ctrl+⇧Z` (também os botões ↶ ↷ no quadro).
 - **Gerenciar disciplinas pela estante:** botão **⋯** na lombada → *Abrir*, *Renomear*, *Excluir*.
-- **Buscar** (`⌘/Ctrl+K`): acha disciplinas, aulas, nós **e o conteúdo das notas**.
+- **Buscar** (`⌘/Ctrl+K`): acha disciplinas, aulas, nós, **notas, imagens (legenda) e PDFs (nome/texto)**; navegue com ↑/↓ e abra com ↵.
 
 ### Criar disciplina a partir do cronograma
 No modal **Nova disciplina** você pode colar o cronograma/ementa (ou puxar de um **PDF**)
@@ -117,7 +117,7 @@ Sem essas variáveis, a sincronização fica desativada e o app segue só com lo
 | `build.py` | Monta o `index.html` a partir de `app/`. |
 | `dev-server.mjs` | Servidor local (estático + `/api/*`), igual à Vercel. `STUB=1` usa IA falsa. |
 | `design/` | Importação original do Claude Design (referência). |
-| `test/run.mjs` | Suíte headless (Chrome) — 97 verificações do fluxo real. |
+| `test/run.mjs` | Suíte headless (Chrome) — 100 verificações do fluxo real. |
 
 O `index.html` mantém **template e lógica como arquivos editáveis** e os renderiza
 com um runtime aberto de ~250 linhas (*dc-lite*) — **sem depender do `support.js`
@@ -129,7 +129,7 @@ gerado** pela ferramenta de design. É um app real e seu.
 
 ```bash
 python3 build.py          # regenera public/index.html a partir de app/  (ou: npm run build)
-npm install puppeteer-core && node test/run.mjs         # 97 verificações
+npm install puppeteer-core && node test/run.mjs         # 100 verificações
 ```
 
 Se você puxar uma versão nova de `design/Sandbox de Nós.dc.html` do Claude Design,
