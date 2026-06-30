@@ -32,17 +32,24 @@ export default async function handler(req, res) {
   const question = (body.question || "").toString().slice(0, 2000);
   const filename = (body.filename || "documento").toString().slice(0, 200);
   const context = (body.context || "").toString().slice(0, 60000);
+  // optional page images (data URLs) for scanned/figure-heavy PDFs — Claude reads them
+  const images = Array.isArray(body.images) ? body.images.slice(0, 8) : [];
   if (!question.trim()) return res.status(400).json({ error: "Forneça uma pergunta." });
-  if (!context.trim()) return res.status(400).json({ error: "Documento sem texto para consultar." });
+  if (!context.trim() && !images.length) return res.status(400).json({ error: "Documento sem texto nem imagens para consultar." });
 
-  const userText = `Documento [${filename}]:\n${context}\n\nPergunta do aluno: ${question.trim()}`;
+  const content = [];
+  images.forEach((u) => {
+    const m = /^data:(image\/[a-z]+);base64,(.+)$/i.exec(String(u));
+    if (m) content.push({ type: "image", source: { type: "base64", media_type: m[1], data: m[2] } });
+  });
+  content.push({ type: "text", text: (context.trim() ? `Documento [${filename}]:\n${context}\n\n` : `Documento [${filename}] (páginas em imagem acima).\n\n`) + `Pergunta do aluno: ${question.trim()}` });
 
   let upstream;
   try {
     upstream = await fetch(ANTHROPIC_URL, {
       method: "POST",
       headers: { "x-api-key": apiKey, "anthropic-version": "2023-06-01", "content-type": "application/json" },
-      body: JSON.stringify({ model: MODEL, max_tokens: 1500, system: SYSTEM, messages: [{ role: "user", content: userText }] }),
+      body: JSON.stringify({ model: MODEL, max_tokens: 1500, system: SYSTEM, messages: [{ role: "user", content }] }),
     });
   } catch (e) {
     return res.status(502).json({ error: "Falha ao contatar a API da Claude.", detail: String((e && e.message) || e) });

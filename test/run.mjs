@@ -56,7 +56,8 @@ try {
   page.on('pageerror', (e) => pageErrors.push(String(e)));
   page.on('requestfailed', (r) => { const u = r.url(); if (!u.startsWith('data:') && !u.startsWith('blob:') && !/favicon/.test(u)) failedReq.push(u + ' :: ' + (r.failure()?.errorText || '')); });
   let lastGenBody = null;
-  page.on('request', (r) => { if (r.method() === 'POST' && /\/api\/generate$/.test(r.url())) { try { lastGenBody = JSON.parse(r.postData() || '{}'); } catch {} } });
+  let lastAskBody = null;
+  page.on('request', (r) => { if (r.method() === 'POST' && /\/api\/generate$/.test(r.url())) { try { lastGenBody = JSON.parse(r.postData() || '{}'); } catch {} } if (r.method() === 'POST' && /\/api\/ask$/.test(r.url())) { try { lastAskBody = JSON.parse(r.postData() || '{}'); } catch {} } });
   page.on('dialog', (d) => { d.accept().catch(() => {}); }); // auto-accept the delete-discipline confirm
 
   const txt = () => page.evaluate(() => document.body.innerText);
@@ -555,6 +556,7 @@ try {
   await page.evaluate(() => { const b = [...document.querySelectorAll('button')].find((x) => /✚ Nota/.test(x.textContent)); if (b) b.click(); });
   await sleep(300);
   ok('pdf: "Nota" creates a note from the selection', await page.evaluate(() => /Do PDF/.test(document.body.innerText) || [...document.querySelectorAll('#app input[value^="Do PDF"]')].length > 0 || [...document.querySelectorAll('#app input')].some((i) => /Do PDF/.test(i.value || ''))));
+  ok('pdf: backlink badge appears on the source page', await page.evaluate(() => !!document.querySelector('.sdn-bl')));
   // re-select → highlight with a color → appears in the panel and persists
   await page.evaluate(() => { const tl = document.querySelector('.sdn-tl'); const range = document.createRange(); range.selectNodeContents(tl); const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range); tl.closest('.sdn-pdf-scroll').dispatchEvent(new MouseEvent('mouseup', { bubbles: true })); });
   await sleep(140);
@@ -571,6 +573,11 @@ try {
   await page.evaluate(() => { const inp = [...document.querySelectorAll('input')].find((i) => /Pergunte ao PDF/.test(i.placeholder || '')); if (inp) inp.value = 'qual o tema'; const b = [...document.querySelectorAll('button')].find((x) => x.textContent.trim() === 'Perguntar'); if (b) b.click(); });
   await page.waitForFunction(() => /Resposta de teste/.test(document.body.textContent), { timeout: 8000 });
   ok('pdf: "Pergunte ao PDF" returns a grounded answer', await page.evaluate(() => /Resposta de teste/.test(document.body.textContent)));
+  // vision: "👁 visão" renders pages to images and sends them to /api/ask
+  lastAskBody = null;
+  await page.evaluate(() => { const b = [...document.querySelectorAll('button')].find((x) => /👁 visão/.test(x.textContent)); if (b) b.click(); });
+  { let tries = 0; while (!(lastAskBody && lastAskBody.images && lastAskBody.images.length) && tries < 50) { await sleep(100); tries++; } }
+  ok('pdf: vision sends page images to /api/ask', !!(lastAskBody && lastAskBody.images && lastAskBody.images.length >= 1), lastAskBody ? ('imgs=' + (lastAskBody.images || []).length) : 'no body');
   // in-PDF search highlights matches
   await page.evaluate(() => { const f = [...document.querySelectorAll('input')].find((i) => /buscar no PDF/.test(i.placeholder || '')); if (f) { f.value = 'Cronograma'; f.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })); } });
   await sleep(300);

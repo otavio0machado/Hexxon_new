@@ -727,6 +727,7 @@ class Component extends DCLogic {
       const crop = mkHeadBtn('▢ recortar', () => this.toggleCrop(crop)); ctrls.appendChild(crop);
     }
     if (blob) ctrls.appendChild(mkHeadBtn('✦ resumir', () => this.askPdf(this.pdfDocNode, 'Resuma este documento em tópicos curtos e liste os termos-chave.', this.pdfAns)));
+    if (blob) ctrls.appendChild(mkHeadBtn('👁 visão', () => this.askPdfVision(this.pdfDocNode, this.pdfAns)));
     ctrls.appendChild(mkHeadBtn('↧ destaques', () => this.exportHighlights(this.pdfDocNode)));
     if (blob) ctrls.appendChild(mkHeadBtn('↓ baixar', () => { const u = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = u; a.download = node.filename || 'documento.pdf'; a.click(); setTimeout(() => URL.revokeObjectURL(u), 1500); }));
     const close = document.createElement('button'); close.textContent = '✕';
@@ -835,6 +836,7 @@ class Component extends DCLogic {
       body.appendChild(wrap);
       this.pageWraps[p] = wrap;
       this.paintHighlights(wrap, p, this.byId()[node.id] || node);
+      this.paintBacklinks(wrap, p, node.id);
       if (this._pdfGoto && p === this._pdfGoto) { const tgt = this._pdfGoto; this._pdfGoto = null; setTimeout(() => this.scrollToHlPage(tgt), 60); }
     }
   }
@@ -874,7 +876,19 @@ class Component extends DCLogic {
     const fname = (node.filename || 'PDF').replace(/\.pdf$/i, '').slice(0, 22);
     const id = this.createNote('Do PDF · ' + fname, text, 'pdf-sel');
     if (id) this.setState({ nodes: this.state.nodes.map(n => n.id === id ? { ...n, pdfSource: { id: node.id, page: page || 1 } } : n) });
+    if (this.pageWraps && this.pageWraps[page || 1]) this.paintBacklinks(this.pageWraps[page || 1], page || 1, node.id);
     this.toast('Nota criada a partir da seleção — conecte (●) a um nó de IA');
+  }
+  // margin badge: how many notes/generators link back to this page
+  paintBacklinks(wrap, page, pdfId) {
+    [...wrap.querySelectorAll('.sdn-bl')].forEach(e => e.remove());
+    const refs = this.state.nodes.filter(n => n.pdfSource && n.pdfSource.id === pdfId && n.pdfSource.page === page);
+    if (!refs.length) return;
+    const badge = document.createElement('button'); badge.className = 'sdn-bl'; badge.textContent = '◉ ' + refs.length;
+    badge.title = refs.length + ' nó(s) referenciam esta página';
+    badge.style.cssText = 'position:absolute;top:8px;right:-13px;z-index:4;font-family:"IBM Plex Mono",monospace;font-size:10px;color:#FFFDF8;background:' + this.curAccent() + ';border:none;border-radius:10px;padding:3px 8px;cursor:pointer;box-shadow:0 1px 5px rgba(0,0,0,0.35);';
+    badge.onclick = () => { const first = refs[0]; this.closePdf(); setTimeout(() => { this.setState({ selectedId: first.id }); if (this.frameSelection) this.frameSelection(); }, 90); };
+    wrap.appendChild(badge);
   }
   openPdfAt = (id, page) => { this._pdfGoto = page || 1; this.openPdf(id); };
   reattachPdf(id, file) {
@@ -999,13 +1013,32 @@ class Component extends DCLogic {
       return this.esc(tk.value).replace(/\n/g, '<br>');
     }).join('');
   }
-  // grounded Q&A over the PDF's extracted text
-  askPdf(node, question, ansEl) {
+  // render the open PDF's first pages to JPEG data URLs (for vision on scanned PDFs)
+  async pdfPageImages(max) {
+    const pdf = this.pdfDoc; if (!pdf) return [];
+    const out = []; const n = Math.min(pdf.numPages, max || 4);
+    for (let p = 1; p <= n; p++) {
+      const page = await pdf.getPage(p);
+      const v0 = page.getViewport({ scale: 1 });
+      const vp = page.getViewport({ scale: Math.min(1.6, 1100 / v0.width) });
+      const c = document.createElement('canvas'); c.width = Math.round(vp.width); c.height = Math.round(vp.height);
+      await page.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise;
+      out.push(c.toDataURL('image/jpeg', 0.7));
+    }
+    return out;
+  }
+  askPdfVision(node, ansEl) {
+    ansEl = ansEl || this.pdfAns; if (!ansEl) return;
+    ansEl.style.display = 'block'; ansEl.textContent = 'lendo as páginas com visão…';
+    this.pdfPageImages(4).then(imgs => { if (!imgs.length) { ansEl.textContent = 'Não consegui renderizar as páginas.'; return; } this.askPdf(node, 'Transcreva e explique o conteúdo destas páginas em tópicos.', ansEl, imgs); }).catch(() => { ansEl.textContent = 'Falha ao ler as páginas.'; });
+  }
+  // grounded Q&A over the PDF's text and/or page images (vision)
+  askPdf(node, question, ansEl, images) {
     question = (question || '').trim(); if (!question || !ansEl) return;
     const text = (this.byId()[node.id] || node).content || '';
-    if (!text.trim()) { this.toast('Este PDF não tem texto extraível para consultar'); return; }
-    ansEl.style.display = 'block'; ansEl.textContent = 'pensando…';
-    fetch('/api/ask', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ question, filename: node.filename || 'PDF', context: text }) })
+    if (!text.trim() && !(images && images.length)) { this.toast('Sem texto — use 👁 visão para ler as páginas'); return; }
+    ansEl.style.display = 'block'; if (ansEl.textContent.indexOf('visão') < 0) ansEl.textContent = 'pensando…';
+    fetch('/api/ask', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ question, filename: node.filename || 'PDF', context: text, images: images || [] }) })
       .then(async (r) => { const d = await r.json().catch(() => ({})); if (!r.ok) throw new Error(d.error || ('erro ' + r.status)); return d; })
       .then((d) => {
         if (!this.pdfEl || !ansEl.isConnected) return;
