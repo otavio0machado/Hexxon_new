@@ -31,7 +31,7 @@ class Component extends DCLogic {
     selectedId: null, selectedConnId: null, drag: null, gen: null, popover: null,
     hintOpen: true,
     reading: null, material: null, search: null, newDisc: null, toast: null, flash: null,
-    discMenu: null, renameDisc: null, noteEdit: null, pdfView: null,
+    discMenu: null, renameDisc: null, noteEdit: null, pdfView: null, imgView: null,
     cloud: false, session: null, authScreen: null,
     disciplines: this.DISCIPLINES.slice(),
     boards: {},
@@ -520,7 +520,7 @@ class Component extends DCLogic {
   async idbGet(key) { try { const db = await this.idb(); return await new Promise((res) => { const tx = db.transaction('files', 'readonly'); const r = tx.objectStore('files').get(key); r.onsuccess = () => res(r.result || null); r.onerror = () => res(null); }); } catch (e) { return null; } }
   async idbDel(key) { try { const db = await this.idb(); const tx = db.transaction('files', 'readwrite'); tx.objectStore('files').delete(key); } catch (e) {} }
   async idbClear() { try { const db = await this.idb(); const tx = db.transaction('files', 'readwrite'); tx.objectStore('files').clear(); } catch (e) {} }
-  delBoardFiles(board) { try { (board && board.nodes || []).forEach(n => { if (n.type === 'pdf') this.idbDel(n.id); }); } catch (e) {} }
+  delBoardFiles(board) { try { (board && board.nodes || []).forEach(n => { if (n.type === 'pdf' || n.type === 'image') this.idbDel(n.id); }); } catch (e) {} }
 
   onPdfPick = (e) => {
     const file = e.target && e.target.files && e.target.files[0];
@@ -559,23 +559,20 @@ class Component extends DCLogic {
   // ---------- image nodes (your own diagrams / prints) ----------
   pickImage = () => { if (this.imgInput) this.imgInput.click(); };
   setImgInput = (el) => { this.imgInput = el; };
-  // downscale to keep localStorage small: max 1280px on the long edge, JPEG q≈0.82
+  // Produce a full-res blob (≤1600px, kept in IndexedDB) + a tiny thumbnail data URL
+  // (≤360px, lives in the node so localStorage/cloud stay small).
   downscaleImage(file) {
     return new Promise((resolve, reject) => {
       const url = URL.createObjectURL(file);
       const img = new Image();
       img.onload = () => {
         try {
-          const MAX = 1280;
-          let { width: w, height: h } = img;
-          const scale = Math.min(1, MAX / Math.max(w, h));
-          w = Math.round(w * scale); h = Math.round(h * scale);
-          const c = document.createElement('canvas'); c.width = w; c.height = h;
-          c.getContext('2d').drawImage(img, 0, 0, w, h);
           const transparent = /png|gif|webp/i.test(file.type);
-          const out = transparent ? c.toDataURL('image/png') : c.toDataURL('image/jpeg', 0.82);
-          URL.revokeObjectURL(url);
-          resolve({ src: out, w, h });
+          const mime = transparent ? 'image/png' : 'image/jpeg';
+          const draw = (max) => { let w = img.width, h = img.height; const s = Math.min(1, max / Math.max(w, h)); w = Math.round(w * s); h = Math.round(h * s); const c = document.createElement('canvas'); c.width = w; c.height = h; c.getContext('2d').drawImage(img, 0, 0, w, h); return { c, w, h }; };
+          const full = draw(1600);
+          const thumb = draw(360).c.toDataURL(mime, 0.8);
+          full.c.toBlob((blob) => { URL.revokeObjectURL(url); resolve({ blob: blob || null, thumb, w: full.w, h: full.h }); }, mime, 0.85);
         } catch (e) { URL.revokeObjectURL(url); reject(e); }
       };
       img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('img')); };
@@ -588,8 +585,9 @@ class Component extends DCLogic {
     this.toast('Processando imagem…');
     let data;
     try { data = await this.downscaleImage(file); } catch (e) { this.toast('Falha ao ler a imagem'); return; }
-    if (data.src.length > 2400000) this.toast('Imagem grande — pode pesar no armazenamento');
-    this.createImage(data.src, data.w, data.h, caption || (file.name || '').replace(/\.[a-z]+$/i, ''));
+    const id = 'n' + (++this.nidc);
+    if (data.blob) this.idbPut(id, data.blob).catch(() => {});   // full image stays local (IndexedDB)
+    this.createImage(id, data.thumb, data.w, data.h, caption || (file.name || '').replace(/\.[a-z]+$/i, ''));
   }
   onImgPick = async (e) => {
     const file = e.target && e.target.files && e.target.files[0];
@@ -607,24 +605,31 @@ class Component extends DCLogic {
       }
     }
   };
-  createImage(src, iw, ih, caption) {
+  createImage(id, thumb, iw, ih, caption) {
     const r = this.vp.getBoundingClientRect();
     const j = (this.nidc % 4) * 24;
     const wld = this.screenToWorld(r.left + r.width * 0.42 + j, r.top + r.height * 0.40 + j);
     const w = 300, h = Math.round(Math.max(140, Math.min(360, w * (ih / Math.max(1, iw)) + 38)));
     this.pushHist();
-    const id = 'n' + (++this.nidc);
-    const node = { id, type: 'image', x: wld.x - w / 2, y: wld.y - h / 2, w, h, src, caption: caption || '', shortLabel: (caption || 'Imagem').slice(0, 18) };
+    const node = { id, type: 'image', x: wld.x - w / 2, y: wld.y - h / 2, w, h, src: thumb, hasFile: true, caption: caption || '', shortLabel: (caption || 'Imagem').slice(0, 18) };
     this.setState({ nodes: [...this.state.nodes, node], selectedId: id, selectedConnId: null });
     this.toast('Imagem adicionada');
     return id;
   }
   setImageCaption(id, val) { this.setState({ nodes: this.state.nodes.map(n => n.id === id ? { ...n, caption: val, shortLabel: (val || 'Imagem').slice(0, 18) } : n) }); }
+  // lightbox: show the thumbnail immediately, upgrade to the full image from IndexedDB
+  openImg = async (id) => {
+    const n = this.byId()[id]; if (!n) return;
+    this.setState({ imgView: { id, caption: n.caption || '', url: n.src || '', full: false } });
+    const blob = await this.idbGet(id);
+    if (blob) { if (this._imgUrl) { try { URL.revokeObjectURL(this._imgUrl); } catch (e) {} } this._imgUrl = URL.createObjectURL(blob); this.setState({ imgView: { id, caption: n.caption || '', url: this._imgUrl, full: true } }); }
+  };
+  closeImg = () => { if (this._imgUrl) { try { URL.revokeObjectURL(this._imgUrl); } catch (e) {} this._imgUrl = null; } this.setState({ imgView: null }); };
 
   deleteNode(id) {
     const n = this.byId()[id];
     if (!n || n.locked) return;
-    if (n.type === 'pdf') this.idbDel(id);
+    if (n.type === 'pdf' || n.type === 'image') this.idbDel(id);
     this.pushHist();
     const patch = {
       nodes: this.state.nodes.filter(x => x.id !== id),
@@ -1043,6 +1048,7 @@ class Component extends DCLogic {
     const typing = t && /input|textarea/i.test(t.tagName);
     if (e.key === 'Escape') {
       if (this.state.search) return this.closeSearch();
+      if (this.state.imgView) return this.closeImg();
       if (this.state.pdfView) return this.closePdf();
       if (this.state.noteEdit) return this.closeNoteEditor();
       if (this.state.renameDisc) return this.closeRename();
@@ -1187,6 +1193,7 @@ class Component extends DCLogic {
         onNoteTitleInput: (e) => this.setNoteTitle(n.id, e.target.value),
         onExpandNote: (e) => { this.stop(e); this.openNoteEditor(n.id); },
         onImgCaption: (e) => this.setImageCaption(n.id, e.target.value),
+        onViewImg: (e) => { this.stop(e); this.openImg(n.id); },
         onTitleRename: (e) => this.renameTitle(n.id, e.target.value),
       };
       if (isGen) {
@@ -1339,6 +1346,9 @@ class Component extends DCLogic {
       } else { noteEdit = null; }
     }
 
+    // image lightbox overlay
+    const imgView = S.imgView ? { caption: S.imgView.caption || '', url: S.imgView.url || '', hasUrl: !!S.imgView.url } : null;
+
     // pdf viewer overlay
     const pdfView = S.pdfView ? {
       filename: S.pdfView.filename || 'documento.pdf',
@@ -1414,6 +1424,8 @@ class Component extends DCLogic {
       noteEdit, closeNoteEditor: this.closeNoteEditor, toggleNotePreview: this.toggleNotePreview, setNoteBodyRef: this.setNoteBodyRef,
       // pdf viewer
       pdfView, closePdf: this.closePdf, downloadPdf: this.downloadPdf,
+      // image lightbox
+      imgView, imgViewUrl: imgView ? imgView.url : '', imgViewCaption: imgView ? imgView.caption : '', closeImg: this.closeImg,
       hintOpen: S.screen === 'canvas' && S.hintOpen && this.curHints(),
       hintClosed: S.screen === 'canvas' && !(S.hintOpen && this.curHints()),
       dismissHint: () => this.setState({ hintOpen: false }), openHint: () => this.setState({ hintOpen: true }),

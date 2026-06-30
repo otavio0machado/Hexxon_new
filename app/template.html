@@ -201,7 +201,10 @@
 
             <sc-if value="{{ n.isImage }}" hint-placeholder-val="{{ false }}">
               <div style="background:#FFFDF8;border:1px solid rgba(33,30,26,0.26);border-radius:3px;padding:8px;box-shadow:0 1px 0 rgba(33,30,26,0.05);">
-                <img src="{{ n.imgSrc }}" alt="{{ n.imgCaption }}" draggable="false" style="display:block;width:100%;height:{{ n.imgAreaH }}px;object-fit:contain;background:#FAF8F3;border:1px solid rgba(33,30,26,0.08);border-radius:2px;" />
+                <div style="position:relative;">
+                  <img src="{{ n.imgSrc }}" alt="{{ n.imgCaption }}" draggable="false" style="display:block;width:100%;height:{{ n.imgAreaH }}px;object-fit:contain;background:#FAF8F3;border:1px solid rgba(33,30,26,0.08);border-radius:2px;" />
+                  <button onPointerDown="{{ stop }}" onClick="{{ n.onViewImg }}" title="Ampliar" style="position:absolute;top:6px;right:6px;width:24px;height:24px;display:flex;align-items:center;justify-content:center;background:rgba(255,253,248,0.92);border:1px solid rgba(33,30,26,0.22);border-radius:2px;color:#211E1A;font-family:'IBM Plex Mono',monospace;font-size:12px;cursor:pointer;" style-hover="border-color:var(--ox);color:var(--ox);">⤢</button>
+                </div>
                 <input onPointerDown="{{ stop }}" value="{{ n.imgCaption }}" onInput="{{ n.onImgCaption }}" placeholder="legenda da imagem…" style="width:100%;margin-top:7px;font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:rgba(33,30,26,0.7);background:transparent;border:none;outline:none;padding:0 2px;" />
               </div>
             </sc-if>
@@ -846,6 +849,17 @@
             </div>
           </sc-if>
         </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ===================== IMAGE LIGHTBOX ===================== -->
+  <sc-if value="{{ imgView }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeImg }}" style="position:absolute;inset:0;z-index:85;background:rgba(33,30,26,0.78);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:34px;">
+      <img src="{{ imgViewUrl }}" alt="{{ imgViewCaption }}" onClick="{{ stop }}" style="max-width:94%;max-height:84%;object-fit:contain;background:#FFFDF8;border:1px solid rgba(250,248,243,0.3);box-shadow:0 18px 60px rgba(0,0,0,0.5);" />
+      <div onClick="{{ stop }}" style="display:flex;align-items:center;gap:16px;margin-top:16px;">
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#FAF8F3;max-width:60vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ imgViewCaption }}</span>
+        <button onClick="{{ closeImg }}" style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#FAF8F3;background:transparent;border:1px solid rgba(250,248,243,0.45);border-radius:2px;padding:8px 14px;cursor:pointer;" style-hover="border-color:#FAF8F3;">Fechar ✕</button>
       </div>
     </div>
   </sc-if>

@@ -398,6 +398,18 @@ try {
   await imgInput.uploadFile(pngPath);
   await page.waitForFunction(() => !!document.querySelector('#app img[src^="data:"]'), { timeout: 6000 });
   ok('image: node created from upload', !!(await page.$('#app img[src^="data:"]')));
+  // node stores only a small thumbnail data URL (full image lives in IndexedDB)
+  const thumbLen = await page.evaluate(() => { const i = document.querySelector('#app img[src^="data:"]'); return i ? i.src.length : 0; });
+  ok('image: node holds a small thumbnail', thumbLen > 0 && thumbLen < 200000, `len=${thumbLen}`);
+  // open the lightbox (full image comes from IndexedDB → blob: URL)
+  ok('action: open image lightbox', await page.evaluate(() => { const b = document.querySelector('button[title="Ampliar"]'); if (b) { b.click(); return true; } return false; }));
+  await page.waitForFunction(() => !!document.querySelector('#app img[src^="blob:"]'), { timeout: 5000 });
+  const lightboxShown = () => page.evaluate(() => { const o = [...document.querySelectorAll('#app div')].find((d) => d.style && d.style.zIndex === '85'); return !!(o && o.getBoundingClientRect().width > 200); });
+  ok('image: lightbox shows full image from IndexedDB', (await lightboxShown()) && await page.evaluate(() => !!document.querySelector('#app img[src^="blob:"]')));
+  await page.screenshot({ path: `${SHOT}/r10b-lightbox.png` });
+  await page.keyboard.press('Escape');
+  await page.waitForFunction(() => { const o = [...document.querySelectorAll('#app div')].find((d) => d.style && d.style.zIndex === '85'); return !o || o.getBoundingClientRect().width < 10; }, { timeout: 5000 }).catch(() => {});
+  ok('image: lightbox closed', !(await lightboxShown()));
 
   // ---- Notion-style note editor: write markdown, preview it ----
   ok('action: "+ Nota"', await clickByText('+ Nota'));
