@@ -716,6 +716,7 @@ class Component extends DCLogic {
     head.innerHTML = '<div style="display:flex;align-items:baseline;gap:12px;min-width:0;"><span style="font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;color:' + accent + ';">PDF</span><span style="font-family:\'Cormorant Garamond\',Georgia,serif;font-size:18px;color:#211E1A;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + this.esc(node.filename || 'documento.pdf') + '</span></div>';
     const ctrls = document.createElement('div'); ctrls.style.cssText = 'display:flex;gap:10px;flex:none;align-items:center;';
     const mkHeadBtn = (label, fn) => { const b = document.createElement('button'); b.textContent = label; b.style.cssText = 'font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:rgba(33,30,26,0.6);background:transparent;border:1px solid rgba(33,30,26,0.2);border-radius:2px;padding:7px 11px;cursor:pointer;'; b.onclick = fn; return b; };
+    if (blob) ctrls.appendChild(mkHeadBtn('✦ resumir', () => this.askPdf(this.pdfDocNode, 'Resuma este documento em tópicos curtos e liste os termos-chave.', this.pdfAns)));
     ctrls.appendChild(mkHeadBtn('↧ destaques', () => this.exportHighlights(this.pdfDocNode)));
     if (blob) ctrls.appendChild(mkHeadBtn('↓ baixar', () => { const u = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = u; a.download = node.filename || 'documento.pdf'; a.click(); setTimeout(() => URL.revokeObjectURL(u), 1500); }));
     const close = document.createElement('button'); close.textContent = '✕';
@@ -728,8 +729,18 @@ class Component extends DCLogic {
     const body = document.createElement('div'); body.className = 'sdn-pdf-scroll';
     body.style.cssText = 'flex:1;min-height:0;overflow:auto;background:#525659;padding:22px;display:flex;flex-direction:column;align-items:center;gap:18px;';
     row.appendChild(side); row.appendChild(body); panel.appendChild(row);
+    // footer: "Pergunte ao PDF" (grounded Q&A)
+    const foot = document.createElement('div'); foot.style.cssText = 'flex:none;border-top:1px solid rgba(33,30,26,0.12);background:#FFFDF8;';
+    const ans = document.createElement('div'); ans.style.cssText = 'display:none;padding:14px 22px;max-height:200px;overflow:auto;border-bottom:1px solid rgba(33,30,26,0.08);font-family:"IBM Plex Serif",Georgia,serif;font-size:14px;line-height:1.6;color:#211E1A;';
+    foot.appendChild(ans);
+    const askRow = document.createElement('div'); askRow.style.cssText = 'display:flex;gap:10px;align-items:center;padding:12px 22px;';
+    const inp = document.createElement('input'); inp.placeholder = 'Pergunte ao PDF…'; inp.style.cssText = 'flex:1;font-family:"IBM Plex Mono",monospace;font-size:13px;color:#211E1A;background:#FCFAF4;border:1px solid rgba(33,30,26,0.2);border-radius:2px;padding:10px 12px;outline:none;';
+    inp.onkeydown = (e) => { if (e.key === 'Enter') { e.preventDefault(); this.askPdf(node, inp.value, ans); inp.value = ''; } };
+    const askBtn = document.createElement('button'); askBtn.textContent = 'Perguntar'; askBtn.style.cssText = 'font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#FFFDF8;background:' + accent + ';border:none;border-radius:2px;padding:10px 18px;cursor:pointer;';
+    askBtn.onclick = () => { this.askPdf(node, inp.value, ans); inp.value = ''; };
+    askRow.appendChild(inp); askRow.appendChild(askBtn); foot.appendChild(askRow); panel.appendChild(foot);
     ov.appendChild(panel); document.body.appendChild(ov);
-    this.pdfEl = ov; this.pdfBody = body; this.pdfSide = side;
+    this.pdfEl = ov; this.pdfBody = body; this.pdfSide = side; this.pdfAns = ans;
     this.renderHlPanel(node);
     if (!blob) { body.innerHTML = '<div style="margin:auto;max-width:420px;text-align:center;color:#FAF8F3;font-size:12px;line-height:1.7;">O arquivo não está neste dispositivo (o PDF fica salvo localmente). O texto extraído continua disponível para a IA.</div>'; return; }
     body.addEventListener('mouseup', () => setTimeout(() => this.onPdfSelect(node), 0));
@@ -853,6 +864,7 @@ class Component extends DCLogic {
     const hls = node.highlights || [];
     side.appendChild(sec('Destaques (' + hls.length + ')'));
     if (!hls.length) { const e = document.createElement('div'); e.textContent = 'Selecione um trecho e escolha uma cor.'; e.style.cssText = 'font-size:10.5px;line-height:1.6;color:rgba(33,30,26,0.45);padding:2px 16px 16px;'; side.appendChild(e); }
+    if (hls.length) { const g = document.createElement('button'); g.textContent = '↳ gerar questões destes destaques'; g.style.cssText = 'display:block;width:calc(100% - 28px);margin:2px 14px 12px;text-align:left;font-size:10.5px;letter-spacing:.04em;color:' + this.curAccent() + ';background:transparent;border:1px solid rgba(122,31,43,0.3);border-radius:2px;padding:8px 10px;cursor:pointer;'; g.onclick = () => this.generateFromHighlights(node); side.appendChild(g); }
     hls.forEach(h => {
       const row = document.createElement('div'); row.className = 'sdn-hl-row'; row.style.cssText = 'padding:9px 14px 9px 16px;border-bottom:1px solid rgba(33,30,26,0.07);';
       const top = document.createElement('div'); top.style.cssText = 'display:flex;gap:8px;align-items:flex-start;';
@@ -887,6 +899,40 @@ class Component extends DCLogic {
       setTimeout(() => { if (gid) this.openPopover(gid); }, 60);
       this.toast('Trecho pronto — descreva as questões e gere');
     }, 80);
+  }
+  // gather every highlight and generate questions from them
+  generateFromHighlights(node) {
+    const hls = (this.byId()[node.id] || node).highlights || [];
+    if (!hls.length) { this.toast('Destaque algo primeiro'); return; }
+    const text = hls.map(h => '• ' + h.text + (h.comment ? (' — ' + h.comment) : '')).join('\n');
+    this.generateFromPdf(text, node);
+  }
+  // convert text with $...$ / $$...$$ to safe HTML (KaTeX where possible)
+  textToHtml(text) {
+    return this.splitMath(text || '').map(tk => {
+      if (tk.math) { const h = this.mathToHtml(tk.value, tk.display); return h || (tk.display ? '$$' : '$') + this.esc(tk.value) + (tk.display ? '$$' : '$'); }
+      return this.esc(tk.value).replace(/\n/g, '<br>');
+    }).join('');
+  }
+  // grounded Q&A over the PDF's extracted text
+  askPdf(node, question, ansEl) {
+    question = (question || '').trim(); if (!question || !ansEl) return;
+    const text = (this.byId()[node.id] || node).content || '';
+    if (!text.trim()) { this.toast('Este PDF não tem texto extraível para consultar'); return; }
+    ansEl.style.display = 'block'; ansEl.textContent = 'pensando…';
+    fetch('/api/ask', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ question, filename: node.filename || 'PDF', context: text }) })
+      .then(async (r) => { const d = await r.json().catch(() => ({})); if (!r.ok) throw new Error(d.error || ('erro ' + r.status)); return d; })
+      .then((d) => {
+        if (!this.pdfEl || !ansEl.isConnected) return;
+        ansEl.innerHTML = '';
+        const q = document.createElement('div'); q.textContent = '“' + question + '”'; q.style.cssText = 'font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.04em;color:rgba(33,30,26,0.5);margin-bottom:8px;';
+        const a = document.createElement('div'); a.innerHTML = this.textToHtml(d.answer || '');
+        const note = document.createElement('button'); note.textContent = '✚ virar nota';
+        note.style.cssText = 'margin-top:10px;font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:rgba(33,30,26,0.55);background:transparent;border:1px solid rgba(33,30,26,0.2);border-radius:2px;padding:6px 10px;cursor:pointer;';
+        note.onclick = () => { this.createNote('PDF · ' + question.slice(0, 28), 'Pergunta: ' + question + '\n\n' + (d.answer || ''), 'pdf-qa'); this.toast('Resposta virou nota'); };
+        ansEl.appendChild(q); ansEl.appendChild(a); ansEl.appendChild(note);
+      })
+      .catch((err) => { if (ansEl.isConnected) ansEl.textContent = 'Falha: ' + ((err && err.message) || 'erro'); });
   }
 
   // ---------- image nodes (your own diagrams / prints) ----------

@@ -567,6 +567,10 @@ try {
   await page.evaluate(() => { const b = [...document.querySelectorAll('button')].find((x) => /↧ destaques/.test(x.textContent)); if (b) b.click(); });
   await sleep(300);
   ok('pdf: export highlights creates a note', await page.evaluate(() => [...document.querySelectorAll('#app input')].some((i) => /Destaques ·/.test(i.value || ''))));
+  // "Pergunte ao PDF" → grounded answer (stub /api/ask)
+  await page.evaluate(() => { const inp = [...document.querySelectorAll('input')].find((i) => /Pergunte ao PDF/.test(i.placeholder || '')); if (inp) inp.value = 'qual o tema'; const b = [...document.querySelectorAll('button')].find((x) => x.textContent.trim() === 'Perguntar'); if (b) b.click(); });
+  await page.waitForFunction(() => /Resposta de teste/.test(document.body.textContent), { timeout: 8000 });
+  ok('pdf: "Pergunte ao PDF" returns a grounded answer', await page.evaluate(() => /Resposta de teste/.test(document.body.textContent)));
   await page.keyboard.press('Escape');
   await sleep(300);
   ok('pdf: viewer closed', await page.evaluate(() => ![...document.querySelectorAll('div')].some((d) => d.style && d.style.zIndex === '100')));
