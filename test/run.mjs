@@ -571,9 +571,15 @@ try {
   await page.evaluate(() => { const inp = [...document.querySelectorAll('input')].find((i) => /Pergunte ao PDF/.test(i.placeholder || '')); if (inp) inp.value = 'qual o tema'; const b = [...document.querySelectorAll('button')].find((x) => x.textContent.trim() === 'Perguntar'); if (b) b.click(); });
   await page.waitForFunction(() => /Resposta de teste/.test(document.body.textContent), { timeout: 8000 });
   ok('pdf: "Pergunte ao PDF" returns a grounded answer', await page.evaluate(() => /Resposta de teste/.test(document.body.textContent)));
+  // in-PDF search highlights matches
+  await page.evaluate(() => { const f = [...document.querySelectorAll('input')].find((i) => /buscar no PDF/.test(i.placeholder || '')); if (f) { f.value = 'Cronograma'; f.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })); } });
+  await sleep(300);
+  ok('pdf: in-PDF search highlights matches', await page.evaluate(() => [...document.querySelectorAll('.sdn-tl span.sdn-find')].length >= 1));
   await page.keyboard.press('Escape');
   await sleep(300);
   ok('pdf: viewer closed', await page.evaluate(() => ![...document.querySelectorAll('div')].some((d) => d.style && d.style.zIndex === '100')));
+  // the note created from the PDF links back to its source page
+  ok('pdf: note links back to its source page', !!(await page.$('button[title="Abrir o PDF na fonte"]')));
 
   // ---- search now indexes PDFs and images, with keyboard navigation ----
   await page.keyboard.down('Control'); await page.keyboard.press('k'); await page.keyboard.up('Control');

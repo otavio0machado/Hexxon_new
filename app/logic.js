@@ -690,6 +690,7 @@ class Component extends DCLogic {
     const n = this.byId()[id]; if (!n) return;
     if (this.pdfEl) this.closePdf();
     this.pdfNodeId = id;
+    this.userZoom = 1;
     this.setState({ pdfView: { id } });           // marker so Escape closes it
     const blob = await this.idbGet(id);
     this.buildPdfOverlay(n, blob);
@@ -714,8 +715,16 @@ class Component extends DCLogic {
     const head = document.createElement('div');
     head.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:14px 22px;border-bottom:1px solid rgba(33,30,26,0.14);flex:none;';
     head.innerHTML = '<div style="display:flex;align-items:baseline;gap:12px;min-width:0;"><span style="font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;color:' + accent + ';">PDF</span><span style="font-family:\'Cormorant Garamond\',Georgia,serif;font-size:18px;color:#211E1A;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + this.esc(node.filename || 'documento.pdf') + '</span></div>';
-    const ctrls = document.createElement('div'); ctrls.style.cssText = 'display:flex;gap:10px;flex:none;align-items:center;';
+    const ctrls = document.createElement('div'); ctrls.style.cssText = 'display:flex;gap:8px;flex:none;align-items:center;';
     const mkHeadBtn = (label, fn) => { const b = document.createElement('button'); b.textContent = label; b.style.cssText = 'font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:rgba(33,30,26,0.6);background:transparent;border:1px solid rgba(33,30,26,0.2);border-radius:2px;padding:7px 11px;cursor:pointer;'; b.onclick = fn; return b; };
+    if (blob) {
+      const find = document.createElement('input'); find.placeholder = 'buscar no PDF'; find.style.cssText = 'font-family:"IBM Plex Mono",monospace;font-size:11px;color:#211E1A;background:#FCFAF4;border:1px solid rgba(33,30,26,0.2);border-radius:2px;padding:6px 9px;outline:none;width:130px;';
+      find.onkeydown = (e) => { if (e.key === 'Enter') { e.preventDefault(); this.searchPdf(find.value); } };
+      ctrls.appendChild(find);
+      const zr = document.createElement('div'); zr.style.cssText = 'display:flex;border:1px solid rgba(33,30,26,0.2);border-radius:2px;overflow:hidden;';
+      const zb = (t, f) => { const b = document.createElement('button'); b.textContent = t; b.style.cssText = 'font-size:14px;color:#211E1A;background:transparent;border:none;padding:3px 9px;cursor:pointer;line-height:1;'; b.onclick = f; return b; };
+      zr.appendChild(zb('−', () => this.zoomPdf(1 / 1.15))); zr.appendChild(zb('+', () => this.zoomPdf(1.15))); ctrls.appendChild(zr);
+    }
     if (blob) ctrls.appendChild(mkHeadBtn('✦ resumir', () => this.askPdf(this.pdfDocNode, 'Resuma este documento em tópicos curtos e liste os termos-chave.', this.pdfAns)));
     ctrls.appendChild(mkHeadBtn('↧ destaques', () => this.exportHighlights(this.pdfDocNode)));
     if (blob) ctrls.appendChild(mkHeadBtn('↓ baixar', () => { const u = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = u; a.download = node.filename || 'documento.pdf'; a.click(); setTimeout(() => URL.revokeObjectURL(u), 1500); }));
@@ -740,7 +749,7 @@ class Component extends DCLogic {
     askBtn.onclick = () => { this.askPdf(node, inp.value, ans); inp.value = ''; };
     askRow.appendChild(inp); askRow.appendChild(askBtn); foot.appendChild(askRow); panel.appendChild(foot);
     ov.appendChild(panel); document.body.appendChild(ov);
-    this.pdfEl = ov; this.pdfBody = body; this.pdfSide = side; this.pdfAns = ans;
+    this.pdfEl = ov; this.pdfBody = body; this.pdfSide = side; this.pdfAns = ans; this._pdfBlob = blob;
     this.renderHlPanel(node);
     if (!blob) { body.innerHTML = '<div style="margin:auto;max-width:420px;text-align:center;color:#FAF8F3;font-size:12px;line-height:1.7;">O arquivo não está neste dispositivo (o PDF fica salvo localmente). O texto extraído continua disponível para a IA.</div>'; return; }
     body.addEventListener('mouseup', () => setTimeout(() => this.onPdfSelect(node), 0));
@@ -759,7 +768,7 @@ class Component extends DCLogic {
       if (this.pdfBody !== body) return; // viewer was closed
       const page = await pdf.getPage(p);
       const v0 = page.getViewport({ scale: 1 });
-      const scale = Math.min(2, maxW / v0.width);
+      const scale = Math.min(2, maxW / v0.width) * (this.userZoom || 1);
       const vp = page.getViewport({ scale });
       const wrap = document.createElement('div');
       wrap.style.cssText = 'position:relative;width:' + Math.round(vp.width) + 'px;height:' + Math.round(vp.height) + 'px;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,0.4);flex:none;';
@@ -774,6 +783,7 @@ class Component extends DCLogic {
       body.appendChild(wrap);
       this.pageWraps[p] = wrap;
       this.paintHighlights(wrap, p, this.byId()[node.id] || node);
+      if (this._pdfGoto && p === this._pdfGoto) { const tgt = this._pdfGoto; this._pdfGoto = null; setTimeout(() => this.scrollToHlPage(tgt), 60); }
     }
   }
   async resolveOutline(pdf) {
@@ -791,25 +801,39 @@ class Component extends DCLogic {
     const sel = window.getSelection();
     const text = sel ? sel.toString().trim() : '';
     if (!text || !this.pdfEl || !sel.rangeCount || !this.pdfEl.contains(sel.anchorNode)) { this.hidePdfToolbar(); return; }
+    let wrap = sel.anchorNode; while (wrap && !(wrap.dataset && wrap.dataset.page)) wrap = wrap.parentElement;
+    const page = wrap ? Number(wrap.dataset.page) : 1;
     const rect = sel.getRangeAt(0).getBoundingClientRect();
-    this.showPdfToolbar(rect, text, node);
+    this.showPdfToolbar(rect, text, node, page);
   }
-  showPdfToolbar(rect, text, node) {
+  showPdfToolbar(rect, text, node, page) {
     this.hidePdfToolbar();
     const bar = document.createElement('div');
     bar.style.cssText = 'position:fixed;z-index:101;left:' + Math.round(rect.left + rect.width / 2) + 'px;top:' + Math.round(rect.top - 44) + 'px;transform:translateX(-50%);display:flex;align-items:center;gap:1px;background:#211E1A;border-radius:3px;box-shadow:0 4px 16px rgba(0,0,0,0.4);padding:0 4px;font-family:"IBM Plex Mono",monospace;';
     const mk = (label, fn) => { const b = document.createElement('button'); b.textContent = label; b.style.cssText = 'font-size:10px;letter-spacing:.06em;color:#FAF8F3;background:transparent;border:none;padding:8px 10px;cursor:pointer;'; b.onmouseenter = () => b.style.background = 'rgba(250,248,243,0.12)'; b.onmouseleave = () => b.style.background = 'transparent'; b.onmousedown = (e) => e.preventDefault(); b.onclick = fn; return b; };
-    bar.appendChild(mk('✚ Nota', () => { this.createNoteFromPdf(text, node); this.hidePdfToolbar(); }));
-    bar.appendChild(mk('✦ IA', () => { this.generateFromPdf(text, node); this.hidePdfToolbar(); }));
+    bar.appendChild(mk('✚ Nota', () => { this.createNoteFromPdf(text, node, page); this.hidePdfToolbar(); }));
+    bar.appendChild(mk('✦ IA', () => { this.generateFromPdf(text, node, page); this.hidePdfToolbar(); }));
     const sep = document.createElement('span'); sep.style.cssText = 'width:1px;height:18px;background:rgba(250,248,243,0.2);margin:0 3px;'; bar.appendChild(sep);
     this.PDF_HL_COLORS.forEach(col => { const d = document.createElement('button'); d.title = 'Destacar ' + col.name; d.style.cssText = 'width:16px;height:16px;border-radius:50%;border:1px solid rgba(250,248,243,0.4);background:' + col.c + ';margin:0 2px;cursor:pointer;padding:0;'; d.onmousedown = (e) => e.preventDefault(); d.onclick = () => { this.highlightSelection(node, col.c); this.hidePdfToolbar(); }; bar.appendChild(d); });
     document.body.appendChild(bar); this.pdfBar = bar;
   }
   hidePdfToolbar() { if (this.pdfBar) { try { this.pdfBar.remove(); } catch (e) {} this.pdfBar = null; } }
-  createNoteFromPdf(text, node) {
+  createNoteFromPdf(text, node, page) {
     const fname = (node.filename || 'PDF').replace(/\.pdf$/i, '').slice(0, 22);
-    this.createNote('Do PDF · ' + fname, text, 'pdf-sel');
+    const id = this.createNote('Do PDF · ' + fname, text, 'pdf-sel');
+    if (id) this.setState({ nodes: this.state.nodes.map(n => n.id === id ? { ...n, pdfSource: { id: node.id, page: page || 1 } } : n) });
     this.toast('Nota criada a partir da seleção — conecte (●) a um nó de IA');
+  }
+  openPdfAt = (id, page) => { this._pdfGoto = page || 1; this.openPdf(id); };
+  zoomPdf(f) { this.userZoom = Math.max(0.6, Math.min(2.6, (this.userZoom || 1) * f)); if (this.pdfBody && this._pdfBlob) { const sc = this.pdfBody.scrollTop; this.pageWraps = {}; this.pdfBody.innerHTML = ''; this.renderPdfPages(this.pdfBody, this._pdfBlob, this.pdfDocNode).then(() => { try { this.pdfBody.scrollTop = sc * 1; } catch (e) {} }).catch(() => {}); } }
+  searchPdf(query) {
+    query = (query || '').trim().toLowerCase(); if (!query || !this.pdfBody) return;
+    [...this.pdfBody.querySelectorAll('.sdn-find')].forEach(e => { e.style.background = ''; e.classList.remove('sdn-find'); });
+    const spans = [...this.pdfBody.querySelectorAll('.sdn-tl span')].filter(s => (s.textContent || '').toLowerCase().includes(query));
+    if (!spans.length) { this.toast('Nada encontrado no PDF'); return; }
+    spans.forEach(s => { s.classList.add('sdn-find'); s.style.background = 'rgba(201,162,39,0.55)'; });
+    spans[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+    this.toast(spans.length + ' ocorrência(s)');
   }
   // persist a colored highlight (page + normalized rects + text + comment) on the node
   highlightSelection(node, color) {
@@ -889,9 +913,10 @@ class Component extends DCLogic {
     this.toast('Destaques exportados como nota');
   }
   // selection → a note with the text + a connected empty generator, opened for a prompt
-  generateFromPdf(text, node) {
+  generateFromPdf(text, node, page) {
     const fname = (node.filename || 'PDF').replace(/\.pdf$/i, '').slice(0, 22);
     const noteId = this.createNote('Do PDF · ' + fname, text, 'pdf-sel');
+    if (noteId) this.setState({ nodes: this.state.nodes.map(n => n.id === noteId ? { ...n, pdfSource: { id: node.id, page: page || 1 } } : n) });
     this.closePdf();
     setTimeout(() => {
       const gid = this.addNode();
@@ -1493,6 +1518,15 @@ class Component extends DCLogic {
       if (this.state.selectedId) return this.setState({ selectedId: null });
       return;
     }
+    // PDF viewer (imperative overlay) keyboard: zoom + page scroll
+    if (this.pdfEl) {
+      if (typing) return; // typing in the ask/search inputs
+      if (e.key === '+' || e.key === '=') { e.preventDefault(); return this.zoomPdf(1.15); }
+      if (e.key === '-' || e.key === '_') { e.preventDefault(); return this.zoomPdf(1 / 1.15); }
+      if (e.key === 'j' || e.key === 'ArrowDown') { e.preventDefault(); if (this.pdfBody) this.pdfBody.scrollBy({ top: this.pdfBody.clientHeight * 0.85, behavior: 'smooth' }); return; }
+      if (e.key === 'k' || e.key === 'ArrowUp') { e.preventDefault(); if (this.pdfBody) this.pdfBody.scrollBy({ top: -this.pdfBody.clientHeight * 0.85, behavior: 'smooth' }); return; }
+      return;
+    }
     // flashcard keyboard (overlay is on top → capture even if a background field has focus)
     if (this.state.flash) {
       if (e.key === ' ' || e.key === 'Spacebar' || e.key === 'Enter') { e.preventDefault(); return this.flipCard(); }
@@ -1650,6 +1684,8 @@ class Component extends DCLogic {
         onNoteInput: (e) => this.setNoteContent(n.id, e.target.value),
         onNoteTitleInput: (e) => this.setNoteTitle(n.id, e.target.value),
         onExpandNote: (e) => { this.stop(e); this.openNoteEditor(n.id); },
+        hasSource: !!n.pdfSource, sourceLabel: n.pdfSource ? ('↗ p.' + n.pdfSource.page) : '',
+        onSource: (e) => { this.stop(e); if (n.pdfSource) this.openPdfAt(n.pdfSource.id, n.pdfSource.page); },
         onImgCaption: (e) => this.setImageCaption(n.id, e.target.value),
         onViewImg: (e) => { this.stop(e); this.openImg(n.id); },
         onTitleRename: (e) => this.renameTitle(n.id, e.target.value),

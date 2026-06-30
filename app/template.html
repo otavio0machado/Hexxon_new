@@ -191,9 +191,14 @@
 
             <sc-if value="{{ n.isNote }}" hint-placeholder-val="{{ false }}">
               <div style="background:#FCFAF4;border:1px solid rgba(33,30,26,0.28);border-radius:3px;padding:15px 17px;box-shadow:0 1px 0 rgba(33,30,26,0.04);">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;gap:6px;">
                   <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--ox);">{{ n.noteSource }}</span>
-                  <button onPointerDown="{{ stop }}" onClick="{{ n.onExpandNote }}" title="Abrir editor" style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:rgba(33,30,26,0.5);background:transparent;border:1px solid rgba(33,30,26,0.2);border-radius:2px;padding:3px 7px;cursor:pointer;" style-hover="color:var(--ox);border-color:var(--ox);">⤢ editar</button>
+                  <div style="display:flex;gap:6px;align-items:center;">
+                    <sc-if value="{{ n.hasSource }}" hint-placeholder-val="{{ false }}">
+                      <button onPointerDown="{{ stop }}" onClick="{{ n.onSource }}" title="Abrir o PDF na fonte" style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.06em;color:var(--ox);background:transparent;border:1px solid rgba(122,31,43,0.35);border-radius:2px;padding:3px 7px;cursor:pointer;" style-hover="background:rgba(122,31,43,0.06);">{{ n.sourceLabel }}</button>
+                    </sc-if>
+                    <button onPointerDown="{{ stop }}" onClick="{{ n.onExpandNote }}" title="Abrir editor" style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:rgba(33,30,26,0.5);background:transparent;border:1px solid rgba(33,30,26,0.2);border-radius:2px;padding:3px 7px;cursor:pointer;" style-hover="color:var(--ox);border-color:var(--ox);">⤢ editar</button>
+                  </div>
                 </div>
                 <input onPointerDown="{{ stop }}" value="{{ n.noteTitle }}" onInput="{{ n.onNoteTitleInput }}" placeholder="título da nota" style="width:100%;font-family:var(--serif);font-size:19px;color:#211E1A;font-weight:600;background:transparent;border:none;outline:none;padding:0;margin-bottom:9px;" />
                 <textarea onPointerDown="{{ stop }}" value="{{ n.noteContent }}" onInput="{{ n.onNoteInput }}" placeholder="cole aqui suas anotações / o conteúdo da aula…" class="ox-scroll" style="width:100%;height:{{ n.noteAreaH }}px;resize:none;font-family:'IBM Plex Mono',monospace;font-size:11.5px;line-height:1.55;color:rgba(33,30,26,0.78);background:#FFFDF8;border:1px solid rgba(33,30,26,0.16);border-radius:2px;padding:9px 10px;outline:none;"></textarea>
