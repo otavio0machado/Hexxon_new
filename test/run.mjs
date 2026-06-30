@@ -236,9 +236,69 @@ try {
   await page.waitForFunction(() => /Suas disciplinas/.test(document.body.innerText), { timeout: 5000 });
   await sleep(300);
   ok('shelf: renamed discipline present', inc(await txt(), 'Renomeada'));
+
+  // ---- Milestone B+: manage a discipline from the shelf (⋯ menu → rename) ----
+  await page.click('button[title="Opções da disciplina"]');
+  await page.waitForFunction(() => /Renomear/.test(document.body.innerText), { timeout: 5000 });
+  ok('shelf: ⋯ menu opens', inc(await txt(), 'Renomear') && inc(await txt(), 'Excluir disciplina'));
+  ok('action: menu "Renomear"', await clickByText('Renomear'));
+  await page.waitForFunction(() => !!document.querySelector('input[title="novo nome da disciplina"]'), { timeout: 5000 });
+  await page.click('input[title="novo nome da disciplina"]', { clickCount: 3 });
+  await page.type('input[title="novo nome da disciplina"]', 'Renomeada 2');
+  ok('action: rename "Salvar"', await clickByText('Salvar'));
+  await page.waitForFunction(() => /Renomeada 2/.test(document.body.innerText), { timeout: 5000 });
+  await sleep(250);
+  ok('shelf: rename from library applied', inc(await txt(), 'Renomeada 2'));
+
   ok('action: reopen renamed', await clickByText('Renomeada'));
   await page.waitForFunction(() => /\d+%/.test(document.body.innerText), { timeout: 6000 });
   await sleep(400);
+
+  // ---- Milestone D: search finds note content ----
+  ok('action: open search', await clickByText('Buscar'));
+  await page.waitForFunction(() => !!document.querySelector('input[placeholder*="Buscar disciplinas"]'), { timeout: 5000 });
+  await page.type('input[placeholder*="Buscar disciplinas"]', 'DEFINICAO');
+  await sleep(300);
+  ok('search: matches note content', inc(await txt(), 'NOTA'));
+  await page.keyboard.press('Escape');
+  await sleep(200);
+
+  // ---- Milestone D: delete a connection, then undo it ----
+  const dotCount = () => page.evaluate(() => document.querySelectorAll('div[title="Selecionar conexão"]').length);
+  ok('canvas: a connection handle exists', (await dotCount()) >= 1);
+  await page.evaluate(() => { const d = document.querySelector('div[title="Selecionar conexão"]'); if (d) d.click(); });
+  await page.waitForFunction(() => !!document.querySelector('button[title="Remover conexão"]'), { timeout: 5000 });
+  ok('canvas: clicking handle selects connection (✕ appears)', !!(await page.$('button[title="Remover conexão"]')));
+  await page.click('button[title="Remover conexão"]');
+  await sleep(250);
+  ok('canvas: connection deleted', (await dotCount()) === 0);
+  await page.keyboard.down('Control'); await page.keyboard.press('z'); await page.keyboard.up('Control');
+  await sleep(250);
+  ok('canvas: undo restores the connection', (await dotCount()) >= 1);
+
+  // ---- Milestone D: duplicate a node, then undo ----
+  const blockCount = () => page.evaluate(() => (document.body.innerText.match(/Bloco de Teste/g) || []).length);
+  const before = await blockCount();
+  const selected = await page.evaluate(() => {
+    const wraps = [...document.querySelectorAll('#app div')].filter((d) => d.style && d.style.cursor === 'grab' && d.style.pointerEvents === 'auto');
+    const genW = wraps.find((w) => /Bloco de Teste/.test(w.innerText || ''));
+    if (!genW) return false;
+    const r = genW.getBoundingClientRect();
+    genW.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true, clientX: r.x + 30, clientY: r.y + 8, button: 0, pointerId: 1 }));
+    window.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerId: 1 }));
+    return true;
+  });
+  ok('canvas: node selected for duplicate', selected);
+  await page.waitForFunction(() => /duplicar/i.test(document.body.innerText), { timeout: 5000 });
+  ok('canvas: selection action bar (duplicar/excluir)', inc(await txt(), 'duplicar'));
+  await clickByText('duplicar');
+  await sleep(300);
+  ok('canvas: node duplicated', (await blockCount()) === before + 1, `before=${before}`);
+  await page.keyboard.down('Control'); await page.keyboard.press('z'); await page.keyboard.up('Control');
+  await sleep(250);
+  ok('canvas: undo removes the duplicate', (await blockCount()) === before);
+  await page.screenshot({ path: `${SHOT}/r07b-canvas-edit.png` });
+
   ok('action: "excluir disciplina"', await clickByText('excluir disciplina'));
   await page.waitForFunction(() => /0 disciplinas · 0 aulas · 0 nós/.test(document.body.innerText), { timeout: 5000 });
   ok('edit: discipline deleted (shelf empty)', inc(await txt(), '0 disciplinas · 0 aulas · 0 nós'));

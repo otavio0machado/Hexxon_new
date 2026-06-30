@@ -60,7 +60,11 @@
         <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:30px 0;">
           <div style="display:flex;align-items:flex-end;gap:15px;border-bottom:2px solid rgba(33,30,26,0.55);padding:0 4px;">
             <sc-for list="{{ spines }}" as="s" hint-placeholder-count="6">
-              <div onClick="{{ s.onOpen }}" style="cursor:pointer;flex:none;">
+              <div onClick="{{ s.onOpen }}" style="cursor:pointer;flex:none;position:relative;">
+
+                <sc-if value="{{ s.canMenu }}" hint-placeholder-val="{{ false }}">
+                  <button onPointerDown="{{ stop }}" onClick="{{ s.onMenu }}" title="Opções da disciplina" style="position:absolute;top:5px;right:5px;z-index:5;width:20px;height:20px;display:flex;align-items:center;justify-content:center;background:#FFFDF8;border:1px solid rgba(33,30,26,0.2);border-radius:2px;color:rgba(33,30,26,0.5);font-family:'IBM Plex Mono',monospace;font-size:13px;line-height:1;cursor:pointer;" style-hover="color:var(--ox);border-color:var(--ox);">⋯</button>
+                </sc-if>
 
                 <sc-if value="{{ s.normal }}" hint-placeholder-val="{{ true }}">
                   <div style="display:flex;flex-direction:column;align-items:center;justify-content:space-between;width:98px;height:{{ s.h }}px;background:#FFFDF8;border:1px solid rgba(33,30,26,0.24);box-shadow:-3px 4px 9px rgba(33,30,26,0.06);transition:transform .2s ease,box-shadow .2s ease;" style-hover="transform:translateY(-10px);box-shadow:-4px 8px 16px rgba(33,30,26,0.1);">
@@ -110,7 +114,7 @@
       <div style="position:absolute;left:0;top:0;transform:{{ worldTransform }};transform-origin:0 0;pointer-events:none;">
         <svg style="position:absolute;left:0;top:0;width:1px;height:1px;overflow:visible;pointer-events:none;">
           <sc-for list="{{ lines }}" as="ln" hint-placeholder-count="2">
-            <line x1="{{ ln.x1 }}" y1="{{ ln.y1 }}" x2="{{ ln.x2 }}" y2="{{ ln.y2 }}" stroke="{{ ln.stroke }}" stroke-width="1.25" vector-effect="non-scaling-stroke"></line>
+            <line x1="{{ ln.x1 }}" y1="{{ ln.y1 }}" x2="{{ ln.x2 }}" y2="{{ ln.y2 }}" stroke="{{ ln.stroke }}" stroke-width="{{ ln.width }}" vector-effect="non-scaling-stroke"></line>
           </sc-for>
           <sc-if value="{{ dragLine }}" hint-placeholder-val="{{ false }}">
             <line x1="{{ dragLine.x1 }}" y1="{{ dragLine.y1 }}" x2="{{ dragLine.x2 }}" y2="{{ dragLine.y2 }}" stroke="var(--ox)" stroke-width="1.5" stroke-dasharray="5 4" vector-effect="non-scaling-stroke"></line>
@@ -212,7 +216,26 @@
 
           </div>
         </sc-for>
+
+        <sc-for list="{{ lines }}" as="ln" hint-placeholder-count="2">
+          <sc-if value="{{ !ln.isSel }}" hint-placeholder-val="{{ true }}">
+            <div onPointerDown="{{ ln.onStop }}" onClick="{{ ln.onSelect }}" title="Selecionar conexão" style="position:absolute;left:{{ ln.mx }}px;top:{{ ln.my }}px;transform:translate(-50%,-50%);width:11px;height:11px;border-radius:50%;background:{{ ln.dotBg }};border:1px solid rgba(33,30,26,0.4);cursor:pointer;pointer-events:auto;opacity:0.55;" style-hover="opacity:1;border-color:var(--ox);"></div>
+          </sc-if>
+        </sc-for>
+
+        <sc-if value="{{ connDelete }}" hint-placeholder-val="{{ false }}">
+          <button onPointerDown="{{ connDelete.onStop }}" onClick="{{ connDelete.onDel }}" title="Remover conexão" style="position:absolute;left:{{ connDelete.x }}px;top:{{ connDelete.y }}px;transform:translate(-50%,-50%);width:22px;height:22px;border-radius:50%;background:var(--ox);border:1px solid var(--ox);color:#FFFDF8;font-family:'IBM Plex Mono',monospace;font-size:12px;line-height:1;cursor:pointer;pointer-events:auto;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(33,30,26,0.25);" style-hover="filter:brightness(0.9);">✕</button>
+        </sc-if>
       </div>
+
+      <!-- selection action bar (Duplicar / Excluir) -->
+      <sc-if value="{{ selChrome }}" hint-placeholder-val="{{ false }}">
+        <div onPointerDown="{{ selChrome.onStop }}" style="position:absolute;left:{{ selChrome.left }}px;top:{{ selChrome.top }}px;display:flex;gap:6px;background:#FFFDF8;border:1px solid rgba(33,30,26,0.22);border-radius:3px;padding:4px;box-shadow:0 2px 10px rgba(33,30,26,0.12);z-index:35;">
+          <button onClick="{{ selChrome.onDup }}" style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#211E1A;background:transparent;border:none;border-radius:2px;padding:6px 9px;cursor:pointer;" style-hover="background:rgba(33,30,26,0.06);">⧉ duplicar</button>
+          <span style="width:1px;background:rgba(33,30,26,0.14);"></span>
+          <button onClick="{{ selChrome.onDel }}" style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ox);background:transparent;border:none;border-radius:2px;padding:6px 9px;cursor:pointer;" style-hover="background:rgba(122,31,43,0.08);">✕ excluir</button>
+        </div>
+      </sc-if>
 
       <!-- canvas chrome -->
       <div style="position:absolute;left:24px;bottom:24px;display:flex;align-items:center;gap:12px;">
@@ -222,6 +245,9 @@
           <button onClick="{{ zoomIn }}" style="font-family:'IBM Plex Mono',monospace;font-size:15px;color:#211E1A;background:transparent;border:none;border-left:1px solid rgba(33,30,26,0.16);padding:6px 13px;cursor:pointer;line-height:1;" style-hover="background:rgba(33,30,26,0.04);">+</button>
         </div>
         <button onClick="{{ resetView }}" style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:rgba(33,30,26,0.5);background:transparent;border:none;cursor:pointer;padding:0;" style-hover="color:var(--ox);">ajustar</button>
+        <span style="width:1px;height:14px;background:rgba(33,30,26,0.18);"></span>
+        <button onClick="{{ undo }}" title="Desfazer (⌘Z)" style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:rgba(33,30,26,0.55);background:transparent;border:none;cursor:pointer;padding:0;line-height:1;" style-hover="color:var(--ox);">↶</button>
+        <button onClick="{{ redo }}" title="Refazer (⌘⇧Z)" style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:rgba(33,30,26,0.55);background:transparent;border:none;cursor:pointer;padding:0;line-height:1;" style-hover="color:var(--ox);">↷</button>
         <span style="width:1px;height:14px;background:rgba(33,30,26,0.18);"></span>
         <button onClick="{{ deleteDiscipline }}" title="Excluir esta disciplina" style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:rgba(33,30,26,0.5);background:transparent;border:none;cursor:pointer;padding:0;" style-hover="color:var(--ox);">excluir disciplina</button>
       </div>
@@ -268,7 +294,52 @@
     <div class="ox-scroll" style="position:absolute;inset:54px 0 0 0;overflow:auto;background:#FAF8F3;">
       <div style="max-width:920px;margin:0 auto;padding:56px 56px 64px;">
         <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.32em;color:var(--ox);text-transform:uppercase;margin-bottom:14px;">Conta &amp; preferências</div>
-        <h1 style="font-family:var(--serif);font-size:54px;line-height:0.95;color:#211E1A;font-weight:600;margin:0 0 40px;">{{ acctName }}</h1>
+        <h1 style="font-family:var(--serif);font-size:54px;line-height:0.95;color:#211E1A;font-weight:600;margin:0 0 32px;">{{ acctName }}</h1>
+
+        <!-- cloud account / sync -->
+        <div style="background:#FFFDF8;border:1px solid rgba(33,30,26,0.18);border-radius:3px;padding:22px 24px;margin-bottom:36px;">
+          <div style="display:flex;align-items:center;gap:9px;margin-bottom:14px;">
+            <span style="width:6px;height:6px;background:var(--ox);display:inline-block;"></span>
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--ox);">Conta na nuvem</span>
+          </div>
+
+          <sc-if value="{{ cloudUnavailable }}" hint-placeholder-val="{{ true }}">
+            <div style="font-family:'IBM Plex Serif',Georgia,serif;font-size:14px;line-height:1.6;color:rgba(33,30,26,0.7);">
+              A sincronização na nuvem está <strong>desativada</strong>. Seus dados ficam salvos apenas neste navegador.
+              Para sincronizar entre dispositivos, configure <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;">SUPABASE_URL</span> e <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;">SUPABASE_ANON_KEY</span> no servidor.
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ cloudLoggedIn }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;">
+              <div>
+                <div style="font-family:var(--serif);font-size:19px;color:#211E1A;">{{ userEmail }}</div>
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:rgba(33,30,26,0.5);margin-top:3px;">Conectado · seus dados sincronizam automaticamente.</div>
+              </div>
+              <button onClick="{{ logout }}" style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:rgba(33,30,26,0.6);background:transparent;border:1px solid rgba(33,30,26,0.24);border-radius:2px;padding:10px 16px;cursor:pointer;" style-hover="color:var(--ox);border-color:var(--ox);">Sair</button>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ cloudNeedsAuth }}" hint-placeholder-val="{{ false }}">
+            <div style="font-family:'IBM Plex Serif',Georgia,serif;font-size:14px;line-height:1.55;color:rgba(33,30,26,0.7);margin-bottom:16px;">Entre com seu e-mail para salvar e sincronizar suas disciplinas na nuvem. Enviaremos um código — sem senha.</div>
+
+            <sc-if value="{{ authStageEmail }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                <input value="{{ authEmail }}" onInput="{{ setAuthEmail }}" onKeyDown="{{ onAuthKey }}" placeholder="seu@email.com" type="email" style="flex:1;min-width:200px;font-family:'IBM Plex Mono',monospace;font-size:13px;color:#211E1A;background:#FCFAF4;border:1px solid rgba(33,30,26,0.22);border-radius:2px;padding:11px 13px;outline:none;" style-focus="border-color:var(--ox);" />
+                <button onClick="{{ authSubmit }}" style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#FFFDF8;background:var(--ox);border:none;border-radius:2px;padding:11px 20px;cursor:pointer;" style-hover="filter:brightness(0.88);">{{ authBtnLabel }}</button>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ authStageCode }}" hint-placeholder-val="{{ false }}">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(33,30,26,0.6);margin-bottom:10px;">{{ authSentTo }}</div>
+              <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                <input value="{{ authCode }}" onInput="{{ setAuthCode }}" onKeyDown="{{ onAuthKey }}" placeholder="código de 6 dígitos" inputmode="numeric" style="flex:1;min-width:160px;font-family:'IBM Plex Mono',monospace;font-size:15px;letter-spacing:.2em;color:#211E1A;background:#FCFAF4;border:1px solid rgba(33,30,26,0.22);border-radius:2px;padding:11px 13px;outline:none;" style-focus="border-color:var(--ox);" />
+                <button onClick="{{ authSubmit }}" style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#FFFDF8;background:var(--ox);border:none;border-radius:2px;padding:11px 20px;cursor:pointer;" style-hover="filter:brightness(0.88);">{{ authBtnLabel }}</button>
+              </div>
+              <button onClick="{{ changeAuthEmail }}" style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.06em;color:rgba(33,30,26,0.5);background:none;border:none;cursor:pointer;padding:10px 0 0;" style-hover="color:var(--ox);">← usar outro e-mail</button>
+            </sc-if>
+          </sc-if>
+        </div>
 
         <div style="display:grid;grid-template-columns:260px 1fr;gap:48px;align-items:start;">
           <!-- identity -->
@@ -621,6 +692,35 @@
         <div style="display:flex;justify-content:flex-end;gap:12px;">
           <button onClick="{{ closeNewDisc }}" style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:rgba(33,30,26,0.55);background:none;border:none;cursor:pointer;padding:11px 12px;" style-hover="color:#211E1A;">Cancelar</button>
           <button onClick="{{ createDisc }}" style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#FFFDF8;background:var(--ox);border:none;border-radius:2px;padding:11px 20px;cursor:pointer;" style-hover="filter:brightness(0.88);">Criar quadro</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ===================== DISCIPLINE MENU (shelf) ===================== -->
+  <sc-if value="{{ discMenu }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeDiscMenu }}" style="position:absolute;inset:0;z-index:80;background:rgba(33,30,26,0.34);display:flex;align-items:center;justify-content:center;padding:24px;">
+      <div onClick="{{ stop }}" style="width:100%;max-width:380px;background:#FFFDF8;border:1px solid rgba(33,30,26,0.3);box-shadow:0 18px 60px rgba(33,30,26,0.24);padding:28px 30px 22px;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--ox);margin-bottom:10px;">Disciplina</div>
+        <h2 style="font-family:var(--serif);font-size:28px;line-height:1.05;color:#211E1A;font-weight:600;margin:0 0 4px;">{{ discMenu.name }}</h2>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.04em;color:rgba(33,30,26,0.5);margin-bottom:22px;">{{ discMenu.meta }}</div>
+        <button onClick="{{ openDiscFromMenu }}" style="display:block;width:100%;text-align:left;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.04em;color:#211E1A;background:transparent;border:1px solid rgba(33,30,26,0.18);border-radius:2px;padding:11px 13px;cursor:pointer;margin-bottom:9px;" style-hover="border-color:var(--ox);">Abrir quadro ↗</button>
+        <button onClick="{{ openRenameFromMenu }}" style="display:block;width:100%;text-align:left;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.04em;color:#211E1A;background:transparent;border:1px solid rgba(33,30,26,0.18);border-radius:2px;padding:11px 13px;cursor:pointer;margin-bottom:9px;" style-hover="border-color:var(--ox);">Renomear</button>
+        <button onClick="{{ deleteFromMenu }}" style="display:block;width:100%;text-align:left;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.04em;color:var(--ox);background:transparent;border:1px solid rgba(122,31,43,0.3);border-radius:2px;padding:11px 13px;cursor:pointer;" style-hover="background:rgba(122,31,43,0.06);">Excluir disciplina</button>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ===================== RENAME DISCIPLINE ===================== -->
+  <sc-if value="{{ renameDisc }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeRename }}" style="position:absolute;inset:0;z-index:81;background:rgba(33,30,26,0.34);display:flex;align-items:center;justify-content:center;padding:24px;">
+      <div onClick="{{ stop }}" style="width:100%;max-width:440px;background:#FFFDF8;border:1px solid rgba(33,30,26,0.3);box-shadow:0 18px 60px rgba(33,30,26,0.24);padding:34px 36px 30px;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--ox);margin-bottom:12px;">Renomear</div>
+        <h2 style="font-family:var(--serif);font-size:30px;line-height:1;color:#211E1A;font-weight:600;margin:0 0 22px;">Nome da disciplina</h2>
+        <input ref="{{ setRenameInput }}" title="novo nome da disciplina" value="{{ renameDisc.name }}" onInput="{{ setRenameName }}" onKeyDown="{{ onRenameKey }}" style="width:100%;font-family:var(--serif);font-size:22px;color:#211E1A;background:#FCFAF4;border:1px solid rgba(33,30,26,0.22);border-radius:2px;padding:11px 13px;outline:none;margin-bottom:26px;" style-focus="border-color:var(--ox);" />
+        <div style="display:flex;justify-content:flex-end;gap:12px;">
+          <button onClick="{{ closeRename }}" style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:rgba(33,30,26,0.55);background:none;border:none;cursor:pointer;padding:11px 12px;" style-hover="color:#211E1A;">Cancelar</button>
+          <button onClick="{{ commitRename }}" style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#FFFDF8;background:var(--ox);border:none;border-radius:2px;padding:11px 20px;cursor:pointer;" style-hover="filter:brightness(0.88);">Salvar</button>
         </div>
       </div>
     </div>

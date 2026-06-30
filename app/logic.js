@@ -20,15 +20,19 @@ class Component extends DCLogic {
   cid = 2;
   nidc = 0;
   dynNum = 7;
+  histStack = [];
+  redoStack = [];
 
   state = {
     screen: 'biblioteca',
     activeDisc: null,
     prefs: { accent: null, serif: null, grid: null, showHints: true },
     pan: { x: 0, y: 0 }, zoom: 0.95, panning: false,
-    selectedId: null, drag: null, gen: null, popover: null,
+    selectedId: null, selectedConnId: null, drag: null, gen: null, popover: null,
     hintOpen: true,
     reading: null, material: null, search: null, newDisc: null, toast: null, flash: null,
+    discMenu: null, renameDisc: null,
+    cloud: false, session: null, authScreen: null,
     disciplines: this.DISCIPLINES.slice(),
     boards: {},
     nodes: [], connections: [],
@@ -57,7 +61,7 @@ class Component extends DCLogic {
     window.addEventListener('pointerup', this.onUp);
     window.addEventListener('keydown', this.onKey);
     window.addEventListener('resize', this.onResize);
-    this.load();
+    this.initCloud();
   }
   componentWillUnmount() {
     window.removeEventListener('pointermove', this.onMove);
@@ -67,37 +71,131 @@ class Component extends DCLogic {
     this.clearGenTimers();
     clearTimeout(this.tt);
     clearTimeout(this._pt);
+    clearTimeout(this._cpt);
     if (this.vp) this.vp.removeEventListener('wheel', this.onWheel);
   }
 
   // ---------- persistence (localStorage) ----------
   componentDidUpdate() { this.schedulePersist(); }
   schedulePersist() { clearTimeout(this._pt); this._pt = setTimeout(() => this.persist(), 400); }
+  snapshot() {
+    const S = this.state;
+    const boards = { ...S.boards };
+    if (S.screen === 'canvas' && S.activeDisc) boards[S.activeDisc] = { nodes: S.nodes, connections: S.connections };
+    return { v: 1, disciplines: S.disciplines, boards, prefs: S.prefs, counters: { nidc: this.nidc, cid: this.cid } };
+  }
   persist() {
-    try {
-      const S = this.state;
-      const boards = { ...S.boards };
-      if (S.screen === 'canvas' && S.activeDisc) boards[S.activeDisc] = { nodes: S.nodes, connections: S.connections };
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify({
-        v: 1, disciplines: S.disciplines, boards, prefs: S.prefs,
-        counters: { nidc: this.nidc, cid: this.cid },
-      }));
-    } catch (e) {}
+    const snap = this.snapshot();
+    try { localStorage.setItem(this.STORAGE_KEY, JSON.stringify(snap)); } catch (e) {}
+    if (this.state.cloud && this.session && this.sb) this.pushCloud(snap);
+  }
+  applySnapshot(d) {
+    if (!d) return;
+    if (d.counters) { this.nidc = d.counters.nidc || 0; this.cid = d.counters.cid || 2; }
+    this.resetHist();
+    this.setState({
+      disciplines: Array.isArray(d.disciplines) ? d.disciplines : [],
+      boards: d.boards && typeof d.boards === 'object' ? d.boards : {},
+      prefs: { ...this.state.prefs, ...(d.prefs || {}) },
+      screen: 'biblioteca', activeDisc: null, nodes: [], connections: [], selectedId: null, popover: null,
+    });
   }
   load() {
     try {
       const raw = localStorage.getItem(this.STORAGE_KEY);
       if (!raw) return;
       const d = JSON.parse(raw);
-      if (!d || d.v !== 1) return;
-      if (d.counters) { this.nidc = d.counters.nidc || 0; this.cid = d.counters.cid || 2; }
-      this.setState({
-        disciplines: Array.isArray(d.disciplines) ? d.disciplines : [],
-        boards: d.boards && typeof d.boards === 'object' ? d.boards : {},
-        prefs: { ...this.state.prefs, ...(d.prefs || {}) },
+      if (d && d.v === 1) this.applySnapshot(d);
+    } catch (e) {}
+  }
+
+  // ---------- cloud (Supabase) — optional; stays off when /api/config has no creds ----------
+  async initCloud() {
+    let cfg = null;
+    try { const r = await fetch('/api/config'); if (r.ok) cfg = await r.json(); } catch (e) {}
+    if (!cfg || !cfg.supabaseUrl || !cfg.supabaseAnonKey) { this.load(); return; } // local-only mode
+    try {
+      await this.loadSupabaseJs();
+      this.sb = window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false } });
+    } catch (e) { this.load(); return; } // CDN/init failed → fall back to local
+    this.setState({ cloud: true });
+    let session = null;
+    try { const { data } = await this.sb.auth.getSession(); session = data && data.session; } catch (e) {}
+    if (session) { this.session = session; this.setState({ session: { email: session.user.email }, authScreen: null }); await this.loadCloud(); }
+    else { this.load(); this.setState({ authScreen: { stage: 'email', email: '', code: '', sending: false } }); }
+    try {
+      this.sb.auth.onAuthStateChange((_evt, sess) => {
+        if (sess && !this.session) { this.session = sess; this.setState({ session: { email: sess.user.email }, authScreen: null }); this.loadCloud(); }
+        else if (!sess && this.session) { this.session = null; this.setState({ session: null }); }
       });
     } catch (e) {}
   }
+  loadSupabaseJs() {
+    if (window.supabase && window.supabase.createClient) return Promise.resolve(window.supabase);
+    if (this._sbP) return this._sbP;
+    this._sbP = new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js';
+      s.onload = () => (window.supabase && window.supabase.createClient) ? resolve(window.supabase) : reject(new Error('global'));
+      s.onerror = () => reject(new Error('cdn'));
+      document.head.appendChild(s);
+    });
+    return this._sbP;
+  }
+  async loadCloud() {
+    if (!this.sb || !this.session) return;
+    let row = null;
+    try { const { data } = await this.sb.from('sdn_state').select('data').eq('user_id', this.session.user.id).maybeSingle(); row = data; } catch (e) {}
+    if (row && row.data && row.data.v === 1) { this.applySnapshot(row.data); return; }
+    // no cloud row yet — migrate local data if present, else start empty
+    let local = null;
+    try { const raw = localStorage.getItem(this.STORAGE_KEY); if (raw) { const d = JSON.parse(raw); if (d && d.v === 1 && (d.disciplines || []).length) local = d; } } catch (e) {}
+    if (local) { this.applySnapshot(local); this.pushCloud(local); this.toast('Seus dados locais foram enviados para a nuvem'); }
+    else { this.applySnapshot({ disciplines: [], boards: {}, prefs: {}, counters: {} }); }
+  }
+  pushCloud(snap) {
+    if (!this.sb || !this.session) return;
+    this._cloudSnap = snap;
+    clearTimeout(this._cpt);
+    this._cpt = setTimeout(() => {
+      const payload = { user_id: this.session.user.id, data: this._cloudSnap, updated_at: new Date().toISOString() };
+      try { this.sb.from('sdn_state').upsert(payload).then(() => {}, () => {}); } catch (e) {}
+    }, 700);
+  }
+
+  // ---------- auth (passwordless e-mail code) ----------
+  setAuthEmail = (e) => { const a = this.state.authScreen; if (a) this.setState({ authScreen: { ...a, email: e.target.value } }); };
+  setAuthCode = (e) => { const a = this.state.authScreen; if (a) this.setState({ authScreen: { ...a, code: e.target.value } }); };
+  onAuthKey = (e) => { if (e.key === 'Enter') { e.preventDefault(); const a = this.state.authScreen; if (a && a.stage === 'code') this.verifyCode(); else this.sendCode(); } };
+  sendCode = async () => {
+    const a = this.state.authScreen; if (!a || !this.sb) return;
+    const email = (a.email || '').trim();
+    if (!/.+@.+\..+/.test(email)) { this.toast('Digite um e-mail válido'); return; }
+    this.setState({ authScreen: { ...a, sending: true } });
+    try {
+      const { error } = await this.sb.auth.signInWithOtp({ email, options: { shouldCreateUser: true } });
+      if (error) throw error;
+      this.setState({ authScreen: { ...this.state.authScreen, stage: 'code', sending: false } });
+      this.toast('Código enviado para ' + email);
+    } catch (e) { this.setState({ authScreen: { ...this.state.authScreen, sending: false } }); this.toast('Falha ao enviar o código'); }
+  };
+  verifyCode = async () => {
+    const a = this.state.authScreen; if (!a || !this.sb) return;
+    const email = (a.email || '').trim(); const token = (a.code || '').trim();
+    if (!token) { this.toast('Digite o código recebido'); return; }
+    this.setState({ authScreen: { ...a, sending: true } });
+    try {
+      const { data, error } = await this.sb.auth.verifyOtp({ email, token, type: 'email' });
+      if (error) throw error;
+      if (data && data.session) { this.session = data.session; this.setState({ session: { email: data.session.user.email }, authScreen: null }); await this.loadCloud(); }
+    } catch (e) { this.setState({ authScreen: { ...this.state.authScreen, sending: false } }); this.toast('Código inválido ou expirado'); }
+  };
+  changeAuthEmail = () => { const a = this.state.authScreen; if (a) this.setState({ authScreen: { stage: 'email', email: a.email, code: '', sending: false } }); };
+  logout = async () => {
+    try { if (this.sb) await this.sb.auth.signOut(); } catch (e) {}
+    this.session = null; this.nidc = 0; this.cid = 2; this.clearGenTimers();
+    this.setState({ session: null, disciplines: [], boards: {}, nodes: [], connections: [], screen: 'biblioteca', activeDisc: null, selectedId: null, popover: null, reading: null, material: null, flash: null, authScreen: { stage: 'email', email: '', code: '', sending: false } });
+  };
   resetAll = () => {
     try { localStorage.removeItem(this.STORAGE_KEY); } catch (e) {}
     this.nidc = 0; this.cid = 2;
@@ -144,10 +242,60 @@ class Component extends DCLogic {
     return null;
   }
   selectNode(id) {
-    const patch = { selectedId: id };
+    const patch = { selectedId: id, selectedConnId: null };
     if (this.state.popover && this.state.popover.nodeId !== id) patch.popover = null;
     this.setState(patch);
   }
+
+  // ---------- undo / redo (per-board canvas history) ----------
+  cloneBoard() {
+    return { nodes: this.state.nodes.map(n => ({ ...n })), connections: this.state.connections.map(c => ({ ...c })) };
+  }
+  pushHist() {
+    if (this.state.screen !== 'canvas') return;
+    this.histStack.push(this.cloneBoard());
+    if (this.histStack.length > 60) this.histStack.shift();
+    this.redoStack = [];
+  }
+  resetHist() { this.histStack = []; this.redoStack = []; }
+  undo = () => {
+    if (this.state.screen !== 'canvas' || !this.histStack.length) { this.toast('Nada para desfazer'); return; }
+    this.redoStack.push(this.cloneBoard());
+    const prev = this.histStack.pop();
+    this.clearGenTimers();
+    this.setState({ nodes: prev.nodes, connections: prev.connections, selectedId: null, selectedConnId: null, popover: null, gen: null });
+    this.toast('Desfeito');
+  };
+  redo = () => {
+    if (this.state.screen !== 'canvas' || !this.redoStack.length) return;
+    this.histStack.push(this.cloneBoard());
+    const next = this.redoStack.pop();
+    this.clearGenTimers();
+    this.setState({ nodes: next.nodes, connections: next.connections, selectedId: null, selectedConnId: null, popover: null, gen: null });
+    this.toast('Refeito');
+  };
+
+  // ---------- connection select / delete, node duplicate ----------
+  selectConn(id) { this.setState({ selectedConnId: id, selectedId: null, popover: null }); }
+  deleteConn = (id) => {
+    id = id || this.state.selectedConnId;
+    if (!id) return;
+    this.pushHist();
+    this.setState({ connections: this.state.connections.filter(c => c.id !== id), selectedConnId: null });
+    this.toast('Conexão removida');
+  };
+  duplicateNode = (id) => {
+    id = id || this.state.selectedId;
+    const n = this.byId()[id];
+    if (!n) { this.toast('Selecione um nó para duplicar'); return; }
+    if (n.type === 'title' || n.locked) { this.toast('Este nó não pode ser duplicado'); return; }
+    this.pushHist();
+    const nid = 'n' + (++this.nidc);
+    const copy = { ...n, id: nid, x: n.x + 30, y: n.y + 30 };
+    if (copy.questions) copy.questions = copy.questions.map(q => ({ ...q, solution: (q.solution || []).slice() }));
+    this.setState({ nodes: [...this.state.nodes, copy], selectedId: nid, selectedConnId: null, popover: null });
+    this.toast('Nó duplicado');
+  };
 
   // ---------- navigation ----------
   goHome = () => { this.saveBoard(); this.setState({ screen: 'biblioteca', selectedId: null, popover: null }); };
@@ -165,10 +313,11 @@ class Component extends DCLogic {
     let target = boards[id];
     if (!target) { target = this.starterBoard(this.disc(id)); boards[id] = target; }
     this.clearGenTimers();
+    this.resetHist();
     this.setState({
       screen: 'canvas', activeDisc: id, boards,
       nodes: target.nodes, connections: target.connections,
-      selectedId: null, popover: null, gen: null, drag: null,
+      selectedId: null, selectedConnId: null, popover: null, gen: null, drag: null,
       reading: null, material: null, search: null,
       hintOpen: this.state.prefs.showHints,
     });
@@ -209,7 +358,7 @@ class Component extends DCLogic {
     } else if (g.type === 'node') {
       const z = this.state.zoom;
       const dx = (e.clientX - g.sx) / z, dy = (e.clientY - g.sy) / z;
-      if (Math.abs(e.clientX - g.sx) + Math.abs(e.clientY - g.sy) > 3) g.moved = true;
+      if (Math.abs(e.clientX - g.sx) + Math.abs(e.clientY - g.sy) > 3 && !g.moved) { g.moved = true; this.pushHist(); }
       this.setState({ nodes: this.state.nodes.map(n => n.id === g.id ? { ...n, x: g.ox + dx, y: g.oy + dy } : n) });
     } else if (g.type === 'conn') {
       const w = this.screenToWorld(e.clientX, e.clientY);
@@ -223,7 +372,7 @@ class Component extends DCLogic {
     this.g = null;
     if (g.type === 'pan') {
       this.setState({ panning: false });
-      if (!g.moved) this.setState({ selectedId: null, popover: null });
+      if (!g.moved) this.setState({ selectedId: null, selectedConnId: null, popover: null });
     } else if (g.type === 'conn') {
       const d = this.state.drag;
       this.setState({ drag: null });
@@ -234,12 +383,14 @@ class Component extends DCLogic {
     if (from === to) return;
     const exists = this.state.connections.some(c => (c.from === from && c.to === to) || (c.from === to && c.to === from));
     if (exists) return;
+    this.pushHist();
     this.setState({ connections: [...this.state.connections, { id: 'c' + (++this.cid), from, to }] });
   }
   createNodeAt(wx, wy) {
+    this.pushHist();
     const id = 'n' + (++this.nidc);
     const node = { id, type: 'generated', x: wx - 150, y: wy - 78, w: 300, h: 156, filled: false, shortLabel: 'Novo nó' };
-    this.setState({ nodes: [...this.state.nodes, node], selectedId: id });
+    this.setState({ nodes: [...this.state.nodes, node], selectedId: id, selectedConnId: null });
     return id;
   }
   addNode = () => {
@@ -258,9 +409,10 @@ class Component extends DCLogic {
     const r = this.vp.getBoundingClientRect();
     const j = (this.nidc % 4) * 24;
     const w = this.screenToWorld(r.left + r.width * 0.34 + j, r.top + r.height * 0.42 + j);
+    this.pushHist();
     const id = 'n' + (++this.nidc);
     const node = { id, type: 'note', x: w.x - 140, y: w.y - 96, w: 280, h: 196, title: title || 'Nota', content: content || '', source: source || 'texto', shortLabel: (title || 'Nota').slice(0, 18) };
-    this.setState({ nodes: [...this.state.nodes, node], selectedId: id });
+    this.setState({ nodes: [...this.state.nodes, node], selectedId: id, selectedConnId: null });
     return id;
   }
   setNoteContent(id, val) { this.setState({ nodes: this.state.nodes.map(n => n.id === id ? { ...n, content: val } : n) }); }
@@ -306,10 +458,11 @@ class Component extends DCLogic {
   deleteNode(id) {
     const n = this.byId()[id];
     if (!n || n.locked) return;
+    this.pushHist();
     const patch = {
       nodes: this.state.nodes.filter(x => x.id !== id),
       connections: this.state.connections.filter(c => c.from !== id && c.to !== id),
-      selectedId: null, popover: null,
+      selectedId: null, selectedConnId: null, popover: null,
     };
     if (this.state.gen && this.state.gen.nodeId === id) { this.clearGenTimers(); patch.gen = null; }
     this.setState(patch);
@@ -322,18 +475,44 @@ class Component extends DCLogic {
       disciplines: this.state.disciplines.map(d => d.id === this.state.activeDisc ? { ...d, name } : d),
     });
   }
-  // delete the open discipline and its whole board
-  deleteDiscipline = () => {
-    const id = this.state.activeDisc;
+  // delete a discipline and its whole board (works from canvas chrome or the shelf)
+  deleteDiscById(id) {
     if (!id) return;
     const d = this.disc(id);
     if (typeof window !== 'undefined' && window.confirm && !window.confirm('Excluir a disciplina "' + (d ? d.name : '') + '" e todo o quadro? Isso não pode ser desfeito.')) return;
     const disciplines = this.state.disciplines.filter(x => x.id !== id);
     const boards = { ...this.state.boards };
     delete boards[id];
-    this.clearGenTimers();
-    this.setState({ disciplines, boards, screen: 'biblioteca', activeDisc: null, nodes: [], connections: [], selectedId: null, popover: null, gen: null, reading: null });
+    const patch = { disciplines, boards, discMenu: null, selectedId: null, selectedConnId: null, popover: null };
+    if (this.state.activeDisc === id) {
+      this.clearGenTimers(); this.resetHist();
+      Object.assign(patch, { screen: 'biblioteca', activeDisc: null, nodes: [], connections: [], gen: null, reading: null });
+    }
+    this.setState(patch);
     this.toast('Disciplina excluída');
+  }
+  deleteDiscipline = () => this.deleteDiscById(this.state.activeDisc);
+
+  // ---------- shelf: per-discipline menu (rename / delete from the library) ----------
+  openDiscMenu(id) { this.setState({ discMenu: { id } }); }
+  closeDiscMenu = () => this.setState({ discMenu: null });
+  deleteFromMenu = () => { const m = this.state.discMenu; if (m) this.deleteDiscById(m.id); };
+  openDiscFromMenu = () => { const m = this.state.discMenu; if (m) { this.setState({ discMenu: null }); this.openDiscipline(m.id); } };
+  openRenameFromMenu = () => { const m = this.state.discMenu; if (!m) return; const d = this.disc(m.id); this.setState({ discMenu: null, renameDisc: { id: m.id, name: d ? d.name : '' } }); };
+  closeRename = () => this.setState({ renameDisc: null });
+  setRenameName = (e) => { const r = this.state.renameDisc; if (r) this.setState({ renameDisc: { ...r, name: e.target.value } }); };
+  onRenameKey = (e) => { if (e.key === 'Enter') { e.preventDefault(); this.commitRename(); } else if (e.key === 'Escape') this.closeRename(); };
+  setRenameInput = (el) => { if (el) setTimeout(() => { try { el.focus(); el.select(); } catch (e) {} }, 20); };
+  commitRename = () => {
+    const r = this.state.renameDisc; if (!r) return;
+    const name = (r.name || '').trim() || 'Sem título';
+    const renameTitleNode = (nodes) => nodes.map(n => n.type === 'title' ? { ...n, titleBig: name, shortLabel: name } : n);
+    const boards = { ...this.state.boards };
+    if (boards[r.id]) boards[r.id] = { ...boards[r.id], nodes: renameTitleNode(boards[r.id].nodes || []) };
+    const patch = { disciplines: this.state.disciplines.map(d => d.id === r.id ? { ...d, name } : d), boards, renameDisc: null };
+    if (this.state.screen === 'canvas' && this.state.activeDisc === r.id) patch.nodes = renameTitleNode(this.state.nodes);
+    this.setState(patch);
+    this.toast('Disciplina renomeada');
   };
   cornerAi = () => {
     const sel = this.state.selectedId;
@@ -540,15 +719,21 @@ class Component extends DCLogic {
 
   searchItems() {
     const items = [];
+    // use the live board for the discipline currently open in the canvas
+    const boards = { ...this.state.boards };
+    if (this.state.screen === 'canvas' && this.state.activeDisc) boards[this.state.activeDisc] = { nodes: this.state.nodes, connections: this.state.connections };
     this.state.disciplines.forEach(d => {
       items.push({ type: 'DISC', title: d.name, context: (d.semester || '') + (d.aulas ? (' · ' + d.aulas + ' aulas') : ''), pick: () => { this.closeSearch(); this.openDiscipline(d.id); } });
-      const board = this.state.boards[d.id];
+      const board = boards[d.id];
       if (!board) return;
       board.nodes.filter(n => n.type === 'lesson').forEach(ls => {
         items.push({ type: 'AULA', title: ls.titleText, context: d.name + ' · ' + (ls.kicker || 'Aula'), pick: () => { this.closeSearch(); this.openDiscipline(d.id); setTimeout(() => this.openMaterial({ kicker: ls.kicker || 'Aula', title: ls.titleText, key: ls.lessonKey, meta: ls.material || 'material' }), 120); } });
       });
+      board.nodes.filter(n => n.type === 'note').forEach(nt => {
+        items.push({ type: 'NOTA', title: nt.title || 'Nota', context: d.name + ' · nota', body: nt.content || '', pick: () => { this.closeSearch(); this.openDiscipline(d.id); } });
+      });
       board.nodes.filter(n => n.type === 'generated' && n.filled).forEach(gn => {
-        items.push({ type: 'NÓ', title: gn.blockTitle || 'Bloco de Questões', context: d.name + ' · gerado', pick: () => { this.closeSearch(); this.openDiscipline(d.id); setTimeout(() => this.openReading(gn.id), 140); } });
+        items.push({ type: 'NÓ', title: gn.blockTitle || 'Bloco de Questões', context: d.name + ' · gerado', body: (gn.questions || []).map(q => q.text).join(' '), pick: () => { this.closeSearch(); this.openDiscipline(d.id); setTimeout(() => this.openReading(gn.id), 140); } });
       });
     });
     return items;
@@ -556,7 +741,7 @@ class Component extends DCLogic {
   searchResults(q) {
     const nq = this.norm(q);
     if (!nq) return [];
-    return this.searchItems().filter(it => this.norm(it.title).includes(nq) || this.norm(it.context).includes(nq)).slice(0, 8);
+    return this.searchItems().filter(it => this.norm(it.title).includes(nq) || this.norm(it.context).includes(nq) || this.norm(it.body || '').includes(nq)).slice(0, 8);
   }
 
   // ---------- new discipline ----------
@@ -571,10 +756,11 @@ class Component extends DCLogic {
     const d = { id, name, num: roman[this.state.disciplines.length] || String(this.state.disciplines.length + 1), semester: sem, aulas: 0, h: 350 + (this.state.disciplines.length % 3) * 24, lessons: [] };
     const board = { nodes: [{ id: 't', type: 'title', x: -180, y: -86, w: 360, h: 172, locked: true, shortLabel: name, titleBig: name, titleMeta: sem + ' · quadro novo', kickerLabel: 'Disciplina' }], connections: [] };
     const boards = { ...this.state.boards, [id]: board };
+    this.resetHist();
     this.setState({
       disciplines: [...this.state.disciplines, d], boards, newDisc: null,
       screen: 'canvas', activeDisc: id, nodes: board.nodes, connections: board.connections,
-      selectedId: null, popover: null, gen: null, drag: null, hintOpen: this.state.prefs.showHints,
+      selectedId: null, selectedConnId: null, popover: null, gen: null, drag: null, hintOpen: this.state.prefs.showHints,
     });
     this.clearGenTimers();
     requestAnimationFrame(() => this.fitView());
@@ -641,17 +827,27 @@ class Component extends DCLogic {
     const typing = t && /input|textarea/i.test(t.tagName);
     if (e.key === 'Escape') {
       if (this.state.search) return this.closeSearch();
+      if (this.state.renameDisc) return this.closeRename();
+      if (this.state.discMenu) return this.closeDiscMenu();
       if (this.state.newDisc) return this.closeNewDisc();
       if (this.state.flash) return this.closeFlash();
       if (this.state.material) return this.closeMaterial();
       if (this.state.reading) return this.closeReading();
       if (this.state.popover) return this.closePopover();
+      if (this.state.selectedConnId) return this.setState({ selectedConnId: null });
       if (this.state.selectedId) return this.setState({ selectedId: null });
       return;
     }
     if (typing) return;
-    if ((e.key === 'Backspace' || e.key === 'Delete') && this.state.selectedId && this.state.screen === 'canvas') {
-      e.preventDefault(); this.deleteNode(this.state.selectedId);
+    // canvas keyboard editing
+    if (this.state.screen === 'canvas') {
+      if ((e.key === 'z' || e.key === 'Z') && (e.metaKey || e.ctrlKey)) { e.preventDefault(); if (e.shiftKey) this.redo(); else this.undo(); return; }
+      if ((e.key === 'y' || e.key === 'Y') && (e.metaKey || e.ctrlKey)) { e.preventDefault(); this.redo(); return; }
+      if ((e.key === 'd' || e.key === 'D') && (e.metaKey || e.ctrlKey) && this.state.selectedId) { e.preventDefault(); this.duplicateNode(this.state.selectedId); return; }
+      if (e.key === 'Backspace' || e.key === 'Delete') {
+        if (this.state.selectedConnId) { e.preventDefault(); this.deleteConn(this.state.selectedConnId); return; }
+        if (this.state.selectedId) { e.preventDefault(); this.deleteNode(this.state.selectedId); return; }
+      }
     }
   };
 
@@ -671,8 +867,9 @@ class Component extends DCLogic {
     // spines
     const spines = S.disciplines.map(d => ({
       id: d.id, name: d.name, num: d.num, aulas: d.aulas + ' aulas', h: d.h,
-      active: d.id === S.activeDisc, normal: d.id !== S.activeDisc, ghost: false,
+      active: d.id === S.activeDisc, normal: d.id !== S.activeDisc, ghost: false, canMenu: true,
       onOpen: () => this.openDiscipline(d.id),
+      onMenu: (e) => { this.stop(e); this.openDiscMenu(d.id); },
     }));
     spines.push({ ghost: true, active: false, normal: false, h: 300, name: '', num: '', aulas: '', onOpen: this.openNewDisc });
 
@@ -690,13 +887,24 @@ class Component extends DCLogic {
     const footerStats = S.disciplines.length + ' disciplinas · ' + lessonCount + ' aulas · ' + nodeCount + ' nós';
 
     // canvas lines + nodes
+    let connDelete = null;
     const lines = S.connections.map(cn => {
       const A = byId[cn.from], B = byId[cn.to];
       if (!A || !B) return null;
       const ca = center(A), cb = center(B);
       const pa = this.edge(A, cb.x, cb.y), pb = this.edge(B, ca.x, ca.y);
-      const sel = S.selectedId && (cn.from === S.selectedId || cn.to === S.selectedId);
-      return { x1: pa.x, y1: pa.y, x2: pb.x, y2: pb.y, stroke: sel ? accent : 'rgba(33,30,26,0.5)' };
+      const isSel = S.selectedConnId === cn.id;
+      const touches = S.selectedId && (cn.from === S.selectedId || cn.to === S.selectedId);
+      const mx = (pa.x + pb.x) / 2, my = (pa.y + pb.y) / 2;
+      if (isSel) connDelete = { x: mx, y: my, onDel: (e) => { this.stop(e); this.deleteConn(cn.id); }, onStop: this.stop };
+      return {
+        id: cn.id, x1: pa.x, y1: pa.y, x2: pb.x, y2: pb.y, mx, my, isSel,
+        stroke: (isSel || touches) ? accent : 'rgba(33,30,26,0.5)',
+        width: isSel ? 2.4 : 1.25,
+        dotBg: isSel ? accent : 'rgba(255,253,248,0.92)',
+        onSelect: (e) => { this.stop(e); this.selectConn(cn.id); },
+        onStop: this.stop,
+      };
     }).filter(Boolean);
 
     let dragLine = null;
@@ -769,6 +977,21 @@ class Component extends DCLogic {
         if (top + 210 > r.top + r.height) top = Math.max(64, 54 + sy - 220);
         const neigh = S.connections.filter(c => c.from === n.id || c.to === n.id).map(c => byId[c.from === n.id ? c.to : c.from]).filter(Boolean);
         popover = { left, top, text: S.popover.text, chips: neigh.map(x => x.shortLabel), empty: neigh.length === 0 };
+      }
+    }
+
+    // selection action bar (Duplicar / Excluir) floating above the selected node
+    let selChrome = null;
+    if (S.screen === 'canvas' && S.selectedId && !S.popover && this.vp) {
+      const n = byId[S.selectedId];
+      const busy = S.gen && S.gen.nodeId === S.selectedId;
+      if (n && !n.locked && n.type !== 'title' && !busy) {
+        const r = this.vp.getBoundingClientRect();
+        const sx = S.pan.x + n.x * S.zoom, sy = S.pan.y + n.y * S.zoom;
+        let left = Math.max(12, Math.min(sx, r.width - 188));
+        let top = 54 + sy - 42;
+        if (top < 62) top = 54 + sy + n.h * S.zoom + 10;
+        selChrome = { left, top, onDup: (e) => { this.stop(e); this.duplicateNode(n.id); }, onDel: (e) => { this.stop(e); this.deleteNode(n.id); }, onStop: this.stop };
       }
     }
 
@@ -867,6 +1090,19 @@ class Component extends DCLogic {
       { short: 'Cormorant', full: 'Cormorant Garamond' }, { short: 'Plex Serif', full: 'IBM Plex Serif' },
     ].map((o, i) => ({ short: o.short, bg: curSerifName === o.full ? accent : 'transparent', fg: curSerifName === o.full ? '#FFFDF8' : 'rgba(33,30,26,0.7)', sep: i === 0 ? 'none' : '1px solid rgba(33,30,26,0.18)', onPick: () => this.setPref('serif', o.full) }));
 
+    // shelf: per-discipline menu + rename dialog
+    let discMenu = null;
+    if (S.discMenu) {
+      const d = this.disc(S.discMenu.id);
+      if (d) discMenu = { name: d.name, meta: (d.semester || '') + (d.aulas ? (' · ' + d.aulas + ' aulas') : '') };
+    }
+    const renameDisc = S.renameDisc ? { name: S.renameDisc.name || '' } : null;
+
+    // cloud / account status (for the Conta screen)
+    const cloudUnavailable = !S.cloud;
+    const cloudLoggedIn = !!(S.cloud && S.session);
+    const cloudNeedsAuth = !!(S.cloud && !S.session);
+
     // identity
     const ident = this.IDENT;
 
@@ -888,7 +1124,9 @@ class Component extends DCLogic {
       bgImage: grid ? 'radial-gradient(circle, rgba(40,32,24,0.16) 1px, transparent 1.4px)' : 'none',
       bgSize: Math.max(7, 28 * S.zoom),
       cursor: S.drag ? 'crosshair' : (S.panning ? 'grabbing' : 'grab'),
-      lines, dragLine, nodes,
+      lines, dragLine, nodes, connDelete, selChrome,
+      canUndo: this.histStack.length > 0, canRedo: this.redoStack.length > 0,
+      undo: this.undo, redo: this.redo,
       zoomPct: Math.round(S.zoom * 100) + '%',
       zoomIn: () => this.zoomBy(1.2), zoomOut: () => this.zoomBy(1 / 1.2), resetView: this.fitView,
       addNode: this.addNode, cornerAi: this.cornerAi,
@@ -925,6 +1163,24 @@ class Component extends DCLogic {
       hintsTrack: this.curHints() ? accent : 'transparent', hintsKnob: this.curHints() ? '22px' : '2px',
       toggleGrid: this.toggleGrid, toggleHints: this.toggleHints, resetAll: this.resetAll,
       deleteDiscipline: this.deleteDiscipline,
+      // shelf: discipline menu + rename
+      discMenu, closeDiscMenu: this.closeDiscMenu,
+      openDiscFromMenu: this.openDiscFromMenu, openRenameFromMenu: this.openRenameFromMenu, deleteFromMenu: this.deleteFromMenu,
+      renameDisc, closeRename: this.closeRename, setRenameName: this.setRenameName, onRenameKey: this.onRenameKey, setRenameInput: this.setRenameInput, commitRename: this.commitRename,
+      // cloud status (Conta)
+      cloudUnavailable, cloudLoggedIn, cloudNeedsAuth,
+      // auth / cloud
+      authOpen: !!S.authScreen,
+      authStageEmail: !!(S.authScreen && S.authScreen.stage === 'email'),
+      authStageCode: !!(S.authScreen && S.authScreen.stage === 'code'),
+      authEmail: S.authScreen ? (S.authScreen.email || '') : '',
+      authCode: S.authScreen ? (S.authScreen.code || '') : '',
+      authBtnLabel: (S.authScreen && S.authScreen.sending) ? 'Aguarde…' : ((S.authScreen && S.authScreen.stage === 'code') ? 'Entrar' : 'Enviar código'),
+      authSentTo: 'Enviamos um código para ' + (S.authScreen ? (S.authScreen.email || '') : ''),
+      setAuthEmail: this.setAuthEmail, setAuthCode: this.setAuthCode, onAuthKey: this.onAuthKey,
+      authSubmit: () => { const a = this.state.authScreen; if (a && a.stage === 'code') this.verifyCode(); else this.sendCode(); },
+      changeAuthEmail: this.changeAuthEmail,
+      cloudOn: !!S.cloud, loggedIn: !!S.session, userEmail: S.session ? S.session.email : '', logout: this.logout,
       // toast
       toast: S.toast,
     };

@@ -35,6 +35,9 @@ Só há **uma** coisa obrigatória para o app funcionar de verdade: a chave da A
 Opcionais:
 - **Seu nome/curso:** edite `IDENT` no topo de `app/logic.js` e rode `npm run build`.
 - **Modelo mais barato:** defina a variável `MODEL` (ex.: `claude-haiku-4-5`).
+- **Conta na nuvem (sincronizar entre dispositivos):** configure um projeto Supabase
+  dedicado — veja a seção *Nuvem* abaixo. Sem isso, o app funciona normalmente, só
+  salvando localmente.
 
 > ⚠️ Servir só os arquivos estáticos (ex.: `python -m http.server`) **não**
 > funciona para a geração — o `/api/generate` precisa do Node (`npm run dev`) ou
@@ -54,11 +57,30 @@ Opcionais:
 5. **Abrir leitura** → resolva, marque como resolvida, veja a resolução. O progresso é salvo.
 6. **Revisar** (flashcards) → vire o cartão, marque *Eu sei* / *Revisar de novo*.
    **↓ PDF** exporta o bloco para impressão/PDF.
-7. Tudo é salvo automaticamente (localStorage). Renomear/excluir disciplina e
-   excluir questões estão na própria tela; **Apagar tudo** está em *Conta*.
+7. Tudo é salvo automaticamente (localStorage; e na nuvem se você entrar — veja abaixo).
 
-> Os dados ficam **só neste navegador** (sem nuvem/login ainda — planejado para um
-> projeto Supabase dedicado, separado do seu sistema do laboratório).
+### Editar o quadro
+- **Mover/conectar:** arraste o nó; arraste a alça ● para criar uma conexão.
+- **Apagar conexão:** clique no ponto no meio da linha → aparece o ✕ → confirme.
+- **Duplicar / excluir nó:** selecione o nó → barra **⧉ duplicar · ✕ excluir**
+  (ou `⌘/Ctrl+D` para duplicar, `Delete` para excluir).
+- **Desfazer / refazer:** `⌘/Ctrl+Z` e `⌘/Ctrl+⇧Z` (também os botões ↶ ↷ no quadro).
+- **Gerenciar disciplinas pela estante:** botão **⋯** na lombada → *Abrir*, *Renomear*, *Excluir*.
+- **Buscar** (`⌘/Ctrl+K`): acha disciplinas, aulas, nós **e o conteúdo das notas**.
+
+### Nuvem (opcional — Supabase)
+Para salvar e sincronizar entre dispositivos com login por e-mail (sem senha):
+
+1. Crie um projeto em <https://supabase.com> (dedicado a este app, **não** o banco do laboratório).
+2. No **SQL Editor**, rode o arquivo `supabase/migrations/0001_sdn_state.sql` (cria a tabela
+   `sdn_state` com Row Level Security — cada usuário só lê/escreve a própria linha).
+3. Em **Authentication → Providers → Email**, deixe o login por e-mail ativo (OTP/código).
+4. Defina as variáveis no servidor (`.env.local` para `npm run dev`, ou na Vercel):
+   `SUPABASE_URL` e `SUPABASE_ANON_KEY` (a chave *anon/publishable* é pública por design).
+5. Pronto: em **Conta → Conta na nuvem**, entre com seu e-mail. Os dados locais migram
+   para a nuvem no primeiro login e passam a sincronizar automaticamente.
+
+Sem essas variáveis, a sincronização fica desativada e o app segue só com localStorage.
 
 ---
 
@@ -68,6 +90,8 @@ Opcionais:
 |---|---|
 | **`public/index.html`** | App pronto (gerado pelo build). Frontend estático: React 18 (CDN) + *dc-lite*. |
 | **`api/generate.js`** | Função serverless (Vercel/Node) que chama a Claude. **Guarda a chave.** |
+| `api/config.js` | Devolve ao navegador a config **pública** do Supabase (URL + anon key), se houver. |
+| `supabase/migrations/` | SQL da tabela `sdn_state` (estado na nuvem, com RLS por usuário). |
 | `app/template.html` | A view (DSL: `{{ }}`, `<sc-if>`, `<sc-for>`, `style-hover`, `ref`). |
 | `app/logic.js` | A lógica (`class Component extends DCLogic`) — estado, IA, persistência. |
 | `app/runtime.js` | *dc-lite* — renderizador aberto da DSL sobre React (sem dependência proprietária). |
@@ -75,7 +99,7 @@ Opcionais:
 | `build.py` | Monta o `index.html` a partir de `app/`. |
 | `dev-server.mjs` | Servidor local (estático + `/api/*`), igual à Vercel. `STUB=1` usa IA falsa. |
 | `design/` | Importação original do Claude Design (referência). |
-| `test/run.mjs` | Suíte headless (Chrome) — 35 verificações do fluxo real. |
+| `test/run.mjs` | Suíte headless (Chrome) — 70 verificações do fluxo real. |
 
 O `index.html` mantém **template e lógica como arquivos editáveis** e os renderiza
 com um runtime aberto de ~250 linhas (*dc-lite*) — **sem depender do `support.js`
@@ -87,7 +111,7 @@ gerado** pela ferramenta de design. É um app real e seu.
 
 ```bash
 python3 build.py          # regenera public/index.html a partir de app/  (ou: npm run build)
-cd test && npm install puppeteer-core && node run.mjs   # 35 verificações
+npm install puppeteer-core && node test/run.mjs         # 70 verificações
 ```
 
 Se você puxar uma versão nova de `design/Sandbox de Nós.dc.html` do Claude Design,

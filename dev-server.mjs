@@ -67,11 +67,13 @@ const server = createServer(async (req, res) => {
   const url = new URL(req.url, "http://localhost");
   const path = url.pathname;
 
-  if (path === "/api/generate") {
+  if (path.startsWith("/api/")) {
     const shim = shimRes(res);
+    const name = path.slice(5);
+    if (!/^[a-z0-9_-]+$/.test(name)) { res.writeHead(404); return res.end("404"); }
     try {
-      if (STUB) return await stubGenerate(req, shim);
-      const mod = await import("./api/generate.js");
+      if (STUB && name === "generate") return await stubGenerate(req, shim);
+      const mod = await import("./api/" + name + ".js");
       return await mod.default(req, shim);
     } catch (e) {
       return shim.status(500).json({ error: "dev-server: " + String(e && e.message || e) });
