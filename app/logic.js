@@ -725,14 +725,26 @@ class Component extends DCLogic {
   }
 
   // ---------- AI popover + generation ----------
-  openPopover(id) { this.setState({ selectedId: id, popover: { nodeId: id, text: '' } }); }
+  openPopover(id) { this.setState({ selectedId: id, popover: { nodeId: id, text: '', count: 5, level: 'médio' } }); }
   closePopover = () => this.setState({ popover: null });
   onPopInput = (e) => { const p = this.state.popover; if (p) this.setState({ popover: { ...p, text: e.target.value } }); };
+  setPopCount = (n) => { const p = this.state.popover; if (p) this.setState({ popover: { ...p, count: n } }); };
+  setPopLevel = (l) => { const p = this.state.popover; if (p) this.setState({ popover: { ...p, level: l } }); };
   onPopKey = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); this.submitGen(); }
     else if (e.key === 'Escape') this.closePopover();
   };
-  submitGen = () => { const p = this.state.popover; const id = p && p.nodeId; const text = p ? p.text : ''; this.closePopover(); if (id) this.startGen(id, text); };
+  // weave the chosen quantity/level into the prompt the backend receives
+  composePrompt(p) {
+    const bits = [];
+    if (p.count) bits.push('Gere ' + p.count + ' questões');
+    if (p.level) bits.push('de nível ' + p.level);
+    let head = bits.join(' ');
+    if (head) head += '.';
+    const t = (p.text || '').trim();
+    return (head + (t ? (' ' + t) : '')).trim();
+  }
+  submitGen = () => { const p = this.state.popover; const id = p && p.nodeId; this.closePopover(); if (id) this.startGen(id, this.composePrompt(p)); };
 
   // Collect text context from the nodes connected to `id` to ground the AI.
   gatherContext(id) {
@@ -1290,7 +1302,10 @@ class Component extends DCLogic {
         let top = 54 + sy + sh + 12;
         if (top + 210 > r.top + r.height) top = Math.max(64, 54 + sy - 220);
         const neigh = S.connections.filter(c => c.from === n.id || c.to === n.id).map(c => byId[c.from === n.id ? c.to : c.from]).filter(Boolean);
-        popover = { left, top, text: S.popover.text, chips: neigh.map(x => x.shortLabel), empty: neigh.length === 0 };
+        const pc = S.popover.count, pl = S.popover.level;
+        const countOpts = [3, 5, 8, 10].map(c => ({ n: c, sel: c === pc, bg: c === pc ? accent : 'transparent', fg: c === pc ? '#FFFDF8' : 'rgba(33,30,26,0.6)', onPick: () => this.setPopCount(c) }));
+        const levelOpts = [['fácil', 'Fácil'], ['médio', 'Médio'], ['difícil', 'Difícil']].map(([k, lbl]) => ({ label: lbl, sel: k === pl, bg: k === pl ? accent : 'transparent', fg: k === pl ? '#FFFDF8' : 'rgba(33,30,26,0.6)', onPick: () => this.setPopLevel(k) }));
+        popover = { left, top, text: S.popover.text, chips: neigh.map(x => x.shortLabel), empty: neigh.length === 0, countOpts, levelOpts };
       }
     }
 

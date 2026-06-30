@@ -52,7 +52,7 @@ Opcionais:
    (`↥ PDF`) — dá pra **abrir e ler o PDF** dentro do site (visualizador nativo) e o texto
    é extraído para a IA. Arraste a alça ● para **conectar** o material a um nó.
 3. **Toque duplo** no papel cria um nó de geração. Selecione → **Invocar IA** →
-   escreva o pedido (ex.: *"5 questões de derivadas, nível intermediário"*) → ↵.
+   escolha **quantidade** e **nível** e escreva o pedido (ex.: *"foco em derivadas"*) → ↵.
 4. O navegador chama `/api/generate`, que chama a Claude com **saída estruturada**
    (JSON garantido), enviando o material conectado como contexto. O nó "digita" o resultado.
 5. **Abrir leitura** → escreva sua resolução (é salva), marque como resolvida, veja a resolução e a margem. Tudo persiste.

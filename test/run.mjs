@@ -136,14 +136,18 @@ try {
   await page.waitForFunction(() => !!document.querySelector('textarea[placeholder*="bloco de questões"]'), { timeout: 5000 });
   await page.focus('textarea[placeholder*="bloco de questões"]');
   await page.keyboard.type('logica de teste');
+  // choose quantity 8 and level Difícil
+  await page.evaluate(() => { const b = [...document.querySelectorAll('#app button')].find((x) => x.textContent.trim() === '8'); if (b) b.click(); });
+  await page.evaluate(() => { const b = [...document.querySelectorAll('#app button')].find((x) => x.textContent.trim() === 'Difícil'); if (b) b.click(); });
+  await sleep(150);
   lastGenBody = null;
-  await page.keyboard.press('Enter');
+  await page.evaluate(() => { const b = [...document.querySelectorAll('#app button')].find((x) => x.textContent.trim() === 'Gerar'); if (b) b.click(); });
   await page.waitForFunction(() => /Bloco de Teste/.test(document.body.innerText), { timeout: 10000 });
   await sleep(2500);
   await page.screenshot({ path: `${SHOT}/r03-generated.png` });
   t = await txt();
   ok('gen: node filled "Bloco de Teste"', inc(t, 'Bloco de Teste'));
-  ok('gen: prompt reached the API (echoed in Q1)', inc(t, 'Questão de teste 1 — logica de teste'));
+  ok('gen: prompt carries text + chosen params', !!lastGenBody && /logica de teste/.test(lastGenBody.prompt || '') && /8 quest/.test(lastGenBody.prompt || '') && /dif/i.test(lastGenBody.prompt || ''), lastGenBody ? lastGenBody.prompt : '(none)');
   ok('gen: connected note sent as context', !!lastGenBody && JSON.stringify(lastGenBody.context || []).includes('DEFINICAO_MATERIAL_XYZ'), lastGenBody ? JSON.stringify(lastGenBody.context).slice(0, 90) : 'no body');
 
   // ---- reading modal ----

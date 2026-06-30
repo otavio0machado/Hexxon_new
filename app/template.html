@@ -913,6 +913,22 @@
           <span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:rgba(33,30,26,0.45);font-style:italic;">nenhum nó conectado — conecte aulas para dar contexto</span>
         </sc-if>
       </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:11px;">
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:rgba(33,30,26,0.45);">Quantidade</span>
+        <div style="display:flex;border:1px solid rgba(33,30,26,0.2);border-radius:2px;overflow:hidden;">
+          <sc-for list="{{ popover.countOpts }}" as="c" hint-placeholder-count="4">
+            <button onPointerDown="{{ stop }}" onClick="{{ c.onPick }}" style="font-family:'IBM Plex Mono',monospace;font-size:11px;padding:5px 10px;cursor:pointer;border:none;background:{{ c.bg }};color:{{ c.fg }};">{{ c.n }}</button>
+          </sc-for>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;">
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:rgba(33,30,26,0.45);">Nível</span>
+        <div style="display:flex;border:1px solid rgba(33,30,26,0.2);border-radius:2px;overflow:hidden;">
+          <sc-for list="{{ popover.levelOpts }}" as="l" hint-placeholder-count="3">
+            <button onPointerDown="{{ stop }}" onClick="{{ l.onPick }}" style="font-family:'IBM Plex Mono',monospace;font-size:10px;padding:5px 10px;cursor:pointer;border:none;background:{{ l.bg }};color:{{ l.fg }};">{{ l.label }}</button>
+          </sc-for>
+        </div>
+      </div>
       <textarea ref="{{ setAiInput }}" value="{{ popover.text }}" onInput="{{ onPopInput }}" onKeyDown="{{ onPopKey }}" placeholder="ex.: faça um bloco de questões das aulas 1 e 2" style="width:100%;height:62px;resize:none;font-family:'IBM Plex Mono',monospace;font-size:12px;line-height:1.5;color:#211E1A;background:#FCFAF4;border:1px solid rgba(33,30,26,0.22);border-radius:2px;padding:10px;outline:none;" style-focus="border-color:var(--ox);"></textarea>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;">
         <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.08em;color:rgba(33,30,26,0.4);text-transform:uppercase;">↵ gerar · esc fecha</span>
