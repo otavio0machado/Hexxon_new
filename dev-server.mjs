@@ -45,6 +45,19 @@ function shimRes(nodeRes) {
   };
 }
 
+async function stubOutline(req, res) {
+  const chunks = [];
+  for await (const c of req) chunks.push(c);
+  let body = {};
+  try { body = JSON.parse(Buffer.concat(chunks).toString("utf8") || "{}"); } catch {}
+  await new Promise((r) => setTimeout(r, 300));
+  res.status(200).json({
+    title: body.discipline || "",
+    lessons: ["Introdução e notação", "Tabelas-verdade", "Equivalências lógicas", "Métodos de prova"],
+    model: "stub",
+  });
+}
+
 async function stubGenerate(req, res) {
   const chunks = [];
   for await (const c of req) chunks.push(c);
@@ -73,6 +86,7 @@ const server = createServer(async (req, res) => {
     if (!/^[a-z0-9_-]+$/.test(name)) { res.writeHead(404); return res.end("404"); }
     try {
       if (STUB && name === "generate") return await stubGenerate(req, shim);
+      if (STUB && name === "outline") return await stubOutline(req, shim);
       const mod = await import("./api/" + name + ".js");
       return await mod.default(req, shim);
     } catch (e) {

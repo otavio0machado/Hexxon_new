@@ -1,6 +1,6 @@
 import puppeteer from 'puppeteer-core';
 import { spawn, execSync } from 'node:child_process';
-import { mkdirSync } from 'node:fs';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
@@ -312,6 +312,71 @@ try {
   await sleep(300);
   const cleared = await page.evaluate(() => localStorage.getItem('sandbox-de-nos:v1'));
   ok('reset: localStorage cleared', cleared === null);
+
+  // ============ Batch 2: syllabus pre-canvas · image · note editor · resize ============
+  await page.waitForFunction(() => /Suas disciplinas/.test(document.body.innerText), { timeout: 5000 });
+
+  // ---- create a discipline FROM a syllabus → AI pre-canvas (stub /api/outline) ----
+  ok('action: open "Nova disciplina"', await clickByText('Nova disciplina'));
+  await page.waitForFunction(() => !!document.querySelector('input[placeholder*="Estruturas"]'), { timeout: 5000 });
+  await page.type('input[placeholder*="Estruturas"]', 'Lógica II');
+  await page.type('textarea[placeholder*="cronograma"]', 'Unidade 1: introducao. Unidade 2: tabelas-verdade. Unidade 3: equivalencias.');
+  await sleep(150);
+  ok('action: "Criar com IA"', await clickByText('Criar com IA'));
+  await page.waitForFunction(() => /Tabelas-verdade/.test(document.body.innerText) && /\d+%/.test(document.body.innerText), { timeout: 10000 });
+  await sleep(500);
+  let t2 = await txt();
+  ok('syllabus: pre-canvas has lesson nodes', inc(t2, 'Tabelas-verdade') && inc(t2, 'Aula 02'));
+  const discName = await page.$eval('input[title="renomear disciplina"]', (e) => e.value);
+  ok('syllabus: discipline name is exactly the typed name', discName === 'Lógica II', `name=${JSON.stringify(discName)}`);
+  await page.screenshot({ path: `${SHOT}/r09-precanvas.png` });
+
+  // ---- image node from upload (downscaled to a data URL) ----
+  const pngPath = `${SHOT}/tiny.png`;
+  writeFileSync(pngPath, Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64'));
+  const imgInput = await page.$('input[accept="image/*"]');
+  await imgInput.uploadFile(pngPath);
+  await page.waitForFunction(() => !!document.querySelector('#app img[src^="data:"]'), { timeout: 6000 });
+  ok('image: node created from upload', !!(await page.$('#app img[src^="data:"]')));
+
+  // ---- Notion-style note editor: write markdown, preview it ----
+  ok('action: "+ Nota"', await clickByText('+ Nota'));
+  await page.waitForFunction(() => !!document.querySelector('textarea[placeholder*="anotações"]'), { timeout: 5000 });
+  ok('action: open note editor', await clickByText('editar'));
+  await page.waitForFunction(() => !!document.querySelector('textarea[placeholder*="Escreva aqui"]'), { timeout: 5000 });
+  await page.type('textarea[placeholder*="Escreva aqui"]', '# Titulo da nota\n- primeiro item\ntexto com **negrito** aqui');
+  await sleep(200);
+  ok('note editor: toggle "Pré-visualizar"', await clickByText('Pré-visualizar'));
+  await sleep(300);
+  const pv = await txt();
+  ok('note editor: preview renders markdown', inc(pv, 'Titulo da nota') && inc(pv, 'primeiro item') && inc(pv, 'negrito'));
+  await page.screenshot({ path: `${SHOT}/r10-note-editor.png` });
+  await page.keyboard.press('Escape');
+  await sleep(200);
+
+  // ---- resize a node by dragging its handle ----
+  const noteWidth = () => page.evaluate(() => {
+    const wraps = [...document.querySelectorAll('#app div')].filter((d) => d.style && d.style.cursor === 'grab' && d.style.pointerEvents === 'auto');
+    const w = wraps.find((x) => x.querySelector('textarea[placeholder*="anotações"]'));
+    return w ? Math.round(w.getBoundingClientRect().width) : 0;
+  });
+  const wBefore = await noteWidth();
+  const resized = await page.evaluate(() => {
+    const wraps = [...document.querySelectorAll('#app div')].filter((d) => d.style && d.style.cursor === 'grab' && d.style.pointerEvents === 'auto');
+    const noteW = wraps.find((x) => x.querySelector('textarea[placeholder*="anotações"]'));
+    if (!noteW) return false;
+    const h = noteW.querySelector('div[title="Redimensionar"]');
+    if (!h) return false;
+    const r = h.getBoundingClientRect(); const cx = r.x + r.width / 2, cy = r.y + r.height / 2;
+    const fire = (t, x, y) => window.dispatchEvent(new PointerEvent(t, { bubbles: true, cancelable: true, clientX: x, clientY: y, button: 0, pointerId: 1 }));
+    h.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true, clientX: cx, clientY: cy, button: 0, pointerId: 1 }));
+    fire('pointermove', cx + 90, cy + 60); fire('pointermove', cx + 150, cy + 90); fire('pointerup', cx + 150, cy + 90);
+    return true;
+  });
+  ok('action: resize gesture dispatched', resized);
+  await sleep(250);
+  const wAfter = await noteWidth();
+  ok('resize: node grew wider', wAfter > wBefore + 25, `before=${wBefore} after=${wAfter}`);
 
 } catch (e) {
   results.push(['FAIL', 'EXCEPTION', String((e && e.stack) || e)]);

@@ -64,9 +64,19 @@ Opcionais:
 - **Apagar conexão:** clique no ponto no meio da linha → aparece o ✕ → confirme.
 - **Duplicar / excluir nó:** selecione o nó → barra **⧉ duplicar · ✕ excluir**
   (ou `⌘/Ctrl+D` para duplicar, `Delete` para excluir).
+- **Redimensionar:** arraste a alça no canto inferior-direito do nó (notas, imagens e blocos).
+- **Imagens:** **+ Imagem** (ou **cole com ⌘V**) cria um nó de imagem (reduzida p/ caber no
+  armazenamento). Dá pra pôr legenda e redimensionar.
+- **Notas estilo Notion:** **⤢ editar** abre o editor em tela cheia com formatação
+  (`# título`, `## subtítulo`, `- lista`, `**negrito**`) e alternância **Editar / Pré-visualizar**.
 - **Desfazer / refazer:** `⌘/Ctrl+Z` e `⌘/Ctrl+⇧Z` (também os botões ↶ ↷ no quadro).
 - **Gerenciar disciplinas pela estante:** botão **⋯** na lombada → *Abrir*, *Renomear*, *Excluir*.
 - **Buscar** (`⌘/Ctrl+K`): acha disciplinas, aulas, nós **e o conteúdo das notas**.
+
+### Criar disciplina a partir do cronograma
+No modal **Nova disciplina** você pode colar o cronograma/ementa (ou puxar de um **PDF**)
+e deixar **Gerar matérias com IA** ligado: a IA (`/api/outline`) extrai os tópicos e o app
+monta um **pré-canvas** já com o nó-título da disciplina + um nó por matéria, conectados.
 
 ### Nuvem (opcional — Supabase)
 Para salvar e sincronizar entre dispositivos com login por e-mail (sem senha):
@@ -90,6 +100,7 @@ Sem essas variáveis, a sincronização fica desativada e o app segue só com lo
 |---|---|
 | **`public/index.html`** | App pronto (gerado pelo build). Frontend estático: React 18 (CDN) + *dc-lite*. |
 | **`api/generate.js`** | Função serverless (Vercel/Node) que chama a Claude. **Guarda a chave.** |
+| `api/outline.js` | Serverless: transforma o cronograma/ementa em lista de matérias (pré-canvas). |
 | `api/config.js` | Devolve ao navegador a config **pública** do Supabase (URL + anon key), se houver. |
 | `supabase/migrations/` | SQL da tabela `sdn_state` (estado na nuvem, com RLS por usuário). |
 | `app/template.html` | A view (DSL: `{{ }}`, `<sc-if>`, `<sc-for>`, `style-hover`, `ref`). |
@@ -99,7 +110,7 @@ Sem essas variáveis, a sincronização fica desativada e o app segue só com lo
 | `build.py` | Monta o `index.html` a partir de `app/`. |
 | `dev-server.mjs` | Servidor local (estático + `/api/*`), igual à Vercel. `STUB=1` usa IA falsa. |
 | `design/` | Importação original do Claude Design (referência). |
-| `test/run.mjs` | Suíte headless (Chrome) — 70 verificações do fluxo real. |
+| `test/run.mjs` | Suíte headless (Chrome) — 81 verificações do fluxo real. |
 
 O `index.html` mantém **template e lógica como arquivos editáveis** e os renderiza
 com um runtime aberto de ~250 linhas (*dc-lite*) — **sem depender do `support.js`
@@ -111,7 +122,7 @@ gerado** pela ferramenta de design. É um app real e seu.
 
 ```bash
 python3 build.py          # regenera public/index.html a partir de app/  (ou: npm run build)
-npm install puppeteer-core && node test/run.mjs         # 70 verificações
+npm install puppeteer-core && node test/run.mjs         # 81 verificações
 ```
 
 Se você puxar uma versão nova de `design/Sandbox de Nós.dc.html` do Claude Design,

@@ -31,7 +31,7 @@ class Component extends DCLogic {
     selectedId: null, selectedConnId: null, drag: null, gen: null, popover: null,
     hintOpen: true,
     reading: null, material: null, search: null, newDisc: null, toast: null, flash: null,
-    discMenu: null, renameDisc: null,
+    discMenu: null, renameDisc: null, noteEdit: null,
     cloud: false, session: null, authScreen: null,
     disciplines: this.DISCIPLINES.slice(),
     boards: {},
@@ -61,6 +61,7 @@ class Component extends DCLogic {
     window.addEventListener('pointerup', this.onUp);
     window.addEventListener('keydown', this.onKey);
     window.addEventListener('resize', this.onResize);
+    window.addEventListener('paste', this.onPaste);
     this.initCloud();
   }
   componentWillUnmount() {
@@ -68,6 +69,7 @@ class Component extends DCLogic {
     window.removeEventListener('pointerup', this.onUp);
     window.removeEventListener('keydown', this.onKey);
     window.removeEventListener('resize', this.onResize);
+    window.removeEventListener('paste', this.onPaste);
     this.clearGenTimers();
     clearTimeout(this.tt);
     clearTimeout(this._pt);
@@ -217,9 +219,21 @@ class Component extends DCLogic {
       setTimeout(() => this.fitView(), 70);
     }
   };
-  setAiInput = (el) => { this.aiInput = el; if (el) setTimeout(() => { try { el.focus(); } catch (e) {} }, 20); };
-  setSearchInput = (el) => { if (el) setTimeout(() => { try { el.focus(); } catch (e) {} }, 20); };
-  setNewName = (el) => { this.newNameEl = el; if (el) setTimeout(() => { try { el.focus(); } catch (e) {} }, 20); };
+  // focus a field shortly after mount, but never steal focus the user already
+  // moved to another text field (avoids races with fast typing across fields)
+  autoFocus(el, select) {
+    if (!el) return;
+    setTimeout(() => {
+      try {
+        const a = document.activeElement;
+        if (a && a !== el && /input|textarea/i.test(a.tagName)) return; // user is typing elsewhere
+        el.focus(); if (select && el.select) el.select();
+      } catch (e) {}
+    }, 25);
+  }
+  setAiInput = (el) => { this.aiInput = el; this.autoFocus(el); };
+  setSearchInput = (el) => { this.autoFocus(el); };
+  setNewName = (el) => { this.newNameEl = el; this.autoFocus(el); };
   setNewSem = (el) => { this.newSemEl = el; };
   stop = (e) => { e.stopPropagation(); };
   onResize = () => this.forceUpdate();
@@ -348,6 +362,14 @@ class Component extends DCLogic {
     this.g = { type: 'conn', fromId: id, moved: false };
     this.setState({ drag: { fromId: id, cur: w, overId: null } });
   };
+  MIN_W = { note: 200, image: 130, generated: 220 };
+  MIN_H = { note: 150, image: 110, generated: 130 };
+  resizeDown = (e, id) => {
+    e.stopPropagation();
+    this.selectNode(id);
+    const n = this.byId()[id];
+    this.g = { type: 'resize', id, sx: e.clientX, sy: e.clientY, ow: n.w, oh: n.h || 156, moved: false };
+  };
   onMove = (e) => {
     const g = this.g;
     if (!g) return;
@@ -360,6 +382,14 @@ class Component extends DCLogic {
       const dx = (e.clientX - g.sx) / z, dy = (e.clientY - g.sy) / z;
       if (Math.abs(e.clientX - g.sx) + Math.abs(e.clientY - g.sy) > 3 && !g.moved) { g.moved = true; this.pushHist(); }
       this.setState({ nodes: this.state.nodes.map(n => n.id === g.id ? { ...n, x: g.ox + dx, y: g.oy + dy } : n) });
+    } else if (g.type === 'resize') {
+      const z = this.state.zoom;
+      const dx = (e.clientX - g.sx) / z, dy = (e.clientY - g.sy) / z;
+      if (Math.abs(e.clientX - g.sx) + Math.abs(e.clientY - g.sy) > 3 && !g.moved) { g.moved = true; this.pushHist(); }
+      const n0 = this.byId()[g.id]; const t = n0 ? n0.type : 'note';
+      const minW = this.MIN_W[t] || 160, minH = this.MIN_H[t] || 100;
+      const w = Math.round(Math.max(minW, g.ow + dx)), h = Math.round(Math.max(minH, g.oh + dy));
+      this.setState({ nodes: this.state.nodes.map(n => n.id === g.id ? { ...n, w, h } : n) });
     } else if (g.type === 'conn') {
       const w = this.screenToWorld(e.clientX, e.clientY);
       const over = this.nodeAt(w.x, w.y, g.fromId);
@@ -417,6 +447,35 @@ class Component extends DCLogic {
   }
   setNoteContent(id, val) { this.setState({ nodes: this.state.nodes.map(n => n.id === id ? { ...n, content: val } : n) }); }
   setNoteTitle(id, val) { this.setState({ nodes: this.state.nodes.map(n => n.id === id ? { ...n, title: val, shortLabel: (val || 'Nota').slice(0, 18) } : n) }); }
+
+  // ---------- Notion-style note editor (full-screen) ----------
+  openNoteEditor = (id) => { const n = this.byId()[id]; if (!n || n.type !== 'note') return; this.setState({ noteEdit: { id, mode: 'edit' }, selectedId: id }); };
+  closeNoteEditor = () => this.setState({ noteEdit: null });
+  toggleNotePreview = () => { const e = this.state.noteEdit; if (e) this.setState({ noteEdit: { ...e, mode: e.mode === 'preview' ? 'edit' : 'preview' } }); };
+  setNoteBodyRef = (el) => { this.autoFocus(el); };
+  // tiny markdown: # / ## headings, - bullets, **bold** inline
+  mdInline(text) {
+    text = text || '';
+    if (text.indexOf('**') < 0) return text; // plain string (no key warnings)
+    const R = window.React; const out = []; const re = /\*\*([^*]+)\*\*/g; let m, last = 0, k = 0;
+    while ((m = re.exec(text))) {
+      if (m.index > last) out.push(R.createElement('span', { key: 't' + (k++) }, text.slice(last, m.index)));
+      out.push(R.createElement('strong', { key: 'b' + (k++) }, m[1])); last = m.index + m[0].length;
+    }
+    if (last < text.length) out.push(R.createElement('span', { key: 't' + (k++) }, text.slice(last)));
+    return out;
+  }
+  mdBlocks(text) {
+    return (text || '').split('\n').map((raw, idx) => {
+      const t = raw.replace(/\s+$/, '');
+      let kind = 'p', body = t;
+      if (/^#\s+/.test(t)) { kind = 'h1'; body = t.replace(/^#\s+/, ''); }
+      else if (/^##\s+/.test(t)) { kind = 'h2'; body = t.replace(/^##\s+/, ''); }
+      else if (/^[-*]\s+/.test(t)) { kind = 'li'; body = t.replace(/^[-*]\s+/, ''); }
+      else if (t.trim() === '') kind = 'sp';
+      return { key: idx, kind, content: this.mdInline(body), isH1: kind === 'h1', isH2: kind === 'h2', isLi: kind === 'li', isP: kind === 'p', isSp: kind === 'sp' };
+    });
+  }
   loadPdfJs() {
     if (window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
     if (this._pdfP) return this._pdfP;
@@ -455,6 +514,72 @@ class Component extends DCLogic {
       this.toast('PDF importado como nota — conecte a um nó');
     } catch (err) { this.toast('Falha ao ler o PDF'); }
   };
+
+  // ---------- image nodes (your own diagrams / prints) ----------
+  pickImage = () => { if (this.imgInput) this.imgInput.click(); };
+  setImgInput = (el) => { this.imgInput = el; };
+  // downscale to keep localStorage small: max 1280px on the long edge, JPEG q≈0.82
+  downscaleImage(file) {
+    return new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => {
+        try {
+          const MAX = 1280;
+          let { width: w, height: h } = img;
+          const scale = Math.min(1, MAX / Math.max(w, h));
+          w = Math.round(w * scale); h = Math.round(h * scale);
+          const c = document.createElement('canvas'); c.width = w; c.height = h;
+          c.getContext('2d').drawImage(img, 0, 0, w, h);
+          const transparent = /png|gif|webp/i.test(file.type);
+          const out = transparent ? c.toDataURL('image/png') : c.toDataURL('image/jpeg', 0.82);
+          URL.revokeObjectURL(url);
+          resolve({ src: out, w, h });
+        } catch (e) { URL.revokeObjectURL(url); reject(e); }
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('img')); };
+      img.src = url;
+    });
+  }
+  async addImageFromFile(file, caption) {
+    if (!file || !/^image\//.test(file.type)) { this.toast('Selecione um arquivo de imagem'); return; }
+    if (this.state.screen !== 'canvas' || !this.vp) { this.toast('Abra um quadro para adicionar a imagem'); return; }
+    this.toast('Processando imagem…');
+    let data;
+    try { data = await this.downscaleImage(file); } catch (e) { this.toast('Falha ao ler a imagem'); return; }
+    if (data.src.length > 2400000) this.toast('Imagem grande — pode pesar no armazenamento');
+    this.createImage(data.src, data.w, data.h, caption || (file.name || '').replace(/\.[a-z]+$/i, ''));
+  }
+  onImgPick = async (e) => {
+    const file = e.target && e.target.files && e.target.files[0];
+    if (e.target) e.target.value = '';
+    await this.addImageFromFile(file);
+  };
+  onPaste = (e) => {
+    if (this.state.screen !== 'canvas') return;
+    const t = e.target; if (t && /input|textarea/i.test(t.tagName)) return; // let inputs paste text
+    const items = (e.clipboardData && e.clipboardData.items) || [];
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type && items[i].type.indexOf('image') === 0) {
+        const file = items[i].getAsFile();
+        if (file) { e.preventDefault(); this.addImageFromFile(file, 'Colado'); return; }
+      }
+    }
+  };
+  createImage(src, iw, ih, caption) {
+    const r = this.vp.getBoundingClientRect();
+    const j = (this.nidc % 4) * 24;
+    const wld = this.screenToWorld(r.left + r.width * 0.42 + j, r.top + r.height * 0.40 + j);
+    const w = 300, h = Math.round(Math.max(140, Math.min(360, w * (ih / Math.max(1, iw)) + 38)));
+    this.pushHist();
+    const id = 'n' + (++this.nidc);
+    const node = { id, type: 'image', x: wld.x - w / 2, y: wld.y - h / 2, w, h, src, caption: caption || '', shortLabel: (caption || 'Imagem').slice(0, 18) };
+    this.setState({ nodes: [...this.state.nodes, node], selectedId: id, selectedConnId: null });
+    this.toast('Imagem adicionada');
+    return id;
+  }
+  setImageCaption(id, val) { this.setState({ nodes: this.state.nodes.map(n => n.id === id ? { ...n, caption: val, shortLabel: (val || 'Imagem').slice(0, 18) } : n) }); }
+
   deleteNode(id) {
     const n = this.byId()[id];
     if (!n || n.locked) return;
@@ -502,7 +627,7 @@ class Component extends DCLogic {
   closeRename = () => this.setState({ renameDisc: null });
   setRenameName = (e) => { const r = this.state.renameDisc; if (r) this.setState({ renameDisc: { ...r, name: e.target.value } }); };
   onRenameKey = (e) => { if (e.key === 'Enter') { e.preventDefault(); this.commitRename(); } else if (e.key === 'Escape') this.closeRename(); };
-  setRenameInput = (el) => { if (el) setTimeout(() => { try { el.focus(); el.select(); } catch (e) {} }, 20); };
+  setRenameInput = (el) => { this.autoFocus(el, true); };
   commitRename = () => {
     const r = this.state.renameDisc; if (!r) return;
     const name = (r.name || '').trim() || 'Sem título';
@@ -545,6 +670,7 @@ class Component extends DCLogic {
     const out = [];
     neigh.forEach(n => {
       if (n.type === 'note' && (n.content || '').trim()) out.push('Material' + (n.title ? ' [' + n.title + ']' : '') + ':\n' + n.content.trim().slice(0, 12000));
+      else if (n.type === 'image' && (n.caption || '').trim()) out.push('Imagem [' + n.caption.trim() + ']');
       else if (n.type === 'lesson') out.push((n.kicker ? n.kicker + ': ' : '') + (n.titleText || ''));
       else if (n.type === 'title') out.push('Disciplina: ' + (n.titleBig || ''));
       else if (n.type === 'generated' && n.filled && n.questions) out.push('Questões já geradas: ' + n.questions.map(q => q.text).join(' | '));
@@ -744,17 +870,47 @@ class Component extends DCLogic {
     return this.searchItems().filter(it => this.norm(it.title).includes(nq) || this.norm(it.context).includes(nq) || this.norm(it.body || '').includes(nq)).slice(0, 8);
   }
 
-  // ---------- new discipline ----------
-  openNewDisc = () => this.setState({ newDisc: {} });
-  closeNewDisc = () => this.setState({ newDisc: null });
+  // ---------- new discipline (optionally from a syllabus → AI pre-canvas) ----------
+  openNewDisc = () => this.setState({ newDisc: { syllabus: '', useAI: true, busy: false } });
+  closeNewDisc = () => { const nd = this.state.newDisc; if (nd && nd.busy) return; this.setState({ newDisc: null }); };
   onNewKey = (e) => { if (e.key === 'Enter') { e.preventDefault(); this.createDisc(); } else if (e.key === 'Escape') this.closeNewDisc(); };
-  createDisc = () => {
+  setSyllabus = (e) => { const nd = this.state.newDisc; if (nd) this.setState({ newDisc: { ...nd, syllabus: e.target.value } }); };
+  toggleUseAI = () => { const nd = this.state.newDisc; if (nd) this.setState({ newDisc: { ...nd, useAI: !nd.useAI } }); };
+  setSylInput = (el) => { this.sylInput = el; };
+  pickSyllabusPdf = () => { if (this.sylInput) this.sylInput.click(); };
+  onSyllabusPdf = async (e) => {
+    const file = e.target && e.target.files && e.target.files[0];
+    if (e.target) e.target.value = '';
+    if (!file) return;
+    this.toast('Lendo cronograma…');
+    try { const text = await this.extractPdf(file); const nd = this.state.newDisc; if (nd) this.setState({ newDisc: { ...nd, syllabus: (text || '').slice(0, 16000) } }); this.toast('Cronograma carregado — confira e crie'); }
+    catch (err) { this.toast('Falha ao ler o PDF'); }
+  };
+  async fetchOutline(name, syllabus) {
+    const res = await fetch('/api/outline', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ discipline: name, syllabus }) });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || ('erro ' + res.status));
+    return data;
+  }
+  createDisc = async () => {
+    const nd = this.state.newDisc || {};
+    if (nd.busy) return;
     const name = (this.newNameEl && this.newNameEl.value.trim()) || 'Nova disciplina';
     const sem = (this.newSemEl && this.newSemEl.value.trim()) || this.IDENT.term;
+    const syllabus = (nd.syllabus || '').trim();
+    let lessons = [];
+    if (syllabus && nd.useAI !== false) {
+      this.setState({ newDisc: { ...nd, busy: true } });
+      try { const out = await this.fetchOutline(name, syllabus); lessons = (out.lessons || []).map(s => String(s).trim()).filter(Boolean).slice(0, 16); }
+      catch (e) { this.toast('IA: não consegui ler o cronograma — criei o quadro vazio'); }
+      if (!this.state.newDisc) return; // closed meanwhile
+    }
     const id = 'd' + (++this.dynNum) + '-' + (this.nidc + this.cid);
     const roman = ['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'];
-    const d = { id, name, num: roman[this.state.disciplines.length] || String(this.state.disciplines.length + 1), semester: sem, aulas: 0, h: 350 + (this.state.disciplines.length % 3) * 24, lessons: [] };
-    const board = { nodes: [{ id: 't', type: 'title', x: -180, y: -86, w: 360, h: 172, locked: true, shortLabel: name, titleBig: name, titleMeta: sem + ' · quadro novo', kickerLabel: 'Disciplina' }], connections: [] };
+    const d = { id, name, num: roman[this.state.disciplines.length] || String(this.state.disciplines.length + 1), semester: sem, aulas: lessons.length, h: 350 + (this.state.disciplines.length % 3) * 24, lessons };
+    const board = lessons.length
+      ? this.starterBoard(d)
+      : { nodes: [{ id: 't', type: 'title', x: -180, y: -86, w: 360, h: 172, locked: true, shortLabel: name, titleBig: name, titleMeta: sem + ' · quadro novo', kickerLabel: 'Disciplina' }], connections: [] };
     const boards = { ...this.state.boards, [id]: board };
     this.resetHist();
     this.setState({
@@ -764,7 +920,7 @@ class Component extends DCLogic {
     });
     this.clearGenTimers();
     requestAnimationFrame(() => this.fitView());
-    setTimeout(() => { this.fitView(); this.toast('Quadro criado — toque duplo no papel para criar um nó'); }, 80);
+    setTimeout(() => { this.fitView(); this.toast(lessons.length ? ('Pré-canvas gerado · ' + lessons.length + ' matérias') : 'Quadro criado — toque duplo no papel para criar um nó'); }, 80);
   };
 
   // ---------- prefs ----------
@@ -827,6 +983,7 @@ class Component extends DCLogic {
     const typing = t && /input|textarea/i.test(t.tagName);
     if (e.key === 'Escape') {
       if (this.state.search) return this.closeSearch();
+      if (this.state.noteEdit) return this.closeNoteEditor();
       if (this.state.renameDisc) return this.closeRename();
       if (this.state.discMenu) return this.closeDiscMenu();
       if (this.state.newDisc) return this.closeNewDisc();
@@ -881,7 +1038,7 @@ class Component extends DCLogic {
       (allBoards[k].nodes || []).forEach(n => {
         if (n.type === 'lesson') { lessonCount++; nodeCount++; }
         else if (n.type === 'generated') { nodeCount++; if (n.filled) genCount++; }
-        else if (n.type === 'note') { nodeCount++; }
+        else if (n.type === 'note' || n.type === 'image') { nodeCount++; }
       });
     });
     const footerStats = S.disciplines.length + ' disciplinas · ' + lessonCount + ' aulas · ' + nodeCount + ' nós';
@@ -926,16 +1083,23 @@ class Component extends DCLogic {
       const filled = !!n.filled;
       const isGen = n.type === 'generated';
       const qs = n.questions || [];
+      const isNote = n.type === 'note', isImage = n.type === 'image';
+      const resizable = isNote || isImage || isGen;
       const v = {
-        id: n.id, x: n.x, y: n.y, w: n.w,
+        id: n.id, x: n.x, y: n.y, w: n.w, h: n.h || 0,
         isTitle: n.type === 'title', isLesson: n.type === 'lesson',
         kicker: n.kicker, titleText: n.titleText, material: n.material,
         kickerLabel: n.kickerLabel, titleBig: n.titleBig, titleMeta: n.titleMeta,
         blockTitle: n.blockTitle || 'Bloco de Questões',
-        isNote: n.type === 'note',
+        isNote,
         noteTitle: n.title || 'Nota',
         noteContent: n.content || '',
         noteSource: n.source === 'pdf' ? 'PDF · material' : 'Nota · material',
+        noteAreaH: Math.max(60, (n.h || 196) - 96),
+        isImage, imgSrc: n.src || '', imgCaption: n.caption || '',
+        imgAreaH: Math.max(60, (n.h || 220) - 42),
+        genBodyMinH: (isGen && n.h) ? Math.max(0, n.h - 40) : 0,
+        resizable,
         selected: S.selectedId === n.id,
         isOver: !!(S.drag && S.drag.overId === n.id),
         connectedLabel,
@@ -943,6 +1107,7 @@ class Component extends DCLogic {
         genEmpty: false, genResult: false, filled: false, showStatus: false, statusText: '', resultKicker: '', shownLines: [],
         onDown: (e) => this.nodeDown(e, n.id),
         onHandleDown: (e) => this.handleDown(e, n.id),
+        onResize: (e) => this.resizeDown(e, n.id),
         onAi: (e) => { this.stop(e); this.openPopover(n.id); },
         onSkip: () => this.skipTyping(n.id),
         onRegen: (e) => { this.stop(e); this.regen(n.id); },
@@ -951,6 +1116,8 @@ class Component extends DCLogic {
         onMaterial: (e) => { this.stop(e); this.openMaterial({ kicker: n.kicker, title: n.titleText, key: n.lessonKey, meta: n.material }); },
         onNoteInput: (e) => this.setNoteContent(n.id, e.target.value),
         onNoteTitleInput: (e) => this.setNoteTitle(n.id, e.target.value),
+        onExpandNote: (e) => { this.stop(e); this.openNoteEditor(n.id); },
+        onImgCaption: (e) => this.setImageCaption(n.id, e.target.value),
         onTitleRename: (e) => this.renameTitle(n.id, e.target.value),
       };
       if (isGen) {
@@ -1080,6 +1247,36 @@ class Component extends DCLogic {
       }
     }
 
+    // note editor (Notion-style, full-screen)
+    let noteEdit = null;
+    if (S.noteEdit) {
+      const n = byId[S.noteEdit.id];
+      if (n) {
+        const isPreview = S.noteEdit.mode === 'preview';
+        noteEdit = {
+          title: n.title || '', content: n.content || '',
+          isEdit: !isPreview, isPreview,
+          modeLabel: isPreview ? '✎ Editar' : '◉ Pré-visualizar',
+          chars: (n.content || '').length + ' caracteres',
+          blocks: isPreview ? this.mdBlocks(n.content || '') : [],
+          onTitle: (e) => this.setNoteTitle(n.id, e.target.value),
+          onBody: (e) => this.setNoteContent(n.id, e.target.value),
+        };
+      } else { noteEdit = null; }
+    }
+
+    // new-discipline modal (syllabus → AI pre-canvas)
+    const nd = S.newDisc;
+    const newDiscView = nd ? {
+      syllabus: nd.syllabus || '',
+      busy: !!nd.busy,
+      useAI: nd.useAI !== false,
+      aiTrack: (nd.useAI !== false) ? accent : 'transparent',
+      aiKnob: (nd.useAI !== false) ? '22px' : '2px',
+      hasSyllabus: !!(nd.syllabus || '').trim(),
+      createLabel: nd.busy ? 'Gerando…' : ((nd.syllabus || '').trim() && nd.useAI !== false ? 'Criar com IA' : 'Criar quadro'),
+    } : null;
+
     // accent swatches + serif options
     const accentSwatches = [
       { color: '#7A1F2B', label: 'Oxblood' }, { color: '#2E3A2C', label: 'Verde-folha' },
@@ -1131,6 +1328,9 @@ class Component extends DCLogic {
       zoomIn: () => this.zoomBy(1.2), zoomOut: () => this.zoomBy(1 / 1.2), resetView: this.fitView,
       addNode: this.addNode, cornerAi: this.cornerAi,
       addNoteNode: this.addNoteNode, pickPdf: this.pickPdf, setFileInput: this.setFileInput, onPdfPick: this.onPdfPick,
+      pickImage: this.pickImage, setImgInput: this.setImgInput, onImgPick: this.onImgPick,
+      // note editor (Notion-style)
+      noteEdit, closeNoteEditor: this.closeNoteEditor, toggleNotePreview: this.toggleNotePreview, setNoteBodyRef: this.setNoteBodyRef,
       hintOpen: S.screen === 'canvas' && S.hintOpen && this.curHints(),
       hintClosed: S.screen === 'canvas' && !(S.hintOpen && this.curHints()),
       dismissHint: () => this.setState({ hintOpen: false }), openHint: () => this.setState({ hintOpen: true }),
@@ -1150,8 +1350,9 @@ class Component extends DCLogic {
       // search
       search, searchEmpty, searchHasResults, searchNoResults, searchResults, suggestions,
       setSearchInput: this.setSearchInput, onSearchInput: this.onSearchInput, onSearchKey: this.onSearchKey, closeSearch: this.closeSearch,
-      // new disc
-      newDisc: S.newDisc ? true : null, closeNewDisc: this.closeNewDisc, createDisc: this.createDisc, onNewKey: this.onNewKey, setNewName: this.setNewName, setNewSem: this.setNewSem,
+      // new disc (+ syllabus → AI pre-canvas)
+      newDisc: newDiscView, closeNewDisc: this.closeNewDisc, createDisc: this.createDisc, onNewKey: this.onNewKey, setNewName: this.setNewName, setNewSem: this.setNewSem,
+      setSyllabus: this.setSyllabus, toggleUseAI: this.toggleUseAI, pickSyllabusPdf: this.pickSyllabusPdf, setSylInput: this.setSylInput, onSyllabusPdf: this.onSyllabusPdf,
       // conta
       acctName: ident.name, acctInitials: ident.initials || '·',
       acctEmail: ident.email, acctHasEmail: !!ident.email,
