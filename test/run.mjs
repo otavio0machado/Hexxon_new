@@ -555,6 +555,18 @@ try {
   await page.evaluate(() => { const b = [...document.querySelectorAll('button')].find((x) => /✚ Nota/.test(x.textContent)); if (b) b.click(); });
   await sleep(300);
   ok('pdf: "Nota" creates a note from the selection', await page.evaluate(() => /Do PDF/.test(document.body.innerText) || [...document.querySelectorAll('#app input[value^="Do PDF"]')].length > 0 || [...document.querySelectorAll('#app input')].some((i) => /Do PDF/.test(i.value || ''))));
+  // re-select → highlight with a color → appears in the panel and persists
+  await page.evaluate(() => { const tl = document.querySelector('.sdn-tl'); const range = document.createRange(); range.selectNodeContents(tl); const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range); tl.closest('.sdn-pdf-scroll').dispatchEvent(new MouseEvent('mouseup', { bubbles: true })); });
+  await sleep(140);
+  await page.evaluate(() => { const bar = [...document.querySelectorAll('div')].find((d) => d.style.position === 'fixed' && d.style.zIndex === '101'); if (bar) { const dot = [...bar.querySelectorAll('button')].find((b) => /Destacar/.test(b.title || '')); if (dot) dot.click(); } });
+  await sleep(300);
+  ok('pdf: highlight shows in the side panel', await page.evaluate(() => /Destaques \(1\)/.test(document.body.textContent)));
+  await sleep(500);
+  ok('pdf: highlight persisted on the node', await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('sandbox-de-nos:v1') || '{}'); return Object.values(s.boards || {}).some((b) => (b.nodes || []).some((n) => n.type === 'pdf' && (n.highlights || []).length >= 1)); }));
+  // export highlights → a note
+  await page.evaluate(() => { const b = [...document.querySelectorAll('button')].find((x) => /↧ destaques/.test(x.textContent)); if (b) b.click(); });
+  await sleep(300);
+  ok('pdf: export highlights creates a note', await page.evaluate(() => [...document.querySelectorAll('#app input')].some((i) => /Destaques ·/.test(i.value || ''))));
   await page.keyboard.press('Escape');
   await sleep(300);
   ok('pdf: viewer closed', await page.evaluate(() => ![...document.querySelectorAll('div')].some((d) => d.style && d.style.zIndex === '100')));

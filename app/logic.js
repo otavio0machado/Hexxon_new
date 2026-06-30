@@ -510,7 +510,7 @@ class Component extends DCLogic {
     const r = this.vp.getBoundingClientRect();
     const j = (this.nidc % 4) * 26;
     const w = this.screenToWorld(r.left + r.width * 0.5 + j, r.top + r.height * 0.7 + j);
-    this.createNodeAt(w.x, w.y);
+    return this.createNodeAt(w.x, w.y);
   };
 
   // ---------- material / note nodes (your own study content for the AI) ----------
@@ -700,45 +700,50 @@ class Component extends DCLogic {
     this.pdfNodeId = null;
     if (this.state.pdfView) this.setState({ pdfView: null });
   };
+  PDF_HL_COLORS = [{ c: '#C9A227', name: 'amarelo' }, { c: '#3A6EA5', name: 'azul' }, { c: '#5E8C61', name: 'verde' }, { c: '#B5546A', name: 'rosa' }];
   buildPdfOverlay(node, blob) {
     this.injectPdfCss();
     const accent = this.curAccent();
+    this.pageWraps = {}; this.pdfDoc = null; this.pdfOutline = null; this.pdfDocNode = node;
     const ov = document.createElement('div');
     ov.style.cssText = 'position:fixed;inset:0;z-index:100;background:rgba(33,30,26,0.62);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;font-family:"IBM Plex Mono",ui-monospace,monospace;';
     ov.addEventListener('pointerdown', (e) => { if (e.target === ov) this.closePdf(); });
     const panel = document.createElement('div');
-    panel.style.cssText = 'width:100%;max-width:1000px;height:100%;background:#FFFDF8;border:1px solid rgba(33,30,26,0.3);box-shadow:0 18px 60px rgba(33,30,26,0.3);display:flex;flex-direction:column;';
+    panel.style.cssText = 'width:100%;max-width:1180px;height:100%;background:#FFFDF8;border:1px solid rgba(33,30,26,0.3);box-shadow:0 18px 60px rgba(33,30,26,0.3);display:flex;flex-direction:column;';
     // header
     const head = document.createElement('div');
     head.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:14px 22px;border-bottom:1px solid rgba(33,30,26,0.14);flex:none;';
     head.innerHTML = '<div style="display:flex;align-items:baseline;gap:12px;min-width:0;"><span style="font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;color:' + accent + ';">PDF</span><span style="font-family:\'Cormorant Garamond\',Georgia,serif;font-size:18px;color:#211E1A;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + this.esc(node.filename || 'documento.pdf') + '</span></div>';
-    const ctrls = document.createElement('div'); ctrls.style.cssText = 'display:flex;gap:10px;flex:none;';
-    if (blob) {
-      const dl = document.createElement('button'); dl.textContent = '↓ baixar';
-      dl.style.cssText = 'font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:rgba(33,30,26,0.6);background:transparent;border:1px solid rgba(33,30,26,0.2);border-radius:2px;padding:7px 11px;cursor:pointer;';
-      dl.onclick = () => { const u = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = u; a.download = node.filename || 'documento.pdf'; a.click(); setTimeout(() => URL.revokeObjectURL(u), 1500); };
-      ctrls.appendChild(dl);
-    }
+    const ctrls = document.createElement('div'); ctrls.style.cssText = 'display:flex;gap:10px;flex:none;align-items:center;';
+    const mkHeadBtn = (label, fn) => { const b = document.createElement('button'); b.textContent = label; b.style.cssText = 'font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:rgba(33,30,26,0.6);background:transparent;border:1px solid rgba(33,30,26,0.2);border-radius:2px;padding:7px 11px;cursor:pointer;'; b.onclick = fn; return b; };
+    ctrls.appendChild(mkHeadBtn('↧ destaques', () => this.exportHighlights(this.pdfDocNode)));
+    if (blob) ctrls.appendChild(mkHeadBtn('↓ baixar', () => { const u = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = u; a.download = node.filename || 'documento.pdf'; a.click(); setTimeout(() => URL.revokeObjectURL(u), 1500); }));
     const close = document.createElement('button'); close.textContent = '✕';
     close.style.cssText = 'font-size:14px;color:rgba(33,30,26,0.45);background:none;border:1px solid rgba(33,30,26,0.18);border-radius:2px;width:30px;height:30px;cursor:pointer;';
     close.onclick = () => this.closePdf();
     ctrls.appendChild(close); head.appendChild(ctrls); panel.appendChild(head);
-    // body
+    // content row: sidebar + pages
+    const row = document.createElement('div'); row.style.cssText = 'flex:1;min-height:0;display:flex;';
+    const side = document.createElement('div'); side.className = 'sdn-pdf-scroll'; side.style.cssText = 'width:248px;flex:none;border-right:1px solid rgba(33,30,26,0.12);overflow:auto;background:#FAF8F3;';
     const body = document.createElement('div'); body.className = 'sdn-pdf-scroll';
     body.style.cssText = 'flex:1;min-height:0;overflow:auto;background:#525659;padding:22px;display:flex;flex-direction:column;align-items:center;gap:18px;';
-    panel.appendChild(body); ov.appendChild(panel); document.body.appendChild(ov);
-    this.pdfEl = ov; this.pdfBody = body;
+    row.appendChild(side); row.appendChild(body); panel.appendChild(row);
+    ov.appendChild(panel); document.body.appendChild(ov);
+    this.pdfEl = ov; this.pdfBody = body; this.pdfSide = side;
+    this.renderHlPanel(node);
     if (!blob) { body.innerHTML = '<div style="margin:auto;max-width:420px;text-align:center;color:#FAF8F3;font-size:12px;line-height:1.7;">O arquivo não está neste dispositivo (o PDF fica salvo localmente). O texto extraído continua disponível para a IA.</div>'; return; }
     body.addEventListener('mouseup', () => setTimeout(() => this.onPdfSelect(node), 0));
-    this.renderPdfPages(body, blob, node).catch(() => { body.innerHTML = '<div style="margin:auto;color:#FAF8F3;font-size:12px;">Falha ao renderizar o PDF.</div>'; });
+    this.renderPdfPages(body, blob, node).then(() => this.renderHlPanel(node)).catch(() => { body.innerHTML = '<div style="margin:auto;color:#FAF8F3;font-size:12px;">Falha ao renderizar o PDF.</div>'; });
   }
   esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
   async renderPdfPages(body, blob, node) {
     const lib = await this.loadPdfJs();
     const data = new Uint8Array(await blob.arrayBuffer());
     const pdf = await lib.getDocument({ data }).promise;
-    const total = Math.min(pdf.numPages, 40);
-    const maxW = Math.min(900, (body.clientWidth || 800) - 8);
+    this.pdfDoc = pdf;
+    try { this.pdfOutline = await this.resolveOutline(pdf); } catch (e) { this.pdfOutline = null; }
+    const total = Math.min(pdf.numPages, 60);
+    const maxW = Math.min(960, (body.clientWidth || 800) - 8);
     for (let p = 1; p <= total; p++) {
       if (this.pdfBody !== body) return; // viewer was closed
       const page = await pdf.getPage(p);
@@ -756,8 +761,20 @@ class Component extends DCLogic {
       wrap.appendChild(tl);
       try { const tc = await page.getTextContent(); await lib.renderTextLayer({ textContent: tc, container: tl, viewport: vp, textDivs: [] }).promise; } catch (e) {}
       body.appendChild(wrap);
+      this.pageWraps[p] = wrap;
       this.paintHighlights(wrap, p, this.byId()[node.id] || node);
     }
+  }
+  async resolveOutline(pdf) {
+    const raw = await pdf.getOutline();
+    if (!raw || !raw.length) return null;
+    const out = [];
+    for (const it of raw.slice(0, 40)) {
+      let page = null;
+      try { let dest = it.dest; if (typeof dest === 'string') dest = await pdf.getDestination(dest); if (Array.isArray(dest) && dest[0]) page = (await pdf.getPageIndex(dest[0])) + 1; } catch (e) {}
+      out.push({ title: it.title || '—', page });
+    }
+    return out;
   }
   onPdfSelect(node) {
     const sel = window.getSelection();
@@ -768,12 +785,13 @@ class Component extends DCLogic {
   }
   showPdfToolbar(rect, text, node) {
     this.hidePdfToolbar();
-    const accent = this.curAccent();
     const bar = document.createElement('div');
-    bar.style.cssText = 'position:fixed;z-index:101;left:' + Math.round(rect.left + rect.width / 2) + 'px;top:' + Math.round(rect.top - 44) + 'px;transform:translateX(-50%);display:flex;gap:1px;background:#211E1A;border-radius:3px;box-shadow:0 4px 16px rgba(0,0,0,0.4);overflow:hidden;font-family:"IBM Plex Mono",monospace;';
-    const mk = (label, fn) => { const b = document.createElement('button'); b.textContent = label; b.style.cssText = 'font-size:10px;letter-spacing:.06em;color:#FAF8F3;background:transparent;border:none;padding:8px 12px;cursor:pointer;'; b.onmouseenter = () => b.style.background = 'rgba(250,248,243,0.12)'; b.onmouseleave = () => b.style.background = 'transparent'; b.onmousedown = (e) => { e.preventDefault(); }; b.onclick = fn; return b; };
+    bar.style.cssText = 'position:fixed;z-index:101;left:' + Math.round(rect.left + rect.width / 2) + 'px;top:' + Math.round(rect.top - 44) + 'px;transform:translateX(-50%);display:flex;align-items:center;gap:1px;background:#211E1A;border-radius:3px;box-shadow:0 4px 16px rgba(0,0,0,0.4);padding:0 4px;font-family:"IBM Plex Mono",monospace;';
+    const mk = (label, fn) => { const b = document.createElement('button'); b.textContent = label; b.style.cssText = 'font-size:10px;letter-spacing:.06em;color:#FAF8F3;background:transparent;border:none;padding:8px 10px;cursor:pointer;'; b.onmouseenter = () => b.style.background = 'rgba(250,248,243,0.12)'; b.onmouseleave = () => b.style.background = 'transparent'; b.onmousedown = (e) => e.preventDefault(); b.onclick = fn; return b; };
     bar.appendChild(mk('✚ Nota', () => { this.createNoteFromPdf(text, node); this.hidePdfToolbar(); }));
-    bar.appendChild(mk('✦ Destacar', () => { this.highlightSelection(node); this.hidePdfToolbar(); }));
+    bar.appendChild(mk('✦ IA', () => { this.generateFromPdf(text, node); this.hidePdfToolbar(); }));
+    const sep = document.createElement('span'); sep.style.cssText = 'width:1px;height:18px;background:rgba(250,248,243,0.2);margin:0 3px;'; bar.appendChild(sep);
+    this.PDF_HL_COLORS.forEach(col => { const d = document.createElement('button'); d.title = 'Destacar ' + col.name; d.style.cssText = 'width:16px;height:16px;border-radius:50%;border:1px solid rgba(250,248,243,0.4);background:' + col.c + ';margin:0 2px;cursor:pointer;padding:0;'; d.onmousedown = (e) => e.preventDefault(); d.onclick = () => { this.highlightSelection(node, col.c); this.hidePdfToolbar(); }; bar.appendChild(d); });
     document.body.appendChild(bar); this.pdfBar = bar;
   }
   hidePdfToolbar() { if (this.pdfBar) { try { this.pdfBar.remove(); } catch (e) {} this.pdfBar = null; } }
@@ -782,32 +800,93 @@ class Component extends DCLogic {
     this.createNote('Do PDF · ' + fname, text, 'pdf-sel');
     this.toast('Nota criada a partir da seleção — conecte (●) a um nó de IA');
   }
-  // persist a highlight (page + normalized rects + text) on the node and paint it
-  highlightSelection(node) {
+  // persist a colored highlight (page + normalized rects + text + comment) on the node
+  highlightSelection(node, color) {
     const sel = window.getSelection(); if (!sel || !sel.rangeCount) return;
     const text = sel.toString().trim(); if (!text) return;
     const range = sel.getRangeAt(0);
     let wrap = range.startContainer; while (wrap && !(wrap.dataset && wrap.dataset.page)) wrap = wrap.parentElement;
-    if (!wrap) return;
-    const pr = wrap.getBoundingClientRect();
+    const page = wrap ? Number(wrap.dataset.page) : 1;
     const rects = [];
-    [...range.getClientRects()].forEach(r => { if (r.width > 1 && r.height > 1) rects.push({ x: (r.left - pr.left) / pr.width, y: (r.top - pr.top) / pr.height, w: r.width / pr.width, h: r.height / pr.height }); });
-    if (!rects.length) return;
-    const hl = { page: Number(wrap.dataset.page), text, rects };
-    const list = (this.byId()[node.id].highlights || []).concat([hl]);
+    if (wrap) { const pr = wrap.getBoundingClientRect(); [...range.getClientRects()].forEach(r => { if (r.width > 1 && r.height > 1) rects.push({ x: (r.left - pr.left) / pr.width, y: (r.top - pr.top) / pr.height, w: r.width / pr.width, h: r.height / pr.height }); }); }
+    const hl = { id: 'h' + (++this.cid), page, text, rects, color: color || this.PDF_HL_COLORS[0].c, comment: '' };
+    const list = ((this.byId()[node.id] || node).highlights || []).concat([hl]);
     this.setState({ nodes: this.state.nodes.map(n => n.id === node.id ? { ...n, highlights: list } : n) });
-    this.paintHighlights(wrap, Number(wrap.dataset.page), this.byId()[node.id]);
+    if (wrap) this.paintHighlights(wrap, page, this.byId()[node.id]);
+    this.renderHlPanel(this.byId()[node.id]);
     sel.removeAllRanges();
     this.toast('Trecho destacado');
   }
+  updateHl(nodeId, hid, patch) {
+    this.setState({ nodes: this.state.nodes.map(n => n.id === nodeId ? { ...n, highlights: (n.highlights || []).map(h => h.id === hid ? { ...h, ...patch } : h) } : n) });
+    const node = this.byId()[nodeId];
+    const hl = (node.highlights || []).find(h => h.id === hid);
+    if (hl && this.pageWraps && this.pageWraps[hl.page]) this.paintHighlights(this.pageWraps[hl.page], hl.page, node);
+    this.renderHlPanel(node);
+  }
+  deleteHl(nodeId, hid) {
+    const node0 = this.byId()[nodeId]; const hl = (node0.highlights || []).find(h => h.id === hid); const pg = hl && hl.page;
+    this.setState({ nodes: this.state.nodes.map(n => n.id === nodeId ? { ...n, highlights: (n.highlights || []).filter(h => h.id !== hid) } : n) });
+    const node = this.byId()[nodeId];
+    if (pg && this.pageWraps && this.pageWraps[pg]) this.paintHighlights(this.pageWraps[pg], pg, node);
+    this.renderHlPanel(node);
+  }
   paintHighlights(wrap, page, node) {
     [...wrap.querySelectorAll('.sdn-hl')].forEach(e => e.remove());
-    const accent = this.curAccent();
-    (node.highlights || []).filter(h => h.page === page).forEach(h => h.rects.forEach(r => {
+    (node && node.highlights || []).filter(h => h.page === page).forEach(h => (h.rects || []).forEach(r => {
       const d = document.createElement('div'); d.className = 'sdn-hl';
-      d.style.cssText = 'position:absolute;pointer-events:none;left:' + (r.x * 100) + '%;top:' + (r.y * 100) + '%;width:' + (r.w * 100) + '%;height:' + (r.h * 100) + '%;background:' + accent + ';opacity:0.28;border-radius:1px;';
+      d.style.cssText = 'position:absolute;pointer-events:none;left:' + (r.x * 100) + '%;top:' + (r.y * 100) + '%;width:' + (r.w * 100) + '%;height:' + (r.h * 100) + '%;background:' + (h.color || '#C9A227') + ';opacity:0.34;border-radius:1px;mix-blend-mode:multiply;';
       wrap.appendChild(d);
     }));
+  }
+  scrollToHlPage(page) { const w = this.pageWraps && this.pageWraps[page]; if (w) { w.scrollIntoView({ behavior: 'smooth', block: 'center' }); w.style.outline = '3px solid ' + this.curAccent(); setTimeout(() => { try { w.style.outline = 'none'; } catch (e) {} }, 900); } }
+  // (re)build the left sidebar: outline + highlight list with color, comment, delete
+  renderHlPanel(node) {
+    const side = this.pdfSide; if (!side) return;
+    node = this.byId()[this.pdfNodeId] || node || {};
+    side.innerHTML = '';
+    const sec = (title) => { const h = document.createElement('div'); h.textContent = title; h.style.cssText = 'font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:rgba(33,30,26,0.4);padding:14px 16px 8px;'; return h; };
+    if (this.pdfOutline && this.pdfOutline.length) {
+      side.appendChild(sec('Sumário'));
+      this.pdfOutline.forEach(o => { const a = document.createElement('button'); a.textContent = o.title; a.style.cssText = 'display:block;width:100%;text-align:left;font-size:11px;line-height:1.4;color:#211E1A;background:transparent;border:none;padding:5px 16px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;'; a.onmouseenter = () => a.style.background = 'rgba(33,30,26,0.05)'; a.onmouseleave = () => a.style.background = 'transparent'; a.onclick = () => { if (o.page) this.scrollToHlPage(o.page); }; side.appendChild(a); });
+    }
+    const hls = node.highlights || [];
+    side.appendChild(sec('Destaques (' + hls.length + ')'));
+    if (!hls.length) { const e = document.createElement('div'); e.textContent = 'Selecione um trecho e escolha uma cor.'; e.style.cssText = 'font-size:10.5px;line-height:1.6;color:rgba(33,30,26,0.45);padding:2px 16px 16px;'; side.appendChild(e); }
+    hls.forEach(h => {
+      const row = document.createElement('div'); row.className = 'sdn-hl-row'; row.style.cssText = 'padding:9px 14px 9px 16px;border-bottom:1px solid rgba(33,30,26,0.07);';
+      const top = document.createElement('div'); top.style.cssText = 'display:flex;gap:8px;align-items:flex-start;';
+      const dot = document.createElement('span'); dot.style.cssText = 'width:9px;height:9px;border-radius:50%;background:' + (h.color || '#C9A227') + ';flex:none;margin-top:4px;';
+      const snip = document.createElement('button'); snip.textContent = (h.text || '').slice(0, 70); snip.title = 'Ir para a página ' + h.page; snip.style.cssText = 'flex:1;text-align:left;font-size:11px;line-height:1.45;color:#211E1A;background:transparent;border:none;cursor:pointer;padding:0;';
+      snip.onclick = () => this.scrollToHlPage(h.page);
+      const del = document.createElement('button'); del.textContent = '✕'; del.title = 'Remover'; del.style.cssText = 'font-size:11px;color:rgba(33,30,26,0.35);background:none;border:none;cursor:pointer;padding:0 2px;flex:none;'; del.onclick = () => this.deleteHl(node.id, h.id);
+      top.appendChild(dot); top.appendChild(snip); top.appendChild(del); row.appendChild(top);
+      const ci = document.createElement('input'); ci.value = h.comment || ''; ci.placeholder = 'comentário…'; ci.className = 'sdn-hl-comment'; ci.style.cssText = 'width:100%;margin-top:6px;font-family:"IBM Plex Mono",monospace;font-size:10px;color:rgba(33,30,26,0.7);background:transparent;border:none;border-bottom:1px dashed rgba(33,30,26,0.18);outline:none;padding:2px 0;';
+      ci.oninput = (e) => this.updateHlComment(node.id, h.id, e.target.value);
+      row.appendChild(ci); side.appendChild(row);
+    });
+  }
+  // comment edits must not re-render the panel (would lose input focus); just persist
+  updateHlComment(nodeId, hid, text) { this.setState({ nodes: this.state.nodes.map(n => n.id === nodeId ? { ...n, highlights: (n.highlights || []).map(h => h.id === hid ? { ...h, comment: text } : h) } : n) }); }
+  exportHighlights(node) {
+    node = this.byId()[(node && node.id) || this.pdfNodeId];
+    const hls = (node && node.highlights) || [];
+    if (!hls.length) { this.toast('Nenhum destaque para exportar'); return; }
+    const md = '# Destaques — ' + (node.filename || 'PDF') + '\n\n' + hls.map(h => '- (p. ' + h.page + ') ' + h.text + (h.comment ? ('\n  > ' + h.comment) : '')).join('\n');
+    this.createNote('Destaques · ' + (node.filename || 'PDF').replace(/\.pdf$/i, '').slice(0, 20), md, 'pdf-hl');
+    this.toast('Destaques exportados como nota');
+  }
+  // selection → a note with the text + a connected empty generator, opened for a prompt
+  generateFromPdf(text, node) {
+    const fname = (node.filename || 'PDF').replace(/\.pdf$/i, '').slice(0, 22);
+    const noteId = this.createNote('Do PDF · ' + fname, text, 'pdf-sel');
+    this.closePdf();
+    setTimeout(() => {
+      const gid = this.addNode();
+      if (gid && noteId) this.addConn(noteId, gid);
+      setTimeout(() => { if (gid) this.openPopover(gid); }, 60);
+      this.toast('Trecho pronto — descreva as questões e gere');
+    }, 80);
   }
 
   // ---------- image nodes (your own diagrams / prints) ----------
