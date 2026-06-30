@@ -49,7 +49,8 @@ Opcionais:
 
 1. **Nova disciplina** na estante → abre um quadro vazio.
 2. **Material:** crie uma **Nota** (`+ Nota`) e cole seu conteúdo, ou importe um **PDF**
-   (`↥ PDF`, texto extraído no navegador). Arraste a alça ● para **conectar** o material a um nó.
+   (`↥ PDF`) — dá pra **abrir e ler o PDF** dentro do site (visualizador nativo) e o texto
+   é extraído para a IA. Arraste a alça ● para **conectar** o material a um nó.
 3. **Toque duplo** no papel cria um nó de geração. Selecione → **Invocar IA** →
    escreva o pedido (ex.: *"5 questões de derivadas, nível intermediário"*) → ↵.
 4. O navegador chama `/api/generate`, que chama a Claude com **saída estruturada**
@@ -67,6 +68,9 @@ Opcionais:
 - **Redimensionar:** arraste a alça no canto inferior-direito do nó (notas, imagens e blocos).
 - **Imagens:** **+ Imagem** (ou **cole com ⌘V**) cria um nó de imagem (reduzida p/ caber no
   armazenamento). Dá pra pôr legenda e redimensionar.
+- **PDFs:** **↥ PDF** cria um nó de PDF → **abrir PDF** abre o visualizador (o arquivo fica
+  salvo localmente no navegador via IndexedDB; o texto extraído vai para a IA). Em outro
+  dispositivo o texto sincroniza, mas o arquivo em si fica no aparelho de origem.
 - **Notas estilo Notion:** **⤢ editar** abre o editor em tela cheia com formatação
   (`# título`, `## subtítulo`, `- lista`, `**negrito**`) e alternância **Editar / Pré-visualizar**.
 - **Desfazer / refazer:** `⌘/Ctrl+Z` e `⌘/Ctrl+⇧Z` (também os botões ↶ ↷ no quadro).
@@ -110,7 +114,7 @@ Sem essas variáveis, a sincronização fica desativada e o app segue só com lo
 | `build.py` | Monta o `index.html` a partir de `app/`. |
 | `dev-server.mjs` | Servidor local (estático + `/api/*`), igual à Vercel. `STUB=1` usa IA falsa. |
 | `design/` | Importação original do Claude Design (referência). |
-| `test/run.mjs` | Suíte headless (Chrome) — 81 verificações do fluxo real. |
+| `test/run.mjs` | Suíte headless (Chrome) — 85 verificações do fluxo real. |
 
 O `index.html` mantém **template e lógica como arquivos editáveis** e os renderiza
 com um runtime aberto de ~250 linhas (*dc-lite*) — **sem depender do `support.js`
@@ -122,7 +126,7 @@ gerado** pela ferramenta de design. É um app real e seu.
 
 ```bash
 python3 build.py          # regenera public/index.html a partir de app/  (ou: npm run build)
-npm install puppeteer-core && node test/run.mjs         # 81 verificações
+npm install puppeteer-core && node test/run.mjs         # 85 verificações
 ```
 
 Se você puxar uma versão nova de `design/Sandbox de Nós.dc.html` do Claude Design,

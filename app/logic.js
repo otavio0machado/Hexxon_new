@@ -31,7 +31,7 @@ class Component extends DCLogic {
     selectedId: null, selectedConnId: null, drag: null, gen: null, popover: null,
     hintOpen: true,
     reading: null, material: null, search: null, newDisc: null, toast: null, flash: null,
-    discMenu: null, renameDisc: null, noteEdit: null,
+    discMenu: null, renameDisc: null, noteEdit: null, pdfView: null,
     cloud: false, session: null, authScreen: null,
     disciplines: this.DISCIPLINES.slice(),
     boards: {},
@@ -200,6 +200,7 @@ class Component extends DCLogic {
   };
   resetAll = () => {
     try { localStorage.removeItem(this.STORAGE_KEY); } catch (e) {}
+    this.idbClear();
     this.nidc = 0; this.cid = 2;
     this.clearGenTimers();
     this.setState({
@@ -226,7 +227,8 @@ class Component extends DCLogic {
     setTimeout(() => {
       try {
         const a = document.activeElement;
-        if (a && a !== el && /input|textarea/i.test(a.tagName)) return; // user is typing elsewhere
+        if (a === el) return; // already focused — don't re-select mid-typing
+        if (a && /input|textarea/i.test(a.tagName)) return; // user is typing elsewhere
         el.focus(); if (select && el.select) el.select();
       } catch (e) {}
     }, 25);
@@ -502,18 +504,56 @@ class Component extends DCLogic {
     }
     return text.replace(/[ \t]+/g, ' ').slice(0, 24000).trim();
   }
-  onPdfPick = async (e) => {
+  // ---------- local file store (IndexedDB — large quota, stays on the device) ----------
+  idb() {
+    if (this._idb) return this._idb;
+    this._idb = new Promise((resolve, reject) => {
+      const req = indexedDB.open('sdn-files', 1);
+      req.onupgradeneeded = () => req.result.createObjectStore('files');
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+    return this._idb;
+  }
+  async idbPut(key, blob) { const db = await this.idb(); return new Promise((res, rej) => { const tx = db.transaction('files', 'readwrite'); tx.objectStore('files').put(blob, key); tx.oncomplete = () => res(); tx.onerror = () => rej(tx.error); }); }
+  async idbGet(key) { try { const db = await this.idb(); return await new Promise((res) => { const tx = db.transaction('files', 'readonly'); const r = tx.objectStore('files').get(key); r.onsuccess = () => res(r.result || null); r.onerror = () => res(null); }); } catch (e) { return null; } }
+  async idbDel(key) { try { const db = await this.idb(); const tx = db.transaction('files', 'readwrite'); tx.objectStore('files').delete(key); } catch (e) {} }
+  async idbClear() { try { const db = await this.idb(); const tx = db.transaction('files', 'readwrite'); tx.objectStore('files').clear(); } catch (e) {} }
+  delBoardFiles(board) { try { (board && board.nodes || []).forEach(n => { if (n.type === 'pdf') this.idbDel(n.id); }); } catch (e) {} }
+
+  onPdfPick = (e) => {
     const file = e.target && e.target.files && e.target.files[0];
     if (e.target) e.target.value = '';
     if (!file) return;
-    this.toast('Lendo "' + file.name + '"…');
-    try {
-      const text = await this.extractPdf(file);
-      if (!text) { this.toast('Sem texto extraível (PDF digitalizado?).'); return; }
-      this.createNote(file.name.replace(/\.pdf$/i, ''), text, 'pdf');
-      this.toast('PDF importado como nota — conecte a um nó');
-    } catch (err) { this.toast('Falha ao ler o PDF'); }
+    if (this.state.screen !== 'canvas' || !this.vp) { this.toast('Abra um quadro para importar o PDF'); return; }
+    const id = 'n' + (++this.nidc);
+    this.createPdfNode(id, file.name, '');        // node appears immediately (viewable)
+    this.idbPut(id, file).catch(() => {});         // store the file locally
+    this.toast('PDF adicionado — abra para ver ou conecte (●) à IA');
+    // extract text in the background so the AI can use it as context
+    this.extractPdf(file)
+      .then((text) => { if (text) this.setState({ nodes: this.state.nodes.map(n => n.id === id ? { ...n, content: text } : n) }); })
+      .catch(() => {});
   };
+  createPdfNode(id, filename, text) {
+    const r = this.vp.getBoundingClientRect();
+    const j = (this.nidc % 4) * 24;
+    const w = this.screenToWorld(r.left + r.width * 0.4 + j, r.top + r.height * 0.42 + j);
+    this.pushHist();
+    const node = { id, type: 'pdf', x: w.x - 150, y: w.y - 72, w: 300, h: 150, filename: filename || 'documento.pdf', content: text || '', source: 'pdf', hasFile: true, shortLabel: (filename || 'PDF').replace(/\.pdf$/i, '').slice(0, 18) };
+    this.setState({ nodes: [...this.state.nodes, node], selectedId: id, selectedConnId: null });
+  }
+  openPdf = async (id) => {
+    const n = this.byId()[id]; if (!n) return;
+    this.setState({ pdfView: { id, filename: n.filename || 'documento.pdf', url: null, missing: false, loading: true } });
+    const blob = await this.idbGet(id);
+    if (!blob) { this.setState({ pdfView: { id, filename: n.filename || 'documento.pdf', url: null, missing: true, loading: false } }); return; }
+    if (this._pdfUrl) { try { URL.revokeObjectURL(this._pdfUrl); } catch (e) {} }
+    this._pdfUrl = URL.createObjectURL(blob);
+    this.setState({ pdfView: { id, filename: n.filename || 'documento.pdf', url: this._pdfUrl, missing: false, loading: false } });
+  };
+  closePdf = () => { if (this._pdfUrl) { try { URL.revokeObjectURL(this._pdfUrl); } catch (e) {} this._pdfUrl = null; } this.setState({ pdfView: null }); };
+  downloadPdf = () => { const v = this.state.pdfView; if (v && v.url) { const a = document.createElement('a'); a.href = v.url; a.download = v.filename || 'documento.pdf'; a.click(); } };
 
   // ---------- image nodes (your own diagrams / prints) ----------
   pickImage = () => { if (this.imgInput) this.imgInput.click(); };
@@ -583,6 +623,7 @@ class Component extends DCLogic {
   deleteNode(id) {
     const n = this.byId()[id];
     if (!n || n.locked) return;
+    if (n.type === 'pdf') this.idbDel(id);
     this.pushHist();
     const patch = {
       nodes: this.state.nodes.filter(x => x.id !== id),
@@ -607,6 +648,7 @@ class Component extends DCLogic {
     if (typeof window !== 'undefined' && window.confirm && !window.confirm('Excluir a disciplina "' + (d ? d.name : '') + '" e todo o quadro? Isso não pode ser desfeito.')) return;
     const disciplines = this.state.disciplines.filter(x => x.id !== id);
     const boards = { ...this.state.boards };
+    this.delBoardFiles(this.state.activeDisc === id ? { nodes: this.state.nodes } : boards[id]);
     delete boards[id];
     const patch = { disciplines, boards, discMenu: null, selectedId: null, selectedConnId: null, popover: null };
     if (this.state.activeDisc === id) {
@@ -669,7 +711,7 @@ class Component extends DCLogic {
     const neigh = this.state.connections.filter(c => c.from === id || c.to === id).map(c => byId[c.from === id ? c.to : c.from]).filter(Boolean);
     const out = [];
     neigh.forEach(n => {
-      if (n.type === 'note' && (n.content || '').trim()) out.push('Material' + (n.title ? ' [' + n.title + ']' : '') + ':\n' + n.content.trim().slice(0, 12000));
+      if ((n.type === 'note' || n.type === 'pdf') && (n.content || '').trim()) { const lbl = n.title || n.filename; out.push('Material' + (lbl ? ' [' + lbl + ']' : '') + ':\n' + n.content.trim().slice(0, 12000)); }
       else if (n.type === 'image' && (n.caption || '').trim()) out.push('Imagem [' + n.caption.trim() + ']');
       else if (n.type === 'lesson') out.push((n.kicker ? n.kicker + ': ' : '') + (n.titleText || ''));
       else if (n.type === 'title') out.push('Disciplina: ' + (n.titleBig || ''));
@@ -983,6 +1025,7 @@ class Component extends DCLogic {
     const typing = t && /input|textarea/i.test(t.tagName);
     if (e.key === 'Escape') {
       if (this.state.search) return this.closeSearch();
+      if (this.state.pdfView) return this.closePdf();
       if (this.state.noteEdit) return this.closeNoteEditor();
       if (this.state.renameDisc) return this.closeRename();
       if (this.state.discMenu) return this.closeDiscMenu();
@@ -1038,7 +1081,7 @@ class Component extends DCLogic {
       (allBoards[k].nodes || []).forEach(n => {
         if (n.type === 'lesson') { lessonCount++; nodeCount++; }
         else if (n.type === 'generated') { nodeCount++; if (n.filled) genCount++; }
-        else if (n.type === 'note' || n.type === 'image') { nodeCount++; }
+        else if (n.type === 'note' || n.type === 'image' || n.type === 'pdf') { nodeCount++; }
       });
     });
     const footerStats = S.disciplines.length + ' disciplinas · ' + lessonCount + ' aulas · ' + nodeCount + ' nós';
@@ -1098,6 +1141,9 @@ class Component extends DCLogic {
         noteAreaH: Math.max(60, (n.h || 196) - 96),
         isImage, imgSrc: n.src || '', imgCaption: n.caption || '',
         imgAreaH: Math.max(60, (n.h || 220) - 42),
+        isPdf: n.type === 'pdf', pdfName: n.filename || 'documento.pdf',
+        pdfMeta: (n.content || '').trim() ? 'PDF · texto disponível para a IA' : 'PDF · documento',
+        onOpenPdf: (e) => { this.stop(e); this.openPdf(n.id); },
         genBodyMinH: (isGen && n.h) ? Math.max(0, n.h - 40) : 0,
         resizable,
         selected: S.selectedId === n.id,
@@ -1265,6 +1311,13 @@ class Component extends DCLogic {
       } else { noteEdit = null; }
     }
 
+    // pdf viewer overlay
+    const pdfView = S.pdfView ? {
+      filename: S.pdfView.filename || 'documento.pdf',
+      url: S.pdfView.url || '', hasUrl: !!S.pdfView.url,
+      missing: !!S.pdfView.missing, loading: !!S.pdfView.loading,
+    } : null;
+
     // new-discipline modal (syllabus → AI pre-canvas)
     const nd = S.newDisc;
     const newDiscView = nd ? {
@@ -1331,6 +1384,8 @@ class Component extends DCLogic {
       pickImage: this.pickImage, setImgInput: this.setImgInput, onImgPick: this.onImgPick,
       // note editor (Notion-style)
       noteEdit, closeNoteEditor: this.closeNoteEditor, toggleNotePreview: this.toggleNotePreview, setNoteBodyRef: this.setNoteBodyRef,
+      // pdf viewer
+      pdfView, closePdf: this.closePdf, downloadPdf: this.downloadPdf,
       hintOpen: S.screen === 'canvas' && S.hintOpen && this.curHints(),
       hintClosed: S.screen === 'canvas' && !(S.hintOpen && this.curHints()),
       dismissHint: () => this.setState({ hintOpen: false }), openHint: () => this.setState({ hintOpen: true }),

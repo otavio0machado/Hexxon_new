@@ -206,6 +206,20 @@
               </div>
             </sc-if>
 
+            <sc-if value="{{ n.isPdf }}" hint-placeholder-val="{{ false }}">
+              <div style="background:#FFFDF8;border:1px solid rgba(33,30,26,0.28);border-radius:3px;padding:17px 18px;box-shadow:0 1px 0 rgba(33,30,26,0.04);">
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--ox);margin-bottom:11px;">PDF · documento</div>
+                <div style="display:flex;gap:11px;align-items:flex-start;margin-bottom:13px;">
+                  <span style="flex:none;width:30px;height:38px;border:1px solid rgba(33,30,26,0.3);border-radius:2px;background:#FCFAF4;display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px;font-family:'IBM Plex Mono',monospace;font-size:7.5px;letter-spacing:.06em;color:var(--ox);">PDF</span>
+                  <div style="flex:1;min-width:0;">
+                    <div style="font-family:var(--serif);font-size:17px;line-height:1.2;color:#211E1A;font-weight:600;word-break:break-word;">{{ n.pdfName }}</div>
+                    <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.04em;color:rgba(33,30,26,0.45);margin-top:3px;">{{ n.pdfMeta }}</div>
+                  </div>
+                </div>
+                <button onPointerDown="{{ stop }}" onClick="{{ n.onOpenPdf }}" style="width:100%;font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ox);background:transparent;border:1px solid var(--ox);border-radius:2px;padding:9px 12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;" style-hover="background:rgba(122,31,43,0.06);">abrir PDF ↗</button>
+              </div>
+            </sc-if>
+
             <div onPointerDown="{{ n.onHandleDown }}" title="arraste para conectar" style="position:absolute;top:50%;right:-7px;transform:translateY(-50%);width:13px;height:13px;border-radius:50%;background:#FFFDF8;border:1px solid var(--ox);opacity:0.34;cursor:crosshair;display:flex;align-items:center;justify-content:center;" style-hover="opacity:1;">
               <span style="width:4px;height:4px;border-radius:50%;background:var(--ox);display:block;"></span>
             </div>
@@ -790,6 +804,39 @@
             </sc-for>
           </div>
         </sc-if>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ===================== PDF VIEWER ===================== -->
+  <sc-if value="{{ pdfView }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closePdf }}" style="position:absolute;inset:0;z-index:84;background:rgba(33,30,26,0.5);display:flex;align-items:center;justify-content:center;padding:30px;">
+      <div onClick="{{ stop }}" style="width:100%;max-width:1000px;height:100%;background:#FFFDF8;border:1px solid rgba(33,30,26,0.3);box-shadow:0 18px 60px rgba(33,30,26,0.3);display:flex;flex-direction:column;">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 22px;border-bottom:1px solid rgba(33,30,26,0.14);flex:none;">
+          <div style="display:flex;align-items:baseline;gap:12px;min-width:0;">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--ox);flex:none;">PDF</span>
+            <span style="font-family:var(--serif);font-size:18px;color:#211E1A;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ pdfView.filename }}</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;flex:none;">
+            <sc-if value="{{ pdfView.hasUrl }}" hint-placeholder-val="{{ true }}">
+              <button onClick="{{ downloadPdf }}" style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:rgba(33,30,26,0.6);background:transparent;border:1px solid rgba(33,30,26,0.2);border-radius:2px;padding:7px 11px;cursor:pointer;" style-hover="color:var(--ox);border-color:var(--ox);">↓ baixar</button>
+            </sc-if>
+            <button onClick="{{ closePdf }}" style="font-family:'IBM Plex Mono',monospace;font-size:14px;color:rgba(33,30,26,0.45);background:none;border:1px solid rgba(33,30,26,0.18);border-radius:2px;width:30px;height:30px;cursor:pointer;" style-hover="color:#211E1A;border-color:rgba(33,30,26,0.4);">✕</button>
+          </div>
+        </div>
+        <div style="flex:1;min-height:0;background:#525659;position:relative;">
+          <sc-if value="{{ pdfView.hasUrl }}" hint-placeholder-val="{{ true }}">
+            <iframe src="{{ pdfView.url }}" title="{{ pdfView.filename }}" style="width:100%;height:100%;border:none;display:block;"></iframe>
+          </sc-if>
+          <sc-if value="{{ pdfView.loading }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:12px;color:#FAF8F3;">abrindo…</div>
+          </sc-if>
+          <sc-if value="{{ pdfView.missing }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:30px;text-align:center;">
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;line-height:1.7;color:#FAF8F3;max-width:420px;">O arquivo não está neste dispositivo (o PDF fica salvo localmente). O texto extraído continua disponível para a IA.</span>
+            </div>
+          </sc-if>
+        </div>
       </div>
     </div>
   </sc-if>

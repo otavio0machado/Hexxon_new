@@ -11,6 +11,26 @@ const URL = `http://localhost:${PORT}/index.html`;
 const SHOT = '/tmp/hexxon_shots';
 mkdirSync(SHOT, { recursive: true });
 
+// a tiny but structurally-valid single-page PDF (correct xref offsets) so pdf.js parses it
+function makeMinimalPdf() {
+  const objs = [
+    '<</Type/Catalog/Pages 2 0 R>>',
+    '<</Type/Pages/Kids[3 0 R]/Count 1>>',
+    '<</Type/Page/Parent 2 0 R/MediaBox[0 0 300 200]/Contents 4 0 R/Resources<</Font<</F1 5 0 R>>>>>>',
+  ];
+  const stream = 'BT /F1 18 Tf 20 120 Td (Cronograma de teste) Tj ET';
+  objs.push(`<</Length ${stream.length}>>\nstream\n${stream}\nendstream`);
+  objs.push('<</Type/Font/Subtype/Type1/BaseFont/Helvetica>>');
+  let pdf = '%PDF-1.4\n';
+  const offs = [];
+  objs.forEach((o, i) => { offs[i] = Buffer.byteLength(pdf, 'latin1'); pdf += `${i + 1} 0 obj\n${o}\nendobj\n`; });
+  const xref = Buffer.byteLength(pdf, 'latin1');
+  pdf += `xref\n0 ${objs.length + 1}\n0000000000 65535 f \n`;
+  offs.forEach((o) => { pdf += String(o).padStart(10, '0') + ' 00000 n \n'; });
+  pdf += `trailer\n<</Size ${objs.length + 1}/Root 1 0 R>>\nstartxref\n${xref}\n%%EOF`;
+  return Buffer.from(pdf, 'latin1');
+}
+
 // ---- build, then start the dev server in STUB mode ----
 execSync('python3 build.py', { cwd: ROOT, stdio: 'ignore' });
 const server = spawn('node', ['dev-server.mjs'], { cwd: ROOT, env: { ...process.env, STUB: '1', PORT: String(PORT) } });
@@ -377,6 +397,21 @@ try {
   await sleep(250);
   const wAfter = await noteWidth();
   ok('resize: node grew wider', wAfter > wBefore + 25, `before=${wBefore} after=${wAfter}`);
+
+  // ---- PDF node + native viewer (IndexedDB + iframe) ----
+  const pdfPath = `${SHOT}/cronograma.pdf`;
+  writeFileSync(pdfPath, makeMinimalPdf());
+  const pdfInput = await page.$('input[accept="application/pdf,.pdf"]');
+  await pdfInput.uploadFile(pdfPath);
+  await page.waitForFunction(() => /abrir pdf/i.test(document.body.innerText), { timeout: 8000 });
+  ok('pdf: node created with filename', inc(await txt(), 'cronograma.pdf'));
+  ok('action: "abrir PDF"', await clickByText('abrir PDF'));
+  await page.waitForFunction(() => { const f = document.querySelector('iframe'); return !!(f && /^blob:/.test(f.src)); }, { timeout: 6000 });
+  ok('pdf: viewer opened with blob iframe', await page.evaluate(() => { const f = document.querySelector('iframe'); return !!(f && /^blob:/.test(f.src)); }));
+  await page.screenshot({ path: `${SHOT}/r11-pdf-viewer.png` });
+  await page.keyboard.press('Escape');
+  await sleep(200);
+  ok('pdf: viewer closed', await page.evaluate(() => !document.querySelector('iframe')));
 
 } catch (e) {
   results.push(['FAIL', 'EXCEPTION', String((e && e.stack) || e)]);
