@@ -67,21 +67,22 @@
                 </sc-if>
 
                 <sc-if value="{{ s.normal }}" hint-placeholder-val="{{ true }}">
-                  <div style="display:flex;flex-direction:column;align-items:center;justify-content:space-between;width:98px;height:{{ s.h }}px;background:#FFFDF8;border:1px solid rgba(33,30,26,0.24);box-shadow:-3px 4px 9px rgba(33,30,26,0.06);transition:transform .2s ease,box-shadow .2s ease;" style-hover="transform:translateY(-10px);box-shadow:-4px 8px 16px rgba(33,30,26,0.1);">
-                    <div style="padding:14px 0 0;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;color:rgba(33,30,26,0.45);">{{ s.num }}</div>
+                  <div style="display:flex;flex-direction:column;align-items:center;justify-content:space-between;width:98px;height:{{ s.h }}px;background:#FFFDF8;border:1px solid rgba(33,30,26,0.24);box-shadow:-3px 4px 9px rgba(33,30,26,0.06);transition:transform .2s ease,box-shadow .2s ease;overflow:hidden;" style-hover="transform:translateY(-10px);box-shadow:-4px 8px 16px rgba(33,30,26,0.1);">
+                    <div style="width:100%;height:5px;background:{{ s.color }};flex:none;"></div>
+                    <div style="padding:9px 0 0;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;color:rgba(33,30,26,0.45);">{{ s.num }}</div>
                     <div style="writing-mode:vertical-rl;text-orientation:mixed;font-family:var(--serif);font-size:23px;color:#211E1A;font-weight:600;letter-spacing:.01em;white-space:nowrap;padding:6px 0;">{{ s.name }}</div>
                     <div style="padding:0 0 14px;writing-mode:vertical-rl;font-family:'IBM Plex Mono',monospace;font-size:8.5px;letter-spacing:.16em;color:rgba(33,30,26,0.4);text-transform:uppercase;white-space:nowrap;">{{ s.aulas }}</div>
                   </div>
                 </sc-if>
 
                 <sc-if value="{{ s.active }}" hint-placeholder-val="{{ false }}">
-                  <div style="display:flex;flex-direction:column;align-items:center;justify-content:space-between;width:104px;height:{{ s.h }}px;background:#FFFDF8;border:1px solid var(--ox);box-shadow:-3px 4px 12px rgba(122,31,43,0.12);transition:transform .2s ease;" style-hover="transform:translateY(-10px);">
-                    <div style="width:100%;height:7px;background:var(--ox);"></div>
-                    <div style="padding:12px 0 0;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;color:var(--ox);">{{ s.num }}</div>
+                  <div style="display:flex;flex-direction:column;align-items:center;justify-content:space-between;width:104px;height:{{ s.h }}px;background:#FFFDF8;border:1px solid {{ s.color }};box-shadow:-3px 4px 12px rgba(122,31,43,0.12);transition:transform .2s ease;overflow:hidden;" style-hover="transform:translateY(-10px);">
+                    <div style="width:100%;height:7px;background:{{ s.color }};"></div>
+                    <div style="padding:12px 0 0;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;color:{{ s.color }};">{{ s.num }}</div>
                     <div style="writing-mode:vertical-rl;text-orientation:mixed;font-family:var(--serif);font-size:24px;color:#211E1A;font-weight:600;letter-spacing:.01em;white-space:nowrap;padding:6px 0;">{{ s.name }}</div>
                     <div style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:0 0 14px;">
                       <span style="writing-mode:vertical-rl;font-family:'IBM Plex Mono',monospace;font-size:8.5px;letter-spacing:.16em;color:rgba(33,30,26,0.5);text-transform:uppercase;white-space:nowrap;">{{ s.aulas }}</span>
-                      <span style="width:5px;height:5px;border-radius:50%;background:var(--ox);"></span>
+                      <span style="width:5px;height:5px;border-radius:50%;background:{{ s.color }};"></span>
                     </div>
                   </div>
                 </sc-if>
@@ -790,7 +791,22 @@
       <div onClick="{{ stop }}" style="width:100%;max-width:380px;background:#FFFDF8;border:1px solid rgba(33,30,26,0.3);box-shadow:0 18px 60px rgba(33,30,26,0.24);padding:28px 30px 22px;">
         <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--ox);margin-bottom:10px;">Disciplina</div>
         <h2 style="font-family:var(--serif);font-size:28px;line-height:1.05;color:#211E1A;font-weight:600;margin:0 0 4px;">{{ discMenu.name }}</h2>
-        <div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.04em;color:rgba(33,30,26,0.5);margin-bottom:22px;">{{ discMenu.meta }}</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.04em;color:rgba(33,30,26,0.5);margin-bottom:18px;">{{ discMenu.meta }}</div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+          <div style="display:flex;gap:8px;">
+            <sc-for list="{{ discMenu.colors }}" as="c" hint-placeholder-count="6">
+              <button onClick="{{ c.onPick }}" title="Cor" style="width:24px;height:24px;border-radius:2px;background:{{ c.color }};border:1px solid rgba(33,30,26,0.2);cursor:pointer;position:relative;" style-hover="transform:scale(1.08);">
+                <sc-if value="{{ c.selected }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;inset:-4px;border:1px solid #211E1A;border-radius:3px;"></span></sc-if>
+              </button>
+            </sc-for>
+          </div>
+          <div style="display:flex;gap:6px;">
+            <sc-if value="{{ discMenu.canLeft }}" hint-placeholder-val="{{ true }}"><button onClick="{{ discMenu.onMoveLeft }}" title="Mover para a esquerda" style="width:26px;height:26px;border:1px solid rgba(33,30,26,0.2);border-radius:2px;background:#FFFDF8;color:#211E1A;font-family:'IBM Plex Mono',monospace;cursor:pointer;" style-hover="border-color:var(--ox);">←</button></sc-if>
+            <sc-if value="{{ discMenu.canRight }}" hint-placeholder-val="{{ true }}"><button onClick="{{ discMenu.onMoveRight }}" title="Mover para a direita" style="width:26px;height:26px;border:1px solid rgba(33,30,26,0.2);border-radius:2px;background:#FFFDF8;color:#211E1A;font-family:'IBM Plex Mono',monospace;cursor:pointer;" style-hover="border-color:var(--ox);">→</button></sc-if>
+          </div>
+        </div>
+
         <button onClick="{{ openDiscFromMenu }}" style="display:block;width:100%;text-align:left;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.04em;color:#211E1A;background:transparent;border:1px solid rgba(33,30,26,0.18);border-radius:2px;padding:11px 13px;cursor:pointer;margin-bottom:9px;" style-hover="border-color:var(--ox);">Abrir quadro ↗</button>
         <button onClick="{{ openRenameFromMenu }}" style="display:block;width:100%;text-align:left;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.04em;color:#211E1A;background:transparent;border:1px solid rgba(33,30,26,0.18);border-radius:2px;padding:11px 13px;cursor:pointer;margin-bottom:9px;" style-hover="border-color:var(--ox);">Renomear</button>
         <button onClick="{{ deleteFromMenu }}" style="display:block;width:100%;text-align:left;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.04em;color:var(--ox);background:transparent;border:1px solid rgba(122,31,43,0.3);border-radius:2px;padding:11px 13px;cursor:pointer;" style-hover="background:rgba(122,31,43,0.06);">Excluir disciplina</button>

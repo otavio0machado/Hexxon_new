@@ -293,6 +293,10 @@ try {
   await page.click('button[title="Opções da disciplina"]');
   await page.waitForFunction(() => /Renomear/.test(document.body.innerText), { timeout: 5000 });
   ok('shelf: ⋯ menu opens', inc(await txt(), 'Renomear') && inc(await txt(), 'Excluir disciplina'));
+  // pick a discipline color (2nd swatch = green #2E3A2C) → persisted on the discipline
+  await page.evaluate(() => { const bs = [...document.querySelectorAll('#app button[title="Cor"]')]; if (bs[1]) bs[1].click(); });
+  await sleep(600);
+  ok('shelf: discipline color set', await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('sandbox-de-nos:v1') || '{}'); return (s.disciplines || []).some((d) => (d.color || '').toLowerCase() === '#2e3a2c'); }));
   ok('action: menu "Renomear"', await clickByText('Renomear'));
   await page.waitForFunction(() => !!document.querySelector('input[title="novo nome da disciplina"]'), { timeout: 5000 });
   await page.click('input[title="novo nome da disciplina"]', { clickCount: 3 });

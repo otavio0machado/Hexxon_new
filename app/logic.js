@@ -694,6 +694,15 @@ class Component extends DCLogic {
   closeDiscMenu = () => this.setState({ discMenu: null });
   deleteFromMenu = () => { const m = this.state.discMenu; if (m) this.deleteDiscById(m.id); };
   openDiscFromMenu = () => { const m = this.state.discMenu; if (m) { this.setState({ discMenu: null }); this.openDiscipline(m.id); } };
+  setDiscColor(id, color) { this.setState({ disciplines: this.state.disciplines.map(d => d.id === id ? { ...d, color } : d) }); }
+  moveDisc(dir) {
+    const m = this.state.discMenu; if (!m) return;
+    const arr = this.state.disciplines.slice();
+    const i = arr.findIndex(d => d.id === m.id); const j = i + dir;
+    if (i < 0 || j < 0 || j >= arr.length) return;
+    const t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+    this.setState({ disciplines: arr });
+  }
   openRenameFromMenu = () => { const m = this.state.discMenu; if (!m) return; const d = this.disc(m.id); this.setState({ discMenu: null, renameDisc: { id: m.id, name: d ? d.name : '' } }); };
   closeRename = () => this.setState({ renameDisc: null });
   setRenameName = (e) => { const r = this.state.renameDisc; if (r) this.setState({ renameDisc: { ...r, name: e.target.value } }); };
@@ -1191,6 +1200,7 @@ class Component extends DCLogic {
     const spines = S.disciplines.map(d => ({
       id: d.id, name: d.name, num: d.num, aulas: d.aulas + ' aulas', h: d.h,
       active: d.id === S.activeDisc, normal: d.id !== S.activeDisc, ghost: false, canMenu: true,
+      color: d.color || accent,
       onOpen: () => this.openDiscipline(d.id),
       onMenu: (e) => { this.stop(e); this.openDiscMenu(d.id); },
     }));
@@ -1486,7 +1496,17 @@ class Component extends DCLogic {
     let discMenu = null;
     if (S.discMenu) {
       const d = this.disc(S.discMenu.id);
-      if (d) discMenu = { name: d.name, meta: (d.semester || '') + (d.aulas ? (' · ' + d.aulas + ' aulas') : '') };
+      if (d) {
+        const idx = S.disciplines.findIndex(x => x.id === d.id);
+        const palette = ['#7A1F2B', '#2E3A2C', '#243043', '#5A3A22', '#3A2A4A', '#1F4A4A'];
+        const cur = d.color || accent;
+        discMenu = {
+          name: d.name, meta: (d.semester || '') + (d.aulas ? (' · ' + d.aulas + ' aulas') : ''),
+          colors: palette.map(c => ({ color: c, selected: c === cur, onPick: () => this.setDiscColor(d.id, c) })),
+          canLeft: idx > 0, canRight: idx < S.disciplines.length - 1,
+          onMoveLeft: () => this.moveDisc(-1), onMoveRight: () => this.moveDisc(1),
+        };
+      }
     }
     const renameDisc = S.renameDisc ? { name: S.renameDisc.name || '' } : null;
 
