@@ -28,7 +28,7 @@ class Component extends DCLogic {
     activeDisc: null,
     prefs: { accent: null, serif: null, grid: null, showHints: true },
     pan: { x: 0, y: 0 }, zoom: 0.95, panning: false,
-    selectedId: null, selectedConnId: null, drag: null, movingId: null, gen: null, popover: null,
+    selectedId: null, selectedConnId: null, drag: null, movingId: null, gen: null, popover: null, docked: false,
     hintOpen: true,
     reading: null, material: null, search: null, newDisc: null, toast: null, flash: null,
     discMenu: null, renameDisc: null, noteEdit: null, pdfView: null, imgView: null,
@@ -550,6 +550,13 @@ class Component extends DCLogic {
   setNoteContent(id, val) { this.setState({ nodes: this.state.nodes.map(n => n.id === id ? { ...n, content: val } : n) }); }
   setNoteTitle(id, val) { this.setState({ nodes: this.state.nodes.map(n => n.id === id ? { ...n, title: val, shortLabel: (val || 'Nota').slice(0, 18) } : n) }); }
 
+  // ---------- split view: dock any content overlay to the right half (keep the canvas live on the left) ----------
+  toggleDock = () => {
+    const d = !this.state.docked;
+    this.setState({ docked: d });
+    if (this.pdfEl) this.pdfEl.classList.toggle('sdn-docked', d);   // imperative PDF overlay
+  };
+
   // ---------- Notion-style note editor (full-screen) ----------
   openNoteEditor = (id) => { const n = this.byId()[id]; if (!n || n.type !== 'note') return; this.setState({ noteEdit: { id, mode: 'edit' }, selectedId: id }); };
   closeNoteEditor = () => this.setState({ noteEdit: null });
@@ -801,6 +808,7 @@ class Component extends DCLogic {
     this.pageWraps = {}; this.pdfDoc = null; this.pdfOutline = null; this.pdfDocNode = node;
     const el = (tag, cls, css) => { const d = document.createElement(tag); if (cls) d.className = cls; if (css) d.style.cssText = css; return d; };
     const ov = el('div', 'sdn-ov'); ov.style.zIndex = '100'; ov.style.setProperty('--sdn-ox', accent);
+    if (this.state.docked) ov.classList.add('sdn-docked');
     ov.addEventListener('pointerdown', (e) => { if (e.target === ov) this.closePdf(); });
     const panel = el('div', 'sdn-panel');
     // header — title + a tidy, grouped toolbar (icons with tooltips)
@@ -822,6 +830,7 @@ class Component extends DCLogic {
     }
     tools.appendChild(ico('↧', 'Exportar destaques como nota', () => this.exportHighlights(this.pdfDocNode)));
     tools.appendChild(ico('☰', 'Mostrar/ocultar painel', () => { if (this.pdfSide) this.pdfSide.classList.toggle('hidden'); }));
+    tools.appendChild(ico('⇥', 'Painel lateral / tela cheia — veja o quadro ao lado', () => this.toggleDock()));
     if (blob) tools.appendChild(ico('↓', 'Baixar o PDF', () => { const u = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = u; a.download = node.filename || 'documento.pdf'; a.click(); setTimeout(() => URL.revokeObjectURL(u), 1500); }));
     const close = el('button', 'sdn-x'); close.textContent = '✕'; close.title = 'Fechar (Esc)'; close.onclick = () => this.closePdf(); tools.appendChild(close);
     head.appendChild(tools); panel.appendChild(head);
@@ -2105,6 +2114,8 @@ class Component extends DCLogic {
 
     return {
       accent, serifVar,
+      // split view (dock content overlays to the right half)
+      dockCls: S.docked ? 'docked' : '', dockLabel: S.docked ? '⤢ tela cheia' : '⇥ painel', toggleDock: this.toggleDock,
       // masthead
       showCrumb, crumbName, goHome: this.goHome, openConta: this.openConta, openSearch: this.openSearch,
       contaBg: S.screen === 'conta' ? accent : 'var(--surface-raised)', contaFg: S.screen === 'conta' ? 'var(--surface-raised)' : 'var(--ink)',

@@ -34,7 +34,7 @@
   }
 </style>
 </helmet>
-<div class="ox-scope" style="position:relative;width:100%;height:100vh;overflow:hidden;background:var(--surface-page);font-family:'IBM Plex Mono',ui-monospace,monospace;--ox:{{ accent }};--serif:{{ serifVar }};">
+<div class="ox-scope {{ dockCls }}" style="position:relative;width:100%;height:100vh;overflow:hidden;background:var(--surface-page);font-family:'IBM Plex Mono',ui-monospace,monospace;--ox:{{ accent }};--serif:{{ serifVar }};">
 
   <!-- ===================== MASTHEAD ===================== -->
   <div style="position:absolute;top:0;left:0;right:0;height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:var(--surface-page);border-bottom:1px solid var(--ink-14);z-index:40;">
@@ -129,7 +129,7 @@
 
   <!-- ===================== CANVAS ===================== -->
   <sc-if value="{{ showCanvas }}" hint-placeholder-val="{{ false }}">
-    <div ref="{{ setVp }}" onPointerDown="{{ onBgPointerDown }}" onDoubleClick="{{ onBgDblClick }}" style="position:absolute;inset:54px 0 0 0;overflow:hidden;background-color:var(--surface-page);background-image:{{ bgImage }};background-size:{{ bgSize }}px {{ bgSize }}px;background-position:{{ panX }}px {{ panY }}px;cursor:{{ cursor }};user-select:none;touch-action:none;">
+    <div ref="{{ setVp }}" onPointerDown="{{ onBgPointerDown }}" onDoubleClick="{{ onBgDblClick }}" style="position:absolute;inset:54px var(--dock-w,0px) 0 0;transition:right .28s cubic-bezier(.2,.7,.3,1);overflow:hidden;background-color:var(--surface-page);background-image:{{ bgImage }};background-size:{{ bgSize }}px {{ bgSize }}px;background-position:{{ panX }}px {{ panY }}px;cursor:{{ cursor }};user-select:none;touch-action:none;">
 
       <div style="position:absolute;left:0;top:0;transform:{{ worldTransform }};transform-origin:0 0;pointer-events:none;">
         <svg style="position:absolute;left:0;top:0;width:1px;height:1px;overflow:visible;pointer-events:none;">
@@ -504,7 +504,7 @@
 
   <!-- ===================== READING / FOCUS ===================== -->
   <sc-if value="{{ reading }}" hint-placeholder-val="{{ false }}">
-    <div onClick="{{ closeReading }}" style="position:absolute;inset:0;z-index:70;padding:40px 24px;overflow:auto;" class="ox-scroll ox-modal scrim">
+    <div onClick="{{ closeReading }}" style="position:absolute;inset:0;z-index:70;padding:40px 24px;overflow:auto;" class="ox-scroll ox-modal scrim dockable">
       <div onClick="{{ stop }}" class="ox-sheet sheet sheet--editor" style="width:100%;max-width:860px;margin:auto;">
         <div class="sheet__head" style="padding:38px 52px 28px;">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;">
@@ -513,7 +513,10 @@
               <h2 class="t-title" style="margin:0;">{{ readingTitle }}</h2>
               <div class="t-caption" style="margin-top:12px;">{{ readingMeta }}</div>
             </div>
-            <button onClick="{{ closeReading }}" class="btn btn--icon" style="font-size:14px;flex:none;" style-hover="color:var(--ink);border-color:var(--ink-40);">✕</button>
+            <div style="display:flex;gap:8px;align-items:center;flex:none;">
+              <button onClick="{{ toggleDock }}" class="btn btn--quiet btn--sm" title="Painel lateral / tela cheia — veja o quadro ao lado">{{ dockLabel }}</button>
+              <button onClick="{{ closeReading }}" class="btn btn--icon" style="font-size:14px;" style-hover="color:var(--ink);border-color:var(--ink-40);">✕</button>
+            </div>
           </div>
           <div style="display:flex;align-items:center;gap:13px;margin-top:24px;">
             <div style="flex:1;height:2px;background:var(--ink-10);position:relative;">
@@ -588,12 +591,13 @@
 
   <!-- ===================== FLASHCARDS / REVISÃO ===================== -->
   <sc-if value="{{ flash }}" hint-placeholder-val="{{ false }}">
-    <div onClick="{{ closeFlash }}" style="position:absolute;inset:0;z-index:75;background:rgba(28,25,22,0.58);display:flex;align-items:center;justify-content:center;padding:32px;" class="ox-modal">
+    <div onClick="{{ closeFlash }}" style="position:absolute;inset:0;z-index:75;background:rgba(28,25,22,0.58);display:flex;align-items:center;justify-content:center;padding:32px;" class="ox-modal dockable dockable--dark">
       <div onClick="{{ stop }}" class="ox-riser" style="width:100%;max-width:560px;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
           <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--surface-page);">Revisão · {{ flashCount }}</span>
           <div style="display:flex;align-items:center;gap:10px;">
             <button onClick="{{ shuffleFlash }}" title="Embaralhar" class="btn btn--on-dark btn--sm" style="border-radius:2px;" style-hover="border-color:var(--surface-page);">↬ embaralhar</button>
+            <button onClick="{{ toggleDock }}" title="Painel lateral / tela cheia" class="btn btn--on-dark btn--sm" style="border-radius:2px;">{{ dockLabel }}</button>
             <button onClick="{{ closeFlash }}" class="btn btn--icon btn--on-dark" style="border-radius:2px;">✕</button>
           </div>
         </div>
@@ -786,12 +790,13 @@
 
   <!-- ===================== NOTE EDITOR (Notion-style) ===================== -->
   <sc-if value="{{ noteEdit }}" hint-placeholder-val="{{ false }}">
-    <div onClick="{{ closeNoteEditor }}" style="position:absolute;inset:0;z-index:82;background:rgba(28,25,22,0.46);display:flex;align-items:flex-start;justify-content:center;padding:40px 24px;overflow:auto;" class="scrim ox-scroll ox-modal">
+    <div onClick="{{ closeNoteEditor }}" style="position:absolute;inset:0;z-index:82;background:rgba(28,25,22,0.46);display:flex;align-items:flex-start;justify-content:center;padding:40px 24px;overflow:auto;" class="scrim ox-scroll ox-modal dockable">
       <div onClick="{{ stop }}" class="sheet ox-sheet" style="width:100%;max-width:760px;background:var(--surface-raised);border:1px solid var(--ink-16);box-shadow:0 1px 1px var(--ink-04),0 24px 70px var(--ink-28);margin:auto;display:flex;flex-direction:column;min-height:480px;">
         <div style="display:flex;justify-content:space-between;align-items:center;padding:18px 28px;border-bottom:1px solid var(--ink-12);flex:none;">
           <span class="kicker">Nota</span>
           <div style="display:flex;align-items:center;gap:12px;">
             <span class="t-caption" style="color:var(--ink-40);">{{ noteEdit.chars }}</span>
+            <button onClick="{{ toggleDock }}" class="btn btn--quiet btn--sm" title="Painel lateral / tela cheia">{{ dockLabel }}</button>
             <button onClick="{{ toggleNotePreview }}" class="btn btn--ghost btn--sm" style="font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-60);border-color:var(--ink-20);border-radius:2px;" style-hover="color:var(--ox);border-color:var(--ox);">{{ noteEdit.modeLabel }}</button>
             <button onClick="{{ closeNoteEditor }}" class="btn btn--icon" style="font-size:14px;color:var(--text-muted);border-color:var(--ink-18);border-radius:2px;width:30px;height:30px;" style-hover="color:var(--ink);border-color:var(--ink-40);">✕</button>
           </div>
@@ -828,10 +833,11 @@
 
   <!-- ===================== IMAGE LIGHTBOX ===================== -->
   <sc-if value="{{ imgView }}" hint-placeholder-val="{{ false }}">
-    <div onClick="{{ closeImg }}" style="position:absolute;inset:0;z-index:85;background:rgba(20,18,16,0.82);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:34px;" class="ox-modal">
+    <div onClick="{{ closeImg }}" style="position:absolute;inset:0;z-index:85;background:rgba(20,18,16,0.82);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:34px;" class="ox-modal dockable dockable--dark">
       <img src="{{ imgViewUrl }}" alt="{{ imgViewCaption }}" onClick="{{ stop }}" class="ox-riser" style="max-width:94%;max-height:84%;object-fit:contain;background:var(--surface-raised);border-radius:6px;border:1px solid rgba(250,248,243,0.3);box-shadow:0 30px 80px rgba(0,0,0,0.5);" />
       <div onClick="{{ stop }}" style="display:flex;align-items:center;gap:16px;margin-top:16px;">
         <span class="t-label" style="color:var(--surface-page);max-width:60vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ imgViewCaption }}</span>
+        <button onClick="{{ toggleDock }}" title="Painel lateral / tela cheia" class="btn btn--ghost btn--on-dark btn--sm" style="color:var(--surface-page);background:transparent;border:1px solid rgba(250,248,243,0.45);" style-hover="border-color:var(--surface-page);">{{ dockLabel }}</button>
         <button onClick="{{ closeImg }}" class="btn btn--ghost btn--on-dark btn--sm" style="color:var(--surface-page);background:transparent;border:1px solid rgba(250,248,243,0.45);" style-hover="border-color:var(--surface-page);">Fechar ✕</button>
       </div>
     </div>

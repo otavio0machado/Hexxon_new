@@ -999,3 +999,49 @@ button.row-item,a.row-item{ cursor:pointer; border:none; }
 .rule{ border:0; height:1px; background:var(--ink-16); margin:0; }
 .rule--strong{ background:var(--ink-28); }
 .rule--accent{ background:var(--ox-35); }
+/* ============================================================================
+   18) SPLIT VIEW / DOCK — a content overlay can dock to the right half so the
+   canvas stays live and editable on the left (tab-like). Toggled by .docked on
+   the app-root, which also reserves the viewport's right inset (--dock-w).
+   ============================================================================ */
+.docked{ --dock-w: 50vw; }
+@keyframes ox-dock-in{ from{ transform:translateX(26px); opacity:0 } to{ transform:none; opacity:1 } }
+
+/* light content overlays (reading, note editor): the .dockable container BECOMES
+   the panel; its inner sheet sheds its own frame. */
+.docked .dockable{
+  position:fixed !important; inset:var(--masthead-h) 0 0 auto !important;
+  width:var(--dock-w) !important; min-width:360px;
+  background:var(--surface-raised) !important; border-left:var(--hairline);
+  box-shadow:-12px 0 44px var(--ink-14);
+  backdrop-filter:none; -webkit-backdrop-filter:none;
+  padding:0 !important; overflow:auto; display:block !important;
+  animation:ox-dock-in .28s var(--ease-out) both;
+}
+.docked .dockable > *{
+  width:100% !important; max-width:none !important; margin:0 !important;
+  min-height:auto !important; border:none !important; border-radius:0 !important;
+  box-shadow:none !important; background:transparent !important;
+  animation:none !important; transform:none !important;
+}
+/* dark-context overlays (flashcard, image lightbox) keep their on-dark chrome:
+   the docked panel is a warm-dark study surface, content centered. */
+.docked .dockable--dark{
+  background:#241F1A !important; border-left-color:rgba(0,0,0,0.35);
+  display:flex !important; align-items:center; justify-content:center; padding:26px !important;
+}
+.docked .dockable--dark img{ width:auto !important; max-width:100% !important; max-height:74vh !important; }
+
+/* imperative pdf.js overlay lives at document level, so it can't be scoped under
+   .docked — it carries .sdn-docked directly (set in logic.js toggleDock/build). */
+.sdn-ov.sdn-docked{
+  position:fixed; inset:var(--masthead-h) 0 0 auto; width:50vw; min-width:360px;
+  padding:0; background:transparent;
+  backdrop-filter:none; -webkit-backdrop-filter:none;
+  align-items:stretch; justify-content:stretch;
+  animation:ox-dock-in .28s cubic-bezier(.2,.7,.3,1) both;
+}
+.sdn-ov.sdn-docked .sdn-panel{
+  max-width:none; width:100%; height:100%; border-radius:0; border:none;
+  border-left:1px solid rgba(33,30,26,0.16); box-shadow:-12px 0 44px rgba(33,30,26,0.14);
+}
