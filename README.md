@@ -120,6 +120,7 @@ armazenamento local encher, o app avisa para exportar e liberar espaço.
 | `api/ask.js` | Serverless: Q&A fundamentado no texto **e/ou imagens** de um PDF ("Pergunte ao PDF" / 👁 visão). |
 | `api/config.js` | Devolve ao navegador a config **pública** do Supabase (URL + anon key), se houver. |
 | `supabase/migrations/` | SQL da tabela `sdn_state` (estado na nuvem, com RLS por usuário). |
+| **`app/design.css`** | **Design system — a fonte única da verdade da marca** (tokens + biblioteca de componentes). Injetado globalmente pelo build. Veja abaixo. |
 | `app/template.html` | A view (DSL: `{{ }}`, `<sc-if>`, `<sc-for>`, `style-hover`, `ref`). |
 | `app/logic.js` | A lógica (`class Component extends DCLogic`) — estado, IA, persistência. |
 | `app/runtime.js` | *dc-lite* — renderizador aberto da DSL sobre React (sem dependência proprietária). |
@@ -132,6 +133,35 @@ armazenamento local encher, o app avisa para exportar e liberar espaço.
 O `index.html` mantém **template e lógica como arquivos editáveis** e os renderiza
 com um runtime aberto de ~250 linhas (*dc-lite*) — **sem depender do `support.js`
 gerado** pela ferramenta de design. É um app real e seu.
+
+---
+
+## Design system (`app/design.css`)
+
+A identidade **"Margem"** é editorial (serifa Cormorant nos títulos, IBM Plex Mono no
+*chrome*, oxblood como segunda tinta de impressão). Toda ela vive num **único arquivo**,
+`app/design.css`, injetado em `<head>` antes dos estilos do app. **Nada de valores cravados
+à mão** — cada cor, tamanho, espaço, raio e sombra sai de um *token*.
+
+**Camada de tokens (`:root`)**
+- **Cor:** rampa de tinta `--ink` / `--ink-04…--ink-85` (uma tripla `--ink-rgb` gera todas as
+  opacidades); superfícies creme `--surface-page/-raised/-sunken/-reading`; acento **temático**
+  `--ox` com tints via `color-mix` (`--ox-06…--ox-35`); vermelho de perigo fixo `--danger`.
+- **Tipografia:** escala modular de 9 passos `--fs-display 62 · title 44 · heading 30 · subhead 22
+  · lead 17 · body-lg 16 · body 13 · label 11 · caption 10 · micro 8.5`, com *line-heights*,
+  pesos e *tracking* tokenizados.
+- **Espaço:** escala de 8px (`--sp-1…--sp-12`) + *insets* semânticos. **Raio / elevação / movimento
+  / z-index:** escalas dedicadas.
+
+**Biblioteca de componentes** — classes que substituem o *style* inline repetido:
+`.btn` (+ `--primary/--ghost/--danger/--icon/…`), `.field`/`.input`/`.textarea`, `.card`/`.card--node`,
+`.kicker`/`.t-display…t-micro`, `.chip`, `.seg`, `.switch`, `.badge`, `.toast`, `.scrim`/`.sheet`/`.modal`/
+`.popover`, `.toolbar`, `.row-item`, `.progress`.
+
+**Tema (acento):** a classe **`.ox-scope`** (no contêiner-raiz, onde `--ox` é definido) re-declara os
+tints derivados do acento, então trocar a **Cor de acento** em *Conta* (oxblood / verde / navy / marrom)
+re-tinge **toda** borda, tint e anel de foco em tempo real — via `color-mix`, sem duplicar CSS.
+O vermelho de *perigo* fica fixo de propósito. Respeita `prefers-reduced-motion`.
 
 ---
 
