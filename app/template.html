@@ -295,7 +295,7 @@
         <div onPointerDown="{{ selChrome.onStop }}" class="ox-pop" style="position:absolute;left:{{ selChrome.left }}px;top:{{ selChrome.top }}px;display:flex;gap:5px;background:var(--surface-raised);border:1px solid var(--ink-16);border-radius:8px;padding:4px;box-shadow:0 2px 6px var(--ink-08),0 10px 26px var(--ink-14);z-index:35;">
           <button onClick="{{ selChrome.onDup }}" class="btn btn--quiet" style="font-size:10px;letter-spacing:.08em;color:var(--ink);border-radius:2px;padding:6px 9px;" style-hover="background:var(--ink-06);">⧉ duplicar</button>
           <span style="width:1px;background:var(--ink-14);"></span>
-          <button onClick="{{ selChrome.onDel }}" class="btn btn--quiet" style="font-size:10px;letter-spacing:.08em;color:var(--ox);border-radius:2px;padding:6px 9px;" style-hover="background:var(--ox-08);">✕ excluir</button>
+          <button onClick="{{ selChrome.onDel }}" class="btn btn--quiet" style="font-size:10px;letter-spacing:.08em;color:var(--danger);border-radius:2px;padding:6px 9px;" style-hover="background:var(--danger-08);">✕ excluir</button>
         </div>
       </sc-if>
 
@@ -318,15 +318,15 @@
         <button onClick="{{ deleteDiscipline }}" title="Excluir esta disciplina" class="btn btn--quiet" style="font-size:10px;letter-spacing:.14em;color:var(--ink-50);padding:0;" style-hover="color:var(--ox);">excluir disciplina</button>
       </div>
 
-      <div style="position:absolute;right:24px;bottom:24px;display:flex;gap:10px;align-items:center;">
+      <div style="position:absolute;right:24px;bottom:24px;display:flex;gap:var(--sp-15);align-items:center;">
         <input ref="{{ setFileInput }}" type="file" accept="application/pdf,.pdf" onChange="{{ onPdfPick }}" style="display:none;" />
         <input ref="{{ setImgInput }}" type="file" accept="image/*" onChange="{{ onImgPick }}" style="display:none;" />
-        <button onClick="{{ pickPdf }}" title="Importar PDF como nota" class="btn btn--ghost" style="font-size:11px;letter-spacing:.14em;color:var(--ink);background:var(--surface-raised);border-color:var(--ink-28);border-radius:6px;padding:11px 14px;" style-hover="border-color:var(--ink-50);">↥ PDF</button>
-        <button onClick="{{ pickImage }}" title="Adicionar imagem (ou cole com ⌘V)" class="btn btn--ghost" style="font-size:11px;letter-spacing:.14em;color:var(--ink);background:var(--surface-raised);border-color:var(--ink-28);border-radius:6px;padding:11px 14px;" style-hover="border-color:var(--ink-50);">+ Imagem</button>
-        <button onClick="{{ addNoteNode }}" class="btn btn--ghost" style="font-size:11px;letter-spacing:.14em;color:var(--ink);background:var(--surface-raised);border-color:var(--ink-28);border-radius:6px;padding:11px 14px;" style-hover="border-color:var(--ink-50);">+ Nota</button>
-        <button onClick="{{ addNode }}" class="btn btn--ghost" style="font-size:11px;letter-spacing:.14em;color:var(--ink);background:var(--surface-raised);border-color:var(--ink-28);border-radius:6px;padding:11px 16px;" style-hover="border-color:var(--ink-50);">+ Nó</button>
-        <button onClick="{{ cornerAi }}" class="btn btn--primary" style="font-size:11px;letter-spacing:.14em;color:var(--surface-raised);background:var(--ox);border-color:var(--ox);border-radius:6px;padding:11px 18px;display:flex;align-items:center;gap:8px;box-shadow:0 2px 8px var(--ox-22);" style-hover="filter:brightness(0.92);">
-          <span style="width:5px;height:5px;background:var(--surface-raised);display:inline-block;"></span>Invocar IA
+        <button onClick="{{ pickPdf }}" title="Importar PDF como nota" class="btn btn--tool">↥ PDF</button>
+        <button onClick="{{ pickImage }}" title="Adicionar imagem (ou cole com ⌘V)" class="btn btn--tool">+ Imagem</button>
+        <button onClick="{{ addNoteNode }}" class="btn btn--tool">+ Nota</button>
+        <button onClick="{{ addNode }}" class="btn btn--tool">+ Nó</button>
+        <button onClick="{{ cornerAi }}" class="btn btn--primary">
+          <span style="width:5px;height:5px;background:var(--on-ox);display:inline-block;"></span>Invocar IA
         </button>
       </div>
 
@@ -528,7 +528,7 @@
             <div style="display:grid;grid-template-columns:1fr 184px;gap:32px;padding:30px 0;border-bottom:1px solid var(--ink-10);">
               <div>
                 <div style="display:flex;gap:16px;align-items:flex-start;">
-                  <span class="t-heading" style="color:var(--ox);line-height:1;flex:none;width:34px;">{{ q.num }}</span>
+                  <span class="t-title" style="color:var(--accent);line-height:0.82;flex:none;width:48px;">{{ q.num }}</span>
                   <div style="flex:1;">
                     <div class="t-body" style="line-height:1.62;color:var(--ink);">{{ q.text }}</div>
 

@@ -569,6 +569,11 @@
 .btn--lg{ min-height:var(--control-h-lg); padding:14px 24px; font-size:var(--fs-body); }
 .btn--tool{ padding:var(--space-inset-btn-tool); }
 .btn--block{ width:100%; }
+/* sentence-case button — editorial dialog actions (Salvar, Renomear, Abrir…):
+   same .btn structure/hover/press, but natural case + reading tracking.
+   Left-align its label when it is also a full-width menu row. */
+.btn--cap{ text-transform:none; letter-spacing:var(--tr-ui); font-weight:var(--fw-med); }
+.btn--start{ justify-content:flex-start; text-align:left; }
 
 /* mono pill / tag button (search suggestions, filter tags) */
 .pill{
