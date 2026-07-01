@@ -142,7 +142,7 @@
         </svg>
 
         <sc-for list="{{ nodes }}" as="n" hint-placeholder-count="3">
-          <div onPointerDown="{{ n.onDown }}" style="position:absolute;left:{{ n.x }}px;top:{{ n.y }}px;width:{{ n.w }}px;pointer-events:auto;cursor:grab;">
+          <div onPointerDown="{{ n.onDown }}" style="position:absolute;left:{{ n.x }}px;top:{{ n.y }}px;width:{{ n.w }}px;pointer-events:auto;cursor:grab;transition:transform .14s cubic-bezier(.2,.7,.3,1),filter .14s ease;{{ n.dragCss }}">
 
             <sc-if value="{{ n.isTitle }}" hint-placeholder-val="{{ false }}">
               <div style="background:#FFFDF8;border:1px solid rgba(33,30,26,0.28);border-radius:3px;padding:28px 32px;box-shadow:0 1px 0 rgba(33,30,26,0.05),inset 0 0 0 3px rgba(33,30,26,0.035);text-align:center;">

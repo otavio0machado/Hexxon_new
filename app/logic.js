@@ -28,7 +28,7 @@ class Component extends DCLogic {
     activeDisc: null,
     prefs: { accent: null, serif: null, grid: null, showHints: true },
     pan: { x: 0, y: 0 }, zoom: 0.95, panning: false,
-    selectedId: null, selectedConnId: null, drag: null, gen: null, popover: null,
+    selectedId: null, selectedConnId: null, drag: null, movingId: null, gen: null, popover: null,
     hintOpen: true,
     reading: null, material: null, search: null, newDisc: null, toast: null, flash: null,
     discMenu: null, renameDisc: null, noteEdit: null, pdfView: null, imgView: null,
@@ -462,7 +462,7 @@ class Component extends DCLogic {
     } else if (g.type === 'node') {
       const z = this.state.zoom;
       const dx = (e.clientX - g.sx) / z, dy = (e.clientY - g.sy) / z;
-      if (Math.abs(e.clientX - g.sx) + Math.abs(e.clientY - g.sy) > 3 && !g.moved) { g.moved = true; this.pushHist(); }
+      if (Math.abs(e.clientX - g.sx) + Math.abs(e.clientY - g.sy) > 3 && !g.moved) { g.moved = true; this.pushHist(); this.setState({ movingId: g.id }); }
       this.setState({ nodes: this.state.nodes.map(n => n.id === g.id ? { ...n, x: g.ox + dx, y: g.oy + dy } : n) });
     } else if (g.type === 'resize') {
       const z = this.state.zoom;
@@ -483,6 +483,7 @@ class Component extends DCLogic {
     const g = this.g;
     if (!g) return;
     this.g = null;
+    if (this.state.movingId) this.setState({ movingId: null });
     if (g.type === 'pan') {
       this.setState({ panning: false });
       if (!g.moved) this.setState({ selectedId: null, selectedConnId: null, popover: null });
@@ -1876,6 +1877,7 @@ class Component extends DCLogic {
         resizable,
         selected: S.selectedId === n.id,
         isOver: !!(S.drag && S.drag.overId === n.id),
+        dragCss: (S.movingId === n.id) ? 'transform:scale(1.02);filter:drop-shadow(0 16px 28px rgba(33,30,26,0.22));cursor:grabbing;z-index:20;' : '',
         connectedLabel,
         connLine: hasConn ? ('●  lê de — ' + connectedLabel) : '○  nenhum nó conectado',
         genEmpty: false, genResult: false, filled: false, showStatus: false, statusText: '', resultKicker: '', shownLines: [],
