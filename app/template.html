@@ -40,8 +40,8 @@
   <div style="position:absolute;top:0;left:0;right:0;height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:var(--surface-page);border-bottom:1px solid var(--ink-14);z-index:40;">
     <div style="display:flex;align-items:center;gap:16px;">
       <button onClick="{{ goHome }}" style="display:flex;align-items:center;gap:9px;background:none;border:none;cursor:pointer;padding:0;">
-        <span style="width:9px;height:9px;background:var(--ox);display:inline-block;"></span>
-        <span style="font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:.3em;color:var(--ink);font-weight:500;">MARGEM</span>
+        <span class="ox-dot"></span>
+        <span class="t-wordmark">MARGEM</span>
       </button>
       <sc-if value="{{ showCrumb }}" hint-placeholder-val="{{ false }}">
         <span style="display:flex;align-items:center;gap:10px;">
@@ -54,23 +54,23 @@
     </div>
     <div style="display:flex;align-items:center;gap:11px;">
       <button onClick="{{ openSearch }}" style="display:flex;align-items:center;gap:24px;background:var(--surface-raised);border:1px solid var(--ink-20);border-radius:8px;padding:7px 10px 7px 13px;cursor:pointer;" style-hover="border-color:var(--ink-40);">
-        <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.04em;color:var(--ink-50);">Buscar…</span>
-        <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.06em;color:var(--ink-42);border:1px solid var(--ink-20);border-radius:2px;padding:1px 5px;">⌘K</span>
+        <span class="t-label" style="color:var(--text-tertiary);">Buscar…</span>
+        <span class="kbd">⌘K</span>
       </button>
-      <button onClick="{{ openConta }}" title="Conta" style="width:30px;height:30px;display:flex;align-items:center;justify-content:center;background:{{ contaBg }};border:1px solid var(--ox);border-radius:7px;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.05em;color:{{ contaFg }};" style-hover="filter:brightness(0.97);">{{ identInitials }}</button>
+      <button onClick="{{ openConta }}" title="Conta" class="avatar" style="background:{{ contaBg }};color:{{ contaFg }};" style-hover="filter:brightness(0.97);">{{ identInitials }}</button>
     </div>
   </div>
 
   <!-- ===================== BIBLIOTECA ===================== -->
   <sc-if value="{{ showBiblioteca }}" hint-placeholder-val="{{ true }}">
-    <div class="ox-scroll" style="position:absolute;inset:54px 0 0 0;overflow:auto;background:var(--surface-page);background-image:radial-gradient(circle, rgba(40,32,24,0.05) 1px, transparent 1.4px);background-size:30px 30px;">
+    <div class="ox-scroll surface-dotgrid" style="position:absolute;inset:54px 0 0 0;overflow:auto;">
       <div style="max-width:1140px;margin:0 auto;padding:60px 56px 40px;min-height:calc(100vh - 54px);display:flex;flex-direction:column;">
         <div style="display:flex;justify-content:space-between;align-items:flex-end;border-bottom:1px solid var(--ink-16);padding-bottom:22px;">
           <div>
-            <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.32em;color:var(--ox);text-transform:uppercase;margin-bottom:14px;">Estante · Vol. IV · 2026.1</div>
-            <h1 style="font-family:var(--serif);font-size:62px;line-height:0.95;color:var(--ink);font-weight:600;margin:0;letter-spacing:.005em;">Suas disciplinas</h1>
+            <div class="kicker" style="margin-bottom:14px;">Estante · Vol. IV · 2026.1</div>
+            <h1 class="t-display" style="margin:0;">Suas disciplinas</h1>
           </div>
-          <div style="text-align:right;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;color:var(--text-muted);line-height:1.9;padding-bottom:5px;">
+          <div class="t-caption t-caption--loose" style="text-align:right;color:var(--text-muted);padding-bottom:5px;">
             <div>{{ shelfName }}</div>
             <div>{{ shelfMeta }}</div>
           </div>
@@ -120,8 +120,8 @@
         </div>
 
         <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--ink-12);padding-top:18px;">
-          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.08em;color:var(--ink-42);">Toque numa lombada para abrir o quadro.</span>
-          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.08em;color:var(--ink-42);">{{ footerStats }}</span>
+          <span class="t-caption" style="color:var(--ink-42);">Toque numa lombada para abrir o quadro.</span>
+          <span class="t-caption" style="color:var(--ink-42);">{{ footerStats }}</span>
         </div>
       </div>
     </div>
