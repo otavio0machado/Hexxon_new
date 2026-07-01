@@ -146,7 +146,7 @@
 
             <sc-if value="{{ n.isTitle }}" hint-placeholder-val="{{ false }}">
               <div class="card card--node card--node--title" style="background:var(--surface-raised);border:1px solid var(--ink-28);border-radius:3px;padding:28px 32px;box-shadow:0 1px 0 var(--ink-05),inset 0 0 0 3px var(--ink-035);text-align:center;">
-                <div class="kicker" style="font-size:10px;letter-spacing:.3em;color:var(--ox);margin-bottom:13px;">{{ n.kickerLabel }}</div>
+                <div class="kicker" style="letter-spacing:.3em;color:var(--ox);margin-bottom:13px;">{{ n.kickerLabel }}</div>
                 <input onPointerDown="{{ stop }}" value="{{ n.titleBig }}" onInput="{{ n.onTitleRename }}" title="renomear disciplina" class="input--seam input--serif t-title" style="width:100%;text-align:center;line-height:1.0;color:var(--ink);letter-spacing:.005em;padding:0;" />
                 <div style="height:1px;background:var(--ink-20);margin:18px auto 13px;width:58px;"></div>
                 <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.16em;color:var(--ink-50);text-transform:uppercase;">{{ n.titleMeta }}</div>
@@ -155,7 +155,7 @@
 
             <sc-if value="{{ n.isLesson }}" hint-placeholder-val="{{ true }}">
               <div class="card card--node card--node--lesson" style="background:var(--surface-raised);border:1px solid var(--ink-24);border-radius:3px;padding:19px 21px;box-shadow:0 1px 0 var(--ink-04);{{ n.cardCss }}">
-                <div class="kicker kicker--ink" style="font-size:10px;letter-spacing:.28em;color:var(--ink-42);margin-bottom:9px;">{{ n.kicker }}</div>
+                <div class="kicker kicker--ink" style="letter-spacing:.28em;color:var(--ink-42);margin-bottom:9px;">{{ n.kicker }}</div>
                 <div class="t-subhead" style="line-height:1.1;color:var(--ink);">{{ n.titleText }}</div>
                 <button onPointerDown="{{ stop }}" onClick="{{ n.onMaterial }}" style="display:flex;align-items:center;gap:8px;margin-top:15px;background:none;border:none;padding:0;cursor:pointer;width:100%;text-align:left;" style-hover="opacity:0.7;">
                   <span style="width:5px;height:5px;background:var(--ox);display:inline-block;flex:none;"></span>
@@ -167,9 +167,9 @@
 
             <sc-if value="{{ n.genEmpty }}" hint-placeholder-val="{{ false }}">
               <div class="card card--node card--dashed" style="background:var(--surface-sunken);border:1px dashed var(--ink-34);border-radius:3px;padding:20px;">
-                <div class="kicker kicker--ink" style="font-size:10px;letter-spacing:.28em;color:var(--ink-40);margin-bottom:13px;">Nó vazio</div>
-                <div class="t-body" style="font-size:12px;line-height:1.55;color:var(--ink-60);margin-bottom:15px;">Conecte uma Nota ou PDF e invoque a IA para preencher este nó.</div>
-                <div class="t-caption" style="font-size:10.5px;letter-spacing:.04em;color:var(--ink-50);text-transform:none;margin-bottom:16px;">{{ n.connLine }}</div>
+                <div class="kicker kicker--ink" style="letter-spacing:.28em;color:var(--ink-40);margin-bottom:13px;">Nó vazio</div>
+                <div class="t-body" style="line-height:1.55;color:var(--ink-60);margin-bottom:15px;">Conecte uma Nota ou PDF e invoque a IA para preencher este nó.</div>
+                <div class="t-caption" style="letter-spacing:.04em;color:var(--ink-50);text-transform:none;margin-bottom:16px;">{{ n.connLine }}</div>
                 <button onPointerDown="{{ stop }}" onClick="{{ n.onAi }}" class="btn btn--accent btn--block" style="font-size:11px;letter-spacing:.16em;border-radius:2px;padding:10px 12px;gap:8px;" style-hover="background:var(--ox-06);">
                   <span style="width:5px;height:5px;background:var(--ox);display:inline-block;"></span>Invocar IA
                 </button>
@@ -178,13 +178,13 @@
 
             <sc-if value="{{ n.genResult }}" hint-placeholder-val="{{ false }}">
               <div onClick="{{ n.onSkip }}" onDoubleClick="{{ n.onOpen }}" class="ox-scroll card card--node card--node--result" style="background:var(--surface-raised);border:1px solid var(--ink-28);border-radius:3px;padding:20px 22px;box-shadow:0 1px 0 var(--ink-05);{{ n.genBodyCss }}">
-                <div class="kicker" style="font-size:10px;letter-spacing:.24em;color:var(--ox);margin-bottom:5px;">{{ n.resultKicker }}</div>
+                <div class="kicker" style="letter-spacing:.24em;color:var(--ox);margin-bottom:5px;">{{ n.resultKicker }}</div>
                 <div class="t-heading" style="font-size:25px;line-height:1.04;color:var(--ink);margin-bottom:7px;">{{ n.blockTitle }}</div>
                 <div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.08em;color:var(--text-muted);text-transform:uppercase;margin-bottom:15px;">lê de — {{ n.connectedLabel }}</div>
                 <div style="height:1px;background:var(--ink-16);margin-bottom:15px;"></div>
                 <sc-if value="{{ n.showStatus }}" hint-placeholder-val="{{ false }}">
                   <div style="display:flex;align-items:center;gap:9px;margin-bottom:2px;">
-                    <span class="t-body" style="font-size:12px;color:var(--ink-60);">{{ n.statusText }}</span>
+                    <span class="t-body" style="color:var(--ink-60);">{{ n.statusText }}</span>
                     <span style="display:inline-block;width:6px;height:13px;background:var(--ox);animation:ox-blink 1s steps(1) infinite;"></span>
                   </div>
                   <div style="height:1px;background:var(--ink-10);overflow:hidden;margin-top:12px;position:relative;">
@@ -194,7 +194,7 @@
                 <sc-for list="{{ n.shownLines }}" as="line" hint-placeholder-count="0">
                   <div style="display:flex;gap:12px;margin-bottom:13px;align-items:flex-start;">
                     <span class="t-body" style="font-size:11px;color:var(--ox);line-height:1.62;flex:none;padding-top:1px;">{{ line.n }}</span>
-                    <span class="t-body" style="font-size:12.5px;line-height:1.62;color:var(--ink);">{{ line.text }}<sc-if value="{{ line.caret }}" hint-placeholder-val="{{ false }}"><span style="display:inline-block;width:6px;height:12px;background:var(--ox);margin-left:2px;transform:translateY(1px);animation:ox-blink 1s steps(1) infinite;"></span></sc-if></span>
+                    <span class="t-body" style="line-height:1.62;color:var(--ink);">{{ line.text }}<sc-if value="{{ line.caret }}" hint-placeholder-val="{{ false }}"><span style="display:inline-block;width:6px;height:12px;background:var(--ox);margin-left:2px;transform:translateY(1px);animation:ox-blink 1s steps(1) infinite;"></span></sc-if></span>
                   </div>
                 </sc-for>
                 <sc-if value="{{ n.filled }}" hint-placeholder-val="{{ false }}">
@@ -236,7 +236,7 @@
 
             <sc-if value="{{ n.isPdf }}" hint-placeholder-val="{{ false }}">
               <div class="card card--node card--node--pdf" style="background:var(--surface-raised);border:1px solid var(--ink-28);border-radius:3px;padding:17px 18px;box-shadow:0 1px 0 var(--ink-04);{{ n.cardCss }}">
-                <div class="kicker" style="font-size:9px;letter-spacing:.22em;color:var(--ox);margin-bottom:11px;">PDF · documento</div>
+                <div class="kicker" style="letter-spacing:.22em;color:var(--ox);margin-bottom:11px;">PDF · documento</div>
                 <div style="display:flex;gap:11px;align-items:flex-start;margin-bottom:13px;">
                   <sc-if value="{{ n.pdfHasThumb }}" hint-placeholder-val="{{ false }}">
                     <img src="{{ n.pdfThumb }}" draggable="false" style="flex:none;width:46px;height:60px;object-fit:cover;object-position:top;border:1px solid var(--ink-20);border-radius:2px;background:#fff;" />
@@ -246,7 +246,7 @@
                   </sc-if>
                   <div style="flex:1;min-width:0;">
                     <div class="t-lead" style="line-height:1.2;color:var(--ink);font-weight:600;word-break:break-word;">{{ n.pdfName }}</div>
-                    <div class="t-caption" style="font-size:9px;letter-spacing:.04em;color:var(--text-muted);text-transform:none;margin-top:3px;">{{ n.pdfMeta }}</div>
+                    <div class="t-caption" style="letter-spacing:.04em;color:var(--text-muted);text-transform:none;margin-top:3px;">{{ n.pdfMeta }}</div>
                   </div>
                 </div>
                 <button onPointerDown="{{ stop }}" onClick="{{ n.onOpenPdf }}" class="btn btn--accent btn--block" style="font-size:10.5px;letter-spacing:.14em;border-radius:2px;padding:9px 12px;gap:8px;" style-hover="background:var(--ox-06);">abrir PDF ↗</button>
@@ -337,15 +337,15 @@
             <button onClick="{{ dismissHint }}" style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text-muted);background:none;border:none;cursor:pointer;padding:0;line-height:1;" style-hover="color:var(--ink);">✕</button>
           </div>
           <div style="display:flex;gap:11px;margin-bottom:11px;align-items:flex-start;">
-            <span class="t-caption" style="font-size:10px;color:var(--ox);text-transform:none;padding-top:1px;">01</span>
+            <span class="t-caption" style="color:var(--ox);text-transform:none;padding-top:1px;">01</span>
             <span class="t-body" style="font-size:11px;line-height:1.5;color:var(--text-secondary);">Toque duplo no papel para criar um nó.</span>
           </div>
           <div style="display:flex;gap:11px;margin-bottom:11px;align-items:flex-start;">
-            <span class="t-caption" style="font-size:10px;color:var(--ox);text-transform:none;padding-top:1px;">02</span>
+            <span class="t-caption" style="color:var(--ox);text-transform:none;padding-top:1px;">02</span>
             <span class="t-body" style="font-size:11px;line-height:1.5;color:var(--text-secondary);">Crie uma Nota ou importe um PDF e conecte (●) ao nó.</span>
           </div>
           <div style="display:flex;gap:11px;align-items:flex-start;">
-            <span class="t-caption" style="font-size:10px;color:var(--ox);text-transform:none;padding-top:1px;">03</span>
+            <span class="t-caption" style="color:var(--ox);text-transform:none;padding-top:1px;">03</span>
             <span class="t-body" style="font-size:11px;line-height:1.5;color:var(--text-secondary);">Selecione o nó e invoque a IA.</span>
           </div>
         </div>
@@ -382,7 +382,7 @@
             <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;">
               <div>
                 <div class="t-subhead" style="font-size:19px;">{{ userEmail }}</div>
-                <div class="t-caption" style="font-size:10.5px;color:var(--ink-50);margin-top:3px;">Conectado · seus dados sincronizam automaticamente.</div>
+                <div class="t-caption" style="color:var(--ink-50);margin-top:3px;">Conectado · seus dados sincronizam automaticamente.</div>
               </div>
               <button onClick="{{ logout }}" class="btn btn--ghost btn--sm" style="color:var(--ink-60);border-color:var(--ink-24);padding:10px 16px;" style-hover="color:var(--ox);border-color:var(--ox);">Sair</button>
             </div>
@@ -399,7 +399,7 @@
             </sc-if>
 
             <sc-if value="{{ authStageCode }}" hint-placeholder-val="{{ false }}">
-              <div class="t-label" style="font-size:11px;color:var(--ink-60);text-transform:none;letter-spacing:0;margin-bottom:10px;">{{ authSentTo }}</div>
+              <div class="t-label" style="color:var(--ink-60);text-transform:none;letter-spacing:0;margin-bottom:10px;">{{ authSentTo }}</div>
               <div style="display:flex;gap:10px;flex-wrap:wrap;">
                 <input value="{{ authCode }}" onInput="{{ setAuthCode }}" onKeyDown="{{ onAuthKey }}" placeholder="código de 6 dígitos" inputmode="numeric" class="input" style="flex:1;min-width:160px;font-size:15px;letter-spacing:.2em;background:var(--surface-sunken);border-color:var(--ink-22);padding:11px 13px;" style-focus="border-color:var(--ox);" />
                 <button onClick="{{ authSubmit }}" style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--surface-raised);background:var(--ox);border:none;border-radius:2px;padding:11px 20px;cursor:pointer;" style-hover="filter:brightness(0.88);">{{ authBtnLabel }}</button>
@@ -456,7 +456,7 @@
             <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--text-muted);padding-bottom:14px;border-bottom:1px solid var(--ink-16);margin-bottom:6px;">Aparência</div>
 
             <div style="display:flex;justify-content:space-between;align-items:center;padding:18px 0;border-bottom:1px solid var(--ink-10);">
-              <div><div class="t-subhead" style="font-size:19px;">Cor de acento</div><div class="t-caption" style="font-size:10.5px;color:var(--ink-50);margin-top:3px;">Usada com parcimônia em todo o app.</div></div>
+              <div><div class="t-subhead" style="font-size:19px;">Cor de acento</div><div class="t-caption" style="color:var(--ink-50);margin-top:3px;">Usada com parcimônia em todo o app.</div></div>
               <div style="display:flex;gap:9px;">
                 <sc-for list="{{ accentSwatches }}" as="sw" hint-placeholder-count="4">
                   <button onClick="{{ sw.onPick }}" title="{{ sw.label }}" style="width:26px;height:26px;border-radius:2px;background:{{ sw.color }};border:1px solid var(--ink-20);cursor:pointer;position:relative;" style-hover="transform:scale(1.08);">
@@ -467,7 +467,7 @@
             </div>
 
             <div style="display:flex;justify-content:space-between;align-items:center;padding:18px 0;border-bottom:1px solid var(--ink-10);">
-              <div><div class="t-subhead" style="font-size:19px;">Fonte dos títulos</div><div class="t-caption" style="font-size:10.5px;color:var(--ink-50);margin-top:3px;">Serifa editorial dos cabeçalhos.</div></div>
+              <div><div class="t-subhead" style="font-size:19px;">Fonte dos títulos</div><div class="t-caption" style="color:var(--ink-50);margin-top:3px;">Serifa editorial dos cabeçalhos.</div></div>
               <div style="display:flex;border:1px solid var(--ink-22);border-radius:2px;overflow:hidden;">
                 <sc-for list="{{ serifOptions }}" as="so" hint-placeholder-count="2">
                   <button onClick="{{ so.onPick }}" style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.06em;padding:8px 13px;cursor:pointer;border:none;background:{{ so.bg }};color:{{ so.fg }};border-left:{{ so.sep }};" style-hover="filter:brightness(0.97);">{{ so.short }}</button>
@@ -476,14 +476,14 @@
             </div>
 
             <div style="display:flex;justify-content:space-between;align-items:center;padding:18px 0;border-bottom:1px solid var(--ink-10);">
-              <div><div class="t-subhead" style="font-size:19px;">Grid pontilhado</div><div class="t-caption" style="font-size:10.5px;color:var(--ink-50);margin-top:3px;">Pontos guia no fundo do quadro.</div></div>
+              <div><div class="t-subhead" style="font-size:19px;">Grid pontilhado</div><div class="t-caption" style="color:var(--ink-50);margin-top:3px;">Pontos guia no fundo do quadro.</div></div>
               <button onClick="{{ toggleGrid }}" style="width:42px;height:23px;border-radius:2px;border:1px solid var(--ink-22);background:{{ gridTrack }};position:relative;cursor:pointer;padding:0;">
                 <span style="position:absolute;top:2px;left:{{ gridKnob }};width:17px;height:17px;background:var(--surface-raised);border:1px solid var(--ink-20);transition:left .16s ease;"></span>
               </button>
             </div>
 
             <div style="display:flex;justify-content:space-between;align-items:center;padding:18px 0;border-bottom:1px solid var(--ink-10);">
-              <div><div class="t-subhead" style="font-size:19px;">Mostrar dicas no quadro</div><div class="t-caption" style="font-size:10.5px;color:var(--ink-50);margin-top:3px;">Painel "Como funciona" ao abrir.</div></div>
+              <div><div class="t-subhead" style="font-size:19px;">Mostrar dicas no quadro</div><div class="t-caption" style="color:var(--ink-50);margin-top:3px;">Painel "Como funciona" ao abrir.</div></div>
               <button onClick="{{ toggleHints }}" style="width:42px;height:23px;border-radius:2px;border:1px solid var(--ink-22);background:{{ hintsTrack }};position:relative;cursor:pointer;padding:0;">
                 <span style="position:absolute;top:2px;left:{{ hintsKnob }};width:17px;height:17px;background:var(--surface-raised);border:1px solid var(--ink-20);transition:left .16s ease;"></span>
               </button>
@@ -530,7 +530,7 @@
                 <div style="display:flex;gap:16px;align-items:flex-start;">
                   <span class="t-heading" style="color:var(--ox);line-height:1;flex:none;width:34px;">{{ q.num }}</span>
                   <div style="flex:1;">
-                    <div class="t-body" style="font-size:14px;line-height:1.62;color:var(--ink);">{{ q.text }}</div>
+                    <div class="t-body" style="line-height:1.62;color:var(--ink);">{{ q.text }}</div>
 
                     <textarea value="{{ q.work }}" onInput="{{ q.onWork }}" placeholder="sua resolução…" class="textarea textarea--mono" style="width:100%;margin-top:16px;min-height:74px;font-size:12.5px;line-height:25px;background:linear-gradient(transparent 24px, var(--ink-10) 25px);background-size:100% 25px;border:none;border-top:1px solid var(--ink-12);border-bottom:1px solid var(--ink-12);padding:6px 2px;"></textarea>
 
@@ -547,7 +547,7 @@
                       <div style="margin-top:16px;padding:18px 20px;background:var(--surface-page);border:1px solid var(--ink-14);border-left:2px solid var(--ox);">
                         <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--ox);margin-bottom:12px;">Resolução</div>
                         <sc-for list="{{ q.solution }}" as="sl" hint-placeholder-count="2">
-                          <div class="t-body" style="font-size:12px;line-height:1.6;margin-bottom:9px;">{{ sl }}</div>
+                          <div class="t-body" style="line-height:1.6;margin-bottom:9px;">{{ sl }}</div>
                         </sc-for>
                         <sc-if value="{{ q.hasTable }}" hint-placeholder-val="{{ false }}">
                           <div style="display:inline-grid;grid-template-columns:repeat(5,auto);border:1px solid var(--ink-20);margin:6px 0 4px;">
@@ -612,7 +612,7 @@
           </sc-if>
           <sc-if value="{{ flashBack }}" hint-placeholder-val="{{ false }}">
             <div style="flex:1;">
-              <div class="kicker" style="font-size:9px;letter-spacing:.2em;color:var(--ox);margin-bottom:14px;">Resolução</div>
+              <div class="kicker" style="letter-spacing:.2em;color:var(--ox);margin-bottom:14px;">Resolução</div>
               <sc-for list="{{ flashSolution }}" as="sl" hint-placeholder-count="2">
                 <div class="t-body" style="line-height:1.62;color:var(--ink);margin-bottom:10px;">{{ sl }}</div>
               </sc-for>
@@ -638,7 +638,7 @@
       <div onClick="{{ stop }}" style="width:100%;max-width:980px;height:100%;max-height:780px;background:var(--surface-raised);border:1px solid var(--ink-30);box-shadow:0 18px 60px var(--ink-24);display:flex;flex-direction:column;">
         <div style="display:flex;justify-content:space-between;align-items:center;padding:18px 26px;border-bottom:1px solid var(--ink-14);flex:none;">
           <div style="display:flex;align-items:baseline;gap:14px;">
-            <span class="kicker" style="font-size:10px;letter-spacing:.22em;color:var(--ox);">{{ material.kicker }}</span>
+            <span class="kicker" style="letter-spacing:.22em;color:var(--ox);">{{ material.kicker }}</span>
             <span class="t-subhead" style="color:var(--ink);font-weight:600;">{{ material.title }}</span>
           </div>
           <div style="display:flex;align-items:center;gap:16px;">
@@ -672,7 +672,7 @@
         <div class="ox-scroll" style="max-height:50vh;overflow:auto;">
           <sc-if value="{{ searchEmpty }}" hint-placeholder-val="{{ true }}">
             <div style="padding:22px;">
-              <div class="kicker kicker--ink" style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-40);margin-bottom:14px;">Sugestões</div>
+              <div class="kicker kicker--ink" style="font-family:'IBM Plex Mono',monospace;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-40);margin-bottom:14px;">Sugestões</div>
               <div style="display:flex;flex-wrap:wrap;gap:9px;">
                 <sc-for list="{{ suggestions }}" as="sg" hint-placeholder-count="4">
                   <button onClick="{{ sg.onPick }}" style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink);background:var(--surface-page);border:1px solid var(--ink-18);border-radius:2px;padding:7px 12px;cursor:pointer;" style-hover="border-color:var(--ox);color:var(--ox);">{{ sg.text }}</button>
@@ -688,7 +688,7 @@
                   <span class="badge badge--accent" style="font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.14em;color:var(--ox);border:1px solid var(--ox-35);padding:3px 6px;width:46px;text-align:center;flex:none;">{{ r.type }}</span>
                   <span style="flex:1;min-width:0;">
                     <span class="t-subhead" style="font-family:var(--serif);font-size:18px;color:var(--ink);display:block;line-height:1.2;">{{ r.title }}</span>
-                    <span class="t-caption" style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--ink-50);display:block;margin-top:2px;">{{ r.context }}</span>
+                    <span class="t-caption" style="font-family:'IBM Plex Mono',monospace;color:var(--ink-50);display:block;margin-top:2px;">{{ r.context }}</span>
                   </span>
                   <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-34);flex:none;">↗</span>
                 </button>
@@ -697,7 +697,7 @@
           </sc-if>
 
           <sc-if value="{{ searchNoResults }}" hint-placeholder-val="{{ false }}">
-            <div class="t-body" style="padding:34px 22px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text-muted);">Nada encontrado para "{{ search.q }}".</div>
+            <div class="t-body" style="padding:34px 22px;text-align:center;font-family:'IBM Plex Mono',monospace;color:var(--text-muted);">Nada encontrado para "{{ search.q }}".</div>
           </sc-if>
         </div>
       </div>
