@@ -579,7 +579,7 @@ class Component extends DCLogic {
       if (m.index > last) push(text.slice(last, m.index));
       if (m[2] != null) out.push(R.createElement('strong', { key: 'b' + (k++) }, m[2]));
       else if (m[4] != null) out.push(R.createElement('em', { key: 'i' + (k++) }, m[4]));
-      else if (m[6] != null) out.push(R.createElement('code', { key: 'c' + (k++), style: { fontFamily: "'IBM Plex Mono',monospace", background: 'rgba(33,30,26,0.06)', padding: '1px 5px', borderRadius: '2px', fontSize: '0.9em' } }, m[6]));
+      else if (m[6] != null) out.push(R.createElement('code', { key: 'c' + (k++), style: { fontFamily: "'IBM Plex Mono',monospace", background: 'var(--ink-06)', padding: '1px 5px', borderRadius: '2px', fontSize: '0.9em' } }, m[6]));
       else if (m[8] != null) out.push(R.createElement('a', { key: 'a' + (k++), href: m[9], target: '_blank', rel: 'noopener noreferrer', style: { color: 'var(--ox)', textDecoration: 'underline' } }, m[8]));
       last = m.index + m[0].length;
     }
@@ -714,67 +714,67 @@ class Component extends DCLogic {
     s.textContent = [
       ".sdn-ov{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:26px;font-family:'IBM Plex Mono',ui-monospace,monospace;background:rgba(28,25,22,0.5);backdrop-filter:blur(6px) saturate(1.05);-webkit-backdrop-filter:blur(6px) saturate(1.05);opacity:0;transition:opacity .18s ease;}",
       ".sdn-ov.in{opacity:1;}",
-      ".sdn-panel{width:100%;max-width:1220px;height:100%;background:#FFFDF8;border:1px solid rgba(33,30,26,0.2);border-radius:7px;box-shadow:0 30px 80px rgba(33,30,26,0.38);display:flex;flex-direction:column;overflow:hidden;transform:translateY(12px) scale(.99);transition:transform .22s cubic-bezier(.2,.7,.3,1);}",
+      ".sdn-panel{width:100%;max-width:1220px;height:100%;background:var(--surface-raised);border:1px solid var(--ink-20);border-radius:7px;box-shadow:0 30px 80px var(--ink-40);display:flex;flex-direction:column;overflow:hidden;transform:translateY(12px) scale(.99);transition:transform .22s cubic-bezier(.2,.7,.3,1);}",
       ".sdn-ov.in .sdn-panel{transform:none;}",
-      ".sdn-head{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:11px 16px 11px 22px;border-bottom:1px solid rgba(33,30,26,0.1);flex:none;}",
+      ".sdn-head{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:11px 16px 11px 22px;border-bottom:1px solid var(--ink-10);flex:none;}",
       ".sdn-htitle{display:flex;align-items:baseline;gap:11px;min-width:0;}",
       ".sdn-kick{font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:var(--sdn-ox);flex:none;}",
-      ".sdn-fname{font-family:'Cormorant Garamond',Georgia,serif;font-size:20px;color:#211E1A;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.005em;}",
+      ".sdn-fname{font-family:'Cormorant Garamond',Georgia,serif;font-size:20px;color:var(--ink);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.005em;}",
       ".sdn-tools{display:flex;align-items:center;gap:7px;flex:none;}",
-      ".sdn-seg{display:flex;align-items:center;border:1px solid rgba(33,30,26,0.16);border-radius:4px;overflow:hidden;background:#FCFAF4;}",
-      ".sdn-ico{width:30px;height:30px;display:flex;align-items:center;justify-content:center;background:transparent;border:none;color:rgba(33,30,26,0.6);font-size:14px;cursor:pointer;transition:background .12s,color .12s;padding:0;line-height:1;}",
-      ".sdn-ico:hover{background:rgba(33,30,26,0.06);color:var(--sdn-ox);}",
-      ".sdn-ico.on{background:var(--sdn-ox);color:#FFFDF8;}",
-      ".sdn-zpct{font-size:10.5px;color:rgba(33,30,26,0.55);min-width:44px;text-align:center;letter-spacing:.03em;}",
-      ".sdn-search{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#211E1A;background:#FCFAF4;border:1px solid rgba(33,30,26,0.16);border-radius:4px;padding:7px 10px;outline:none;width:150px;transition:border-color .12s,width .16s ease;}",
+      ".sdn-seg{display:flex;align-items:center;border:1px solid var(--ink-16);border-radius:4px;overflow:hidden;background:var(--surface-sunken);}",
+      ".sdn-ico{width:30px;height:30px;display:flex;align-items:center;justify-content:center;background:transparent;border:none;color:var(--ink-60);font-size:14px;cursor:pointer;transition:background .12s,color .12s;padding:0;line-height:1;}",
+      ".sdn-ico:hover{background:var(--ink-06);color:var(--sdn-ox);}",
+      ".sdn-ico.on{background:var(--sdn-ox);color:var(--surface-raised);}",
+      ".sdn-zpct{font-size:10.5px;color:var(--text-tertiary);min-width:44px;text-align:center;letter-spacing:.03em;}",
+      ".sdn-search{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--ink);background:var(--surface-sunken);border:1px solid var(--ink-16);border-radius:4px;padding:7px 10px;outline:none;width:150px;transition:border-color .12s,width .16s ease;}",
       ".sdn-search:focus{border-color:var(--sdn-ox);width:184px;}",
-      ".sdn-x{width:30px;height:30px;border:1px solid rgba(33,30,26,0.16);border-radius:4px;background:transparent;color:rgba(33,30,26,0.5);font-size:14px;cursor:pointer;line-height:1;}",
-      ".sdn-x:hover{color:#211E1A;border-color:rgba(33,30,26,0.4);}",
+      ".sdn-x{width:30px;height:30px;border:1px solid var(--ink-16);border-radius:4px;background:transparent;color:var(--ink-50);font-size:14px;cursor:pointer;line-height:1;}",
+      ".sdn-x:hover{color:var(--ink);border-color:var(--ink-40);}",
       ".sdn-row{flex:1;min-height:0;display:flex;}",
-      ".sdn-side{width:256px;flex:none;border-right:1px solid rgba(33,30,26,0.1);overflow:auto;background:#FAF8F3;transition:width .2s ease;}",
+      ".sdn-side{width:256px;flex:none;border-right:1px solid var(--ink-10);overflow:auto;background:var(--surface-page);transition:width .2s ease;}",
       ".sdn-side.hidden{width:0;overflow:hidden;border-right:none;}",
-      ".sdn-sec{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:rgba(33,30,26,0.4);padding:16px 16px 8px;}",
-      ".sdn-out{display:block;width:100%;text-align:left;font-size:11px;line-height:1.4;color:#211E1A;background:transparent;border:none;padding:5px 16px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}",
-      ".sdn-out:hover{background:rgba(33,30,26,0.05);color:var(--sdn-ox);}",
-      ".sdn-hlrow{position:relative;padding:10px 12px 11px 20px;border-bottom:1px solid rgba(33,30,26,0.06);}",
+      ".sdn-sec{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-40);padding:16px 16px 8px;}",
+      ".sdn-out{display:block;width:100%;text-align:left;font-size:11px;line-height:1.4;color:var(--ink);background:transparent;border:none;padding:5px 16px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}",
+      ".sdn-out:hover{background:var(--ink-05);color:var(--sdn-ox);}",
+      ".sdn-hlrow{position:relative;padding:10px 12px 11px 20px;border-bottom:1px solid var(--ink-06);}",
       ".sdn-hlrow::before{content:'';position:absolute;left:10px;top:12px;bottom:12px;width:3px;border-radius:2px;background:var(--rowc,#C9A227);}",
-      ".sdn-hltext{width:100%;text-align:left;font-family:'IBM Plex Serif',Georgia,serif;font-size:12px;line-height:1.5;color:#211E1A;background:transparent;border:none;cursor:pointer;padding:0;display:block;padding-right:14px;}",
+      ".sdn-hltext{width:100%;text-align:left;font-family:'IBM Plex Serif',Georgia,serif;font-size:12px;line-height:1.5;color:var(--ink);background:transparent;border:none;cursor:pointer;padding:0;display:block;padding-right:14px;}",
       ".sdn-hltext:hover{color:var(--sdn-ox);}",
-      ".sdn-hldel{position:absolute;top:8px;right:9px;font-size:11px;color:rgba(33,30,26,0.3);background:none;border:none;cursor:pointer;opacity:0;transition:opacity .12s;padding:0 2px;}",
+      ".sdn-hldel{position:absolute;top:8px;right:9px;font-size:11px;color:var(--ink-30);background:none;border:none;cursor:pointer;opacity:0;transition:opacity .12s;padding:0 2px;}",
       ".sdn-hlrow:hover .sdn-hldel{opacity:1;}",
-      ".sdn-hlc{width:100%;margin-top:6px;font-family:'IBM Plex Mono',monospace;font-size:10px;color:rgba(33,30,26,0.72);background:transparent;border:none;border-bottom:1px dashed rgba(33,30,26,0.16);outline:none;padding:2px 0;}",
+      ".sdn-hlc{width:100%;margin-top:6px;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--ink-70);background:transparent;border:none;border-bottom:1px dashed var(--ink-16);outline:none;padding:2px 0;}",
       ".sdn-hlc:focus{border-bottom-color:var(--sdn-ox);}",
-      ".sdn-gen{display:block;width:calc(100% - 28px);margin:6px 14px 16px;text-align:left;font-size:10.5px;letter-spacing:.03em;color:var(--sdn-ox);background:transparent;border:1px solid rgba(122,31,43,0.3);border-radius:3px;padding:9px 11px;cursor:pointer;transition:background .12s;}",
-      ".sdn-gen:hover{background:rgba(122,31,43,0.06);}",
-      ".sdn-empty{font-size:10.5px;line-height:1.6;color:rgba(33,30,26,0.42);padding:2px 16px 16px;}",
-      ".sdn-reading{flex:1;min-height:0;overflow:auto;background:#E7E2D9;padding:26px 30px 48px;display:flex;flex-direction:column;align-items:center;gap:22px;position:relative;}",
-      ".sdn-page{position:relative;background:#fff;border:1px solid rgba(33,30,26,0.1);border-radius:2px;box-shadow:0 1px 2px rgba(33,30,26,0.14),0 12px 34px rgba(33,30,26,0.12);flex:none;opacity:0;transition:opacity .3s ease;}",
+      ".sdn-gen{display:block;width:calc(100% - 28px);margin:6px 14px 16px;text-align:left;font-size:10.5px;letter-spacing:.03em;color:var(--sdn-ox);background:transparent;border:1px solid var(--ox-30);border-radius:3px;padding:9px 11px;cursor:pointer;transition:background .12s;}",
+      ".sdn-gen:hover{background:var(--ox-06);}",
+      ".sdn-empty{font-size:10.5px;line-height:1.6;color:var(--ink-42);padding:2px 16px 16px;}",
+      ".sdn-reading{flex:1;min-height:0;overflow:auto;background:var(--surface-reading);padding:26px 30px 48px;display:flex;flex-direction:column;align-items:center;gap:22px;position:relative;}",
+      ".sdn-page{position:relative;background:#fff;border:1px solid var(--ink-10);border-radius:2px;box-shadow:0 1px 2px var(--ink-14),0 12px 34px var(--ink-12);flex:none;opacity:0;transition:opacity .3s ease;}",
       ".sdn-page.in{opacity:1;}",
-      ".sdn-load{position:absolute;inset:0;display:flex;flex-direction:column;gap:14px;align-items:center;justify-content:center;color:rgba(33,30,26,0.5);font-size:11px;letter-spacing:.14em;text-transform:uppercase;}",
-      ".sdn-loadbar{width:120px;height:2px;background:rgba(33,30,26,0.12);overflow:hidden;position:relative;}",
+      ".sdn-load{position:absolute;inset:0;display:flex;flex-direction:column;gap:14px;align-items:center;justify-content:center;color:var(--ink-50);font-size:11px;letter-spacing:.14em;text-transform:uppercase;}",
+      ".sdn-loadbar{width:120px;height:2px;background:var(--ink-12);overflow:hidden;position:relative;}",
       ".sdn-loadbar::after{content:'';position:absolute;left:0;top:0;height:2px;width:40%;background:var(--sdn-ox);animation:ox-sweep 1.3s ease-in-out infinite;}",
-      ".sdn-pageind{position:absolute;left:50%;transform:translateX(-50%);background:rgba(33,30,26,0.86);color:#FAF8F3;font-size:11px;letter-spacing:.1em;padding:5px 13px;border-radius:20px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:6;}",
+      ".sdn-pageind{position:absolute;left:50%;transform:translateX(-50%);background:var(--ink-85);color:var(--surface-page);font-size:11px;letter-spacing:.1em;padding:5px 13px;border-radius:20px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:6;}",
       ".sdn-pageind.show{opacity:1;}",
-      ".sdn-foot{flex:none;border-top:1px solid rgba(33,30,26,0.1);background:#FFFDF8;}",
-      ".sdn-ans{display:none;padding:16px 24px;max-height:220px;overflow:auto;border-bottom:1px solid rgba(33,30,26,0.08);}",
-      ".sdn-ans .q{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.03em;color:rgba(33,30,26,0.5);margin-bottom:8px;}",
-      ".sdn-ans .a{font-family:'IBM Plex Serif',Georgia,serif;font-size:14.5px;line-height:1.66;color:#211E1A;}",
+      ".sdn-foot{flex:none;border-top:1px solid var(--ink-10);background:var(--surface-raised);}",
+      ".sdn-ans{display:none;padding:16px 24px;max-height:220px;overflow:auto;border-bottom:1px solid var(--ink-08);}",
+      ".sdn-ans .q{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.03em;color:var(--ink-50);margin-bottom:8px;}",
+      ".sdn-ans .a{font-family:'IBM Plex Serif',Georgia,serif;font-size:14.5px;line-height:1.66;color:var(--ink);}",
       ".sdn-assist{display:flex;gap:9px;align-items:center;padding:12px 24px;}",
-      ".sdn-chip{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:rgba(33,30,26,0.62);background:#FCFAF4;border:1px solid rgba(33,30,26,0.18);border-radius:20px;padding:8px 13px;cursor:pointer;white-space:nowrap;transition:color .12s,border-color .12s;}",
+      ".sdn-chip{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-62);background:var(--surface-sunken);border:1px solid var(--ink-18);border-radius:20px;padding:8px 13px;cursor:pointer;white-space:nowrap;transition:color .12s,border-color .12s;}",
       ".sdn-chip:hover{color:var(--sdn-ox);border-color:var(--sdn-ox);}",
-      ".sdn-askin{flex:1;font-family:'IBM Plex Mono',monospace;font-size:13px;color:#211E1A;background:#FCFAF4;border:1px solid rgba(33,30,26,0.2);border-radius:4px;padding:11px 13px;outline:none;}",
+      ".sdn-askin{flex:1;font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--ink);background:var(--surface-sunken);border:1px solid var(--ink-20);border-radius:4px;padding:11px 13px;outline:none;}",
       ".sdn-askin:focus{border-color:var(--sdn-ox);}",
-      ".sdn-send{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#FFFDF8;background:var(--sdn-ox);border:none;border-radius:4px;padding:11px 18px;cursor:pointer;transition:filter .12s;}",
+      ".sdn-send{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--surface-raised);background:var(--sdn-ox);border:none;border-radius:4px;padding:11px 18px;cursor:pointer;transition:filter .12s;}",
       ".sdn-send:hover{filter:brightness(0.9);}",
-      ".sdn-note{margin-top:10px;font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:rgba(33,30,26,0.55);background:transparent;border:1px solid rgba(33,30,26,0.2);border-radius:3px;padding:6px 10px;cursor:pointer;}",
+      ".sdn-note{margin-top:10px;font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-tertiary);background:transparent;border:1px solid var(--ink-20);border-radius:3px;padding:6px 10px;cursor:pointer;}",
       ".sdn-note:hover{color:var(--sdn-ox);border-color:var(--sdn-ox);}",
-      ".sdn-missing{margin:auto;max-width:440px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:16px;color:rgba(33,30,26,0.6);font-size:12px;line-height:1.7;}",
-      ".sdn-reattach{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#FFFDF8;background:var(--sdn-ox);border:none;border-radius:3px;padding:11px 18px;cursor:pointer;}",
+      ".sdn-missing{margin:auto;max-width:440px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:16px;color:var(--ink-60);font-size:12px;line-height:1.7;}",
+      ".sdn-reattach{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--surface-raised);background:var(--sdn-ox);border:none;border-radius:3px;padding:11px 18px;cursor:pointer;}",
       ".sdn-tl{position:absolute;left:0;top:0;right:0;bottom:0;overflow:hidden;line-height:1;}",
       ".sdn-tl span,.sdn-tl br{color:transparent;position:absolute;white-space:pre;cursor:text;transform-origin:0% 0%;}",
-      ".sdn-tl span::selection{background:rgba(122,31,43,0.28);}",
+      ".sdn-tl span::selection{background:var(--ox-30);}",
       ".sdn-pdf-scroll::-webkit-scrollbar{width:11px;height:11px;}",
-      ".sdn-pdf-scroll::-webkit-scrollbar-thumb{background:rgba(33,30,26,0.22);border-radius:6px;border:3px solid transparent;background-clip:content-box;}",
+      ".sdn-pdf-scroll::-webkit-scrollbar-thumb{background:var(--ink-22);border-radius:6px;border:3px solid transparent;background-clip:content-box;}",
       ".sdn-pdf-scroll::-webkit-scrollbar-track{background:transparent;}",
     ].join('');
     document.head.appendChild(s);
@@ -886,7 +886,7 @@ class Component extends DCLogic {
     if (!wrap) return;
     e.preventDefault();
     this._crop = { wrap, x0: e.clientX, y0: e.clientY, r: wrap.getBoundingClientRect() };
-    const box = document.createElement('div'); box.style.cssText = 'position:fixed;z-index:102;border:1.5px dashed ' + this.curAccent() + ';background:rgba(122,31,43,0.14);pointer-events:none;'; document.body.appendChild(box); this._cropBox = box;
+    const box = document.createElement('div'); box.style.cssText = 'position:fixed;z-index:102;border:1.5px dashed ' + this.curAccent() + ';background:var(--ox-12);pointer-events:none;'; document.body.appendChild(box); this._cropBox = box;
     this.updateCropBox(e);
     window.addEventListener('pointermove', this.onCropMove);
     window.addEventListener('pointerup', this.onCropUp);
@@ -971,13 +971,13 @@ class Component extends DCLogic {
   showPdfToolbar(rect, text, node, page) {
     this.hidePdfToolbar();
     const bar = document.createElement('div');
-    bar.style.cssText = 'position:fixed;z-index:101;left:' + Math.round(rect.left + rect.width / 2) + 'px;top:' + Math.round(rect.top - 48) + 'px;transform:translateX(-50%) scale(.96);opacity:0;transition:opacity .12s ease,transform .12s cubic-bezier(.2,.7,.3,1);display:flex;align-items:center;gap:1px;background:#211E1A;border-radius:6px;box-shadow:0 8px 24px rgba(0,0,0,0.32);padding:3px 5px;font-family:"IBM Plex Mono",monospace;';
-    const mk = (label, fn) => { const b = document.createElement('button'); b.textContent = label; b.style.cssText = 'font-size:10.5px;letter-spacing:.05em;color:#FAF8F3;background:transparent;border:none;border-radius:4px;padding:7px 11px;cursor:pointer;transition:background .1s;'; b.onmouseenter = () => b.style.background = 'rgba(250,248,243,0.14)'; b.onmouseleave = () => b.style.background = 'transparent'; b.onmousedown = (e) => e.preventDefault(); b.onclick = fn; return b; };
+    bar.style.cssText = 'position:fixed;z-index:101;left:' + Math.round(rect.left + rect.width / 2) + 'px;top:' + Math.round(rect.top - 48) + 'px;transform:translateX(-50%) scale(.96);opacity:0;transition:opacity .12s ease,transform .12s cubic-bezier(.2,.7,.3,1);display:flex;align-items:center;gap:1px;background:var(--ink);border-radius:6px;box-shadow:0 8px 24px rgba(0,0,0,0.32);padding:3px 5px;font-family:"IBM Plex Mono",monospace;';
+    const mk = (label, fn) => { const b = document.createElement('button'); b.textContent = label; b.style.cssText = 'font-size:10.5px;letter-spacing:.05em;color:var(--surface-page);background:transparent;border:none;border-radius:4px;padding:7px 11px;cursor:pointer;transition:background .1s;'; b.onmouseenter = () => b.style.background = 'rgba(250,248,243,0.14)'; b.onmouseleave = () => b.style.background = 'transparent'; b.onmousedown = (e) => e.preventDefault(); b.onclick = fn; return b; };
     bar.appendChild(mk('✚ Nota', () => { this.createNoteFromPdf(text, node, page); this.hidePdfToolbar(); }));
     bar.appendChild(mk('✦ IA', () => { this.generateFromPdf(text, node, page); this.hidePdfToolbar(); }));
     const sep = document.createElement('span'); sep.style.cssText = 'width:1px;height:18px;background:rgba(250,248,243,0.18);margin:0 4px;'; bar.appendChild(sep);
     this.PDF_HL_COLORS.forEach(col => { const d = document.createElement('button'); d.title = 'Destacar ' + col.name; d.style.cssText = 'width:15px;height:15px;border-radius:50%;border:1px solid rgba(250,248,243,0.35);background:' + col.c + ';margin:0 2px;cursor:pointer;padding:0;transition:transform .1s;'; d.onmouseenter = () => d.style.transform = 'scale(1.18)'; d.onmouseleave = () => d.style.transform = 'scale(1)'; d.onmousedown = (e) => e.preventDefault(); d.onclick = () => { this.highlightSelection(node, col.c); this.hidePdfToolbar(); }; bar.appendChild(d); });
-    const caret = document.createElement('span'); caret.style.cssText = 'position:absolute;left:50%;bottom:-5px;transform:translateX(-50%);width:10px;height:10px;background:#211E1A;border-bottom-right-radius:2px;clip-path:polygon(100% 0,0 100%,100% 100%);rotate:45deg;'; bar.appendChild(caret);
+    const caret = document.createElement('span'); caret.style.cssText = 'position:absolute;left:50%;bottom:-5px;transform:translateX(-50%);width:10px;height:10px;background:var(--ink);border-bottom-right-radius:2px;clip-path:polygon(100% 0,0 100%,100% 100%);rotate:45deg;'; bar.appendChild(caret);
     document.body.appendChild(bar); this.pdfBar = bar;
     requestAnimationFrame(() => { bar.style.opacity = '1'; bar.style.transform = 'translateX(-50%) scale(1)'; });
   }
@@ -996,7 +996,7 @@ class Component extends DCLogic {
     if (!refs.length) return;
     const badge = document.createElement('button'); badge.className = 'sdn-bl'; badge.textContent = '◉ ' + refs.length;
     badge.title = refs.length + ' nó(s) referenciam esta página';
-    badge.style.cssText = 'position:absolute;top:8px;right:-13px;z-index:4;font-family:"IBM Plex Mono",monospace;font-size:10px;color:#FFFDF8;background:' + this.curAccent() + ';border:none;border-radius:10px;padding:3px 8px;cursor:pointer;box-shadow:0 1px 5px rgba(0,0,0,0.35);';
+    badge.style.cssText = 'position:absolute;top:8px;right:-13px;z-index:4;font-family:"IBM Plex Mono",monospace;font-size:10px;color:var(--surface-raised);background:' + this.curAccent() + ';border:none;border-radius:10px;padding:3px 8px;cursor:pointer;box-shadow:0 1px 5px rgba(0,0,0,0.35);';
     badge.onclick = () => { const first = refs[0]; this.closePdf(); setTimeout(() => { this.setState({ selectedId: first.id }); if (this.frameSelection) this.frameSelection(); }, 90); };
     wrap.appendChild(badge);
   }
@@ -1822,7 +1822,7 @@ class Component extends DCLogic {
       if (isSel) connDelete = { x: mx, y: my, onDel: (e) => { this.stop(e); this.deleteConn(cn.id); }, onStop: this.stop };
       return {
         id: cn.id, x1: pa.x, y1: pa.y, x2: pb.x, y2: pb.y, mx, my, isSel,
-        stroke: (isSel || touches) ? accent : 'rgba(33,30,26,0.5)',
+        stroke: (isSel || touches) ? accent : 'var(--ink-50)',
         width: isSel ? 2.4 : 1.25,
         dotBg: isSel ? accent : 'rgba(255,253,248,0.92)',
         onSelect: (e) => { this.stop(e); this.selectConn(cn.id); },
@@ -1877,7 +1877,7 @@ class Component extends DCLogic {
         resizable,
         selected: S.selectedId === n.id,
         isOver: !!(S.drag && S.drag.overId === n.id),
-        dragCss: (S.movingId === n.id) ? 'transform:scale(1.02);filter:drop-shadow(0 16px 28px rgba(33,30,26,0.22));cursor:grabbing;z-index:20;' : '',
+        dragCss: (S.movingId === n.id) ? 'transform:scale(1.02);filter:drop-shadow(0 16px 28px var(--ink-22));cursor:grabbing;z-index:20;' : '',
         connectedLabel,
         connLine: hasConn ? ('●  lê de — ' + connectedLabel) : '○  nenhum nó conectado',
         genEmpty: false, genResult: false, filled: false, showStatus: false, statusText: '', resultKicker: '', shownLines: [],
@@ -1923,8 +1923,8 @@ class Component extends DCLogic {
         if (top + 210 > r.top + r.height) top = Math.max(64, 54 + sy - 220);
         const neigh = S.connections.filter(c => c.from === n.id || c.to === n.id).map(c => byId[c.from === n.id ? c.to : c.from]).filter(Boolean);
         const pc = S.popover.count, pl = S.popover.level;
-        const countOpts = [3, 5, 8, 10].map(c => ({ n: c, sel: c === pc, bg: c === pc ? accent : 'transparent', fg: c === pc ? '#FFFDF8' : 'rgba(33,30,26,0.6)', onPick: () => this.setPopCount(c) }));
-        const levelOpts = [['fácil', 'Fácil'], ['médio', 'Médio'], ['difícil', 'Difícil']].map(([k, lbl]) => ({ label: lbl, sel: k === pl, bg: k === pl ? accent : 'transparent', fg: k === pl ? '#FFFDF8' : 'rgba(33,30,26,0.6)', onPick: () => this.setPopLevel(k) }));
+        const countOpts = [3, 5, 8, 10].map(c => ({ n: c, sel: c === pc, bg: c === pc ? accent : 'transparent', fg: c === pc ? 'var(--surface-raised)' : 'var(--ink-60)', onPick: () => this.setPopCount(c) }));
+        const levelOpts = [['fácil', 'Fácil'], ['médio', 'Médio'], ['difícil', 'Difícil']].map(([k, lbl]) => ({ label: lbl, sel: k === pl, bg: k === pl ? accent : 'transparent', fg: k === pl ? 'var(--surface-raised)' : 'var(--ink-60)', onPick: () => this.setPopLevel(k) }));
         popover = { left, top, text: S.popover.text, chips: neigh.map(x => x.shortLabel), empty: neigh.length === 0, countOpts, levelOpts };
       }
     }
@@ -1967,10 +1967,10 @@ class Component extends DCLogic {
         return {
           num: q.n, text: this.richInline(q.text, false),
           resolved, revealed,
-          checkBorder: resolved ? accent : 'rgba(33,30,26,0.3)',
+          checkBorder: resolved ? accent : 'var(--ink-30)',
           checkBg: resolved ? accent : 'transparent',
           checkMark: resolved ? '✓' : '',
-          resolveColor: resolved ? accent : 'rgba(33,30,26,0.5)',
+          resolveColor: resolved ? accent : 'var(--ink-50)',
           resolveLabel: resolved ? 'resolvida' : 'marcar resolvida',
           revealLabel: revealed ? 'ocultar resolução' : 'ver resolução',
           solution: (q.solution || []).map(s => this.richInline(s, false)), hasTable: false, answer: this.richInline(q.answer || '', false),
@@ -2026,7 +2026,7 @@ class Component extends DCLogic {
       } else {
         const res = this.searchResults(q);
         const sel = Math.max(0, Math.min(S.search.sel || 0, res.length - 1));
-        searchResults = res.map((r, i) => ({ type: r.type, title: r.title, context: r.context, onPick: r.pick, selected: i === sel, rowBg: i === sel ? '#FAF8F3' : 'transparent' }));
+        searchResults = res.map((r, i) => ({ type: r.type, title: r.title, context: r.context, onPick: r.pick, selected: i === sel, rowBg: i === sel ? 'var(--surface-page)' : 'transparent' }));
         searchHasResults = res.length > 0;
         searchNoResults = res.length === 0;
       }
@@ -2075,7 +2075,7 @@ class Component extends DCLogic {
     const curSerifName = this.curSerif();
     const serifOptions = [
       { short: 'Cormorant', full: 'Cormorant Garamond' }, { short: 'Plex Serif', full: 'IBM Plex Serif' },
-    ].map((o, i) => ({ short: o.short, bg: curSerifName === o.full ? accent : 'transparent', fg: curSerifName === o.full ? '#FFFDF8' : 'rgba(33,30,26,0.7)', sep: i === 0 ? 'none' : '1px solid rgba(33,30,26,0.18)', onPick: () => this.setPref('serif', o.full) }));
+    ].map((o, i) => ({ short: o.short, bg: curSerifName === o.full ? accent : 'transparent', fg: curSerifName === o.full ? 'var(--surface-raised)' : 'var(--text-secondary)', sep: i === 0 ? 'none' : '1px solid var(--ink-18)', onPick: () => this.setPref('serif', o.full) }));
 
     // shelf: per-discipline menu + rename dialog
     let discMenu = null;
@@ -2107,7 +2107,7 @@ class Component extends DCLogic {
       accent, serifVar,
       // masthead
       showCrumb, crumbName, goHome: this.goHome, openConta: this.openConta, openSearch: this.openSearch,
-      contaBg: S.screen === 'conta' ? accent : '#FFFDF8', contaFg: S.screen === 'conta' ? '#FFFDF8' : '#211E1A',
+      contaBg: S.screen === 'conta' ? accent : 'var(--surface-raised)', contaFg: S.screen === 'conta' ? 'var(--surface-raised)' : 'var(--ink)',
       identInitials: ident.initials || '·',
       // screens
       showBiblioteca: S.screen === 'biblioteca', showCanvas: S.screen === 'canvas', showConta: S.screen === 'conta',

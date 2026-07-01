@@ -23,6 +23,9 @@ template = (APP / "template.html").read_text().strip("\n")
 runtime = (APP / "runtime.js").read_text().strip()
 logic = (APP / "logic.js").read_text().strip()
 boot = (APP / "boot.js").read_text().strip()
+# The design system (tokens + component library) is the brand's single source of
+# truth; it is injected globally before the app's own styles.
+design_css = (APP / "design.css").read_text().strip("\n") if (APP / "design.css").exists() else ""
 
 assert logic.startswith("class Component extends DCLogic"), logic[:60]
 assert "dc-lite" in runtime[:200], "runtime.js doesn't look like dc-lite"
@@ -67,7 +70,10 @@ HEAD = r"""<!DOCTYPE html>
 """
 
 doc = (
-    HEAD
+    HEAD.replace(
+        "<style>\n  html,body",
+        '<style id="design-system">\n' + design_css + '\n</style>\n<style>\n  html,body',
+    )
     + template
     + "\n</script>\n\n<script>\n"
     + runtime
