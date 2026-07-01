@@ -499,10 +499,27 @@ class Component extends DCLogic {
     this.pushHist();
     this.setState({ connections: [...this.state.connections, { id: 'c' + (++this.cid), from, to }] });
   }
+  // approximate footprint of a node for collision tests
+  nodeBox(n) { return { x: n.x, y: n.y, w: n.w || 280, h: n.h || (n.type === 'generated' ? 170 : n.type === 'title' ? 150 : 160) }; }
+  boxesHit(a, b, gap) { return a.x < b.x + b.w + gap && a.x + a.w + gap > b.x && a.y < b.y + b.h + gap && a.y + a.h + gap > b.y; }
+  // nudge a desired top-left so the new node doesn't land on top of an existing one
+  avoidOverlap(x, y, w, h) {
+    const gap = 26; const others = (this.state.nodes || []).map(n => this.nodeBox(n));
+    const free = (bx, by) => !others.some(o => this.boxesHit({ x: bx, y: by, w, h }, o, gap));
+    if (free(x, y)) return { x, y };
+    const step = Math.max(58, Math.round(h * 0.5));
+    for (let ring = 1; ring <= 16; ring++) {
+      const d = ring * step;
+      const cands = [[x, y + d], [x + d, y], [x - d, y], [x, y - d], [x + d, y + d], [x - d, y + d], [x + d, y - d], [x - d, y - d]];
+      for (const [cx, cy] of cands) if (free(cx, cy)) return { x: cx, y: cy };
+    }
+    return { x: x + 44, y: y + 44 };
+  }
   createNodeAt(wx, wy) {
     this.pushHist();
     const id = 'n' + (++this.nidc);
-    const node = { id, type: 'generated', x: wx - 150, y: wy - 78, w: 300, h: 156, filled: false, shortLabel: 'Novo nó' };
+    const p = this.avoidOverlap(wx - 150, wy - 78, 300, 156);
+    const node = { id, type: 'generated', x: p.x, y: p.y, w: 300, h: 156, filled: false, shortLabel: 'Novo nó' };
     this.setState({ nodes: [...this.state.nodes, node], selectedId: id, selectedConnId: null });
     return id;
   }
@@ -524,7 +541,8 @@ class Component extends DCLogic {
     const w = this.screenToWorld(r.left + r.width * 0.34 + j, r.top + r.height * 0.42 + j);
     this.pushHist();
     const id = 'n' + (++this.nidc);
-    const node = { id, type: 'note', x: w.x - 140, y: w.y - 96, w: 280, h: 196, title: title || 'Nota', content: content || '', source: source || 'texto', shortLabel: (title || 'Nota').slice(0, 18) };
+    const p = this.avoidOverlap(w.x - 140, w.y - 96, 280, 196);
+    const node = { id, type: 'note', x: p.x, y: p.y, w: 280, h: 196, title: title || 'Nota', content: content || '', source: source || 'texto', shortLabel: (title || 'Nota').slice(0, 18) };
     this.setState({ nodes: [...this.state.nodes, node], selectedId: id, selectedConnId: null });
     return id;
   }
@@ -693,7 +711,7 @@ class Component extends DCLogic {
     if (this._pdfCss) return; this._pdfCss = true;
     const s = document.createElement('style');
     s.textContent = [
-      ".sdn-ov{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:26px;font-family:'IBM Plex Mono',ui-monospace,monospace;background:rgba(33,30,26,0.5);opacity:0;transition:opacity .18s ease;}",
+      ".sdn-ov{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:26px;font-family:'IBM Plex Mono',ui-monospace,monospace;background:rgba(28,25,22,0.5);backdrop-filter:blur(6px) saturate(1.05);-webkit-backdrop-filter:blur(6px) saturate(1.05);opacity:0;transition:opacity .18s ease;}",
       ".sdn-ov.in{opacity:1;}",
       ".sdn-panel{width:100%;max-width:1220px;height:100%;background:#FFFDF8;border:1px solid rgba(33,30,26,0.2);border-radius:7px;box-shadow:0 30px 80px rgba(33,30,26,0.38);display:flex;flex-direction:column;overflow:hidden;transform:translateY(12px) scale(.99);transition:transform .22s cubic-bezier(.2,.7,.3,1);}",
       ".sdn-ov.in .sdn-panel{transform:none;}",
@@ -1203,7 +1221,8 @@ class Component extends DCLogic {
     const wld = this.screenToWorld(r.left + r.width * 0.42 + j, r.top + r.height * 0.40 + j);
     const w = 300, h = Math.round(Math.max(140, Math.min(360, w * (ih / Math.max(1, iw)) + 38)));
     this.pushHist();
-    const node = { id, type: 'image', x: wld.x - w / 2, y: wld.y - h / 2, w, h, src: thumb, hasFile: true, caption: caption || '', shortLabel: (caption || 'Imagem').slice(0, 18) };
+    const p = this.avoidOverlap(wld.x - w / 2, wld.y - h / 2, w, h);
+    const node = { id, type: 'image', x: p.x, y: p.y, w, h, src: thumb, hasFile: true, caption: caption || '', shortLabel: (caption || 'Imagem').slice(0, 18) };
     this.setState({ nodes: [...this.state.nodes, node], selectedId: id, selectedConnId: null });
     this.toast('Imagem adicionada');
     return id;
@@ -1916,9 +1935,10 @@ class Component extends DCLogic {
       if (n && !n.locked && n.type !== 'title' && !busy) {
         const r = this.vp.getBoundingClientRect();
         const sx = S.pan.x + n.x * S.zoom, sy = S.pan.y + n.y * S.zoom;
-        let left = Math.max(12, Math.min(sx, r.width - 188));
-        let top = 54 + sy - 42;
-        if (top < 62) top = 54 + sy + n.h * S.zoom + 10;
+        const cx = sx + (n.w || 280) * S.zoom / 2;              // node centre, screen space
+        let left = Math.max(12, Math.min(cx - 90, r.width - 190));
+        let top = 54 + sy - 50;                                  // float clearly above the node
+        if (top < 62) top = 54 + sy + n.h * S.zoom + 12;         // flip below when near the top
         selChrome = { left, top, onDup: (e) => { this.stop(e); this.duplicateNode(n.id); }, onDel: (e) => { this.stop(e); this.deleteNode(n.id); }, onStop: this.stop };
       }
     }
