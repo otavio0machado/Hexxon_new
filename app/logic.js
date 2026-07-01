@@ -2115,7 +2115,10 @@ class Component extends DCLogic {
     return {
       accent, serifVar,
       // split view (dock content overlays to the right half)
-      dockCls: S.docked ? 'docked' : '', dockLabel: S.docked ? '⤢ tela cheia' : '⇥ painel', toggleDock: this.toggleDock,
+      // the viewport is only reserved while a dockable overlay is actually open,
+      // so closing it reclaims the full canvas (no leftover beige half).
+      dockCls: (S.docked && (S.reading || S.noteEdit || S.flash || S.imgView || S.pdfView || S.material)) ? 'docked' : '',
+      dockLabel: S.docked ? '⤢ tela cheia' : '⇥ painel', toggleDock: this.toggleDock,
       // masthead
       showCrumb, crumbName, goHome: this.goHome, openConta: this.openConta, openSearch: this.openSearch,
       contaBg: S.screen === 'conta' ? accent : 'var(--surface-raised)', contaFg: S.screen === 'conta' ? 'var(--surface-raised)' : 'var(--ink)',
