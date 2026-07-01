@@ -566,7 +566,7 @@ try {
   await sleep(500);
   ok('pdf: highlight persisted on the node', await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('sandbox-de-nos:v1') || '{}'); return Object.values(s.boards || {}).some((b) => (b.nodes || []).some((n) => n.type === 'pdf' && (n.highlights || []).length >= 1)); }));
   // export highlights → a note
-  await page.evaluate(() => { const b = [...document.querySelectorAll('button')].find((x) => /↧ destaques/.test(x.textContent)); if (b) b.click(); });
+  await page.evaluate(() => { const b = [...document.querySelectorAll('button')].find((x) => /Exportar destaques/.test(x.title || '')); if (b) b.click(); });
   await sleep(300);
   ok('pdf: export highlights creates a note', await page.evaluate(() => [...document.querySelectorAll('#app input')].some((i) => /Destaques ·/.test(i.value || ''))));
   // "Pergunte ao PDF" → grounded answer (stub /api/ask)
@@ -575,7 +575,7 @@ try {
   ok('pdf: "Pergunte ao PDF" returns a grounded answer', await page.evaluate(() => /Resposta de teste/.test(document.body.textContent)));
   // vision: "👁 visão" renders pages to images and sends them to /api/ask
   lastAskBody = null;
-  await page.evaluate(() => { const b = [...document.querySelectorAll('button')].find((x) => /👁 visão/.test(x.textContent)); if (b) b.click(); });
+  await page.evaluate(() => { const b = [...document.querySelectorAll('button')].find((x) => /👁\s*Visão/i.test(x.textContent)); if (b) b.click(); });
   { let tries = 0; while (!(lastAskBody && lastAskBody.images && lastAskBody.images.length) && tries < 50) { await sleep(100); tries++; } }
   ok('pdf: vision sends page images to /api/ask', !!(lastAskBody && lastAskBody.images && lastAskBody.images.length >= 1), lastAskBody ? ('imgs=' + (lastAskBody.images || []).length) : 'no body');
   // in-PDF search highlights matches
@@ -583,7 +583,7 @@ try {
   await sleep(300);
   ok('pdf: in-PDF search highlights matches', await page.evaluate(() => [...document.querySelectorAll('.sdn-tl span.sdn-find')].length >= 1));
   // region crop → image node
-  await page.evaluate(() => { const b = [...document.querySelectorAll('button')].find((x) => /▢ recortar/.test(x.textContent)); if (b) b.click(); });
+  await page.evaluate(() => { const b = [...document.querySelectorAll('button')].find((x) => /Recortar regi/.test(x.title || '')); if (b) b.click(); });
   await sleep(80);
   await page.evaluate(() => {
     const wrap = [...document.querySelectorAll('div')].find((d) => d.dataset && d.dataset.page);

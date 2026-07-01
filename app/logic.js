@@ -692,10 +692,72 @@ class Component extends DCLogic {
   injectPdfCss() {
     if (this._pdfCss) return; this._pdfCss = true;
     const s = document.createElement('style');
-    s.textContent = '.sdn-tl{position:absolute;left:0;top:0;right:0;bottom:0;overflow:hidden;line-height:1;}'
-      + '.sdn-tl span,.sdn-tl br{color:transparent;position:absolute;white-space:pre;cursor:text;transform-origin:0% 0%;}'
-      + '.sdn-tl span::selection{background:rgba(122,31,43,0.35);}'
-      + '.sdn-pdf-scroll::-webkit-scrollbar{width:10px;}.sdn-pdf-scroll::-webkit-scrollbar-thumb{background:rgba(250,248,243,0.25);}';
+    s.textContent = [
+      ".sdn-ov{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:26px;font-family:'IBM Plex Mono',ui-monospace,monospace;background:rgba(33,30,26,0.5);opacity:0;transition:opacity .18s ease;}",
+      ".sdn-ov.in{opacity:1;}",
+      ".sdn-panel{width:100%;max-width:1220px;height:100%;background:#FFFDF8;border:1px solid rgba(33,30,26,0.2);border-radius:7px;box-shadow:0 30px 80px rgba(33,30,26,0.38);display:flex;flex-direction:column;overflow:hidden;transform:translateY(12px) scale(.99);transition:transform .22s cubic-bezier(.2,.7,.3,1);}",
+      ".sdn-ov.in .sdn-panel{transform:none;}",
+      ".sdn-head{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:11px 16px 11px 22px;border-bottom:1px solid rgba(33,30,26,0.1);flex:none;}",
+      ".sdn-htitle{display:flex;align-items:baseline;gap:11px;min-width:0;}",
+      ".sdn-kick{font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:var(--sdn-ox);flex:none;}",
+      ".sdn-fname{font-family:'Cormorant Garamond',Georgia,serif;font-size:20px;color:#211E1A;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.005em;}",
+      ".sdn-tools{display:flex;align-items:center;gap:7px;flex:none;}",
+      ".sdn-seg{display:flex;align-items:center;border:1px solid rgba(33,30,26,0.16);border-radius:4px;overflow:hidden;background:#FCFAF4;}",
+      ".sdn-ico{width:30px;height:30px;display:flex;align-items:center;justify-content:center;background:transparent;border:none;color:rgba(33,30,26,0.6);font-size:14px;cursor:pointer;transition:background .12s,color .12s;padding:0;line-height:1;}",
+      ".sdn-ico:hover{background:rgba(33,30,26,0.06);color:var(--sdn-ox);}",
+      ".sdn-ico.on{background:var(--sdn-ox);color:#FFFDF8;}",
+      ".sdn-zpct{font-size:10.5px;color:rgba(33,30,26,0.55);min-width:44px;text-align:center;letter-spacing:.03em;}",
+      ".sdn-search{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#211E1A;background:#FCFAF4;border:1px solid rgba(33,30,26,0.16);border-radius:4px;padding:7px 10px;outline:none;width:150px;transition:border-color .12s,width .16s ease;}",
+      ".sdn-search:focus{border-color:var(--sdn-ox);width:184px;}",
+      ".sdn-x{width:30px;height:30px;border:1px solid rgba(33,30,26,0.16);border-radius:4px;background:transparent;color:rgba(33,30,26,0.5);font-size:14px;cursor:pointer;line-height:1;}",
+      ".sdn-x:hover{color:#211E1A;border-color:rgba(33,30,26,0.4);}",
+      ".sdn-row{flex:1;min-height:0;display:flex;}",
+      ".sdn-side{width:256px;flex:none;border-right:1px solid rgba(33,30,26,0.1);overflow:auto;background:#FAF8F3;transition:width .2s ease;}",
+      ".sdn-side.hidden{width:0;overflow:hidden;border-right:none;}",
+      ".sdn-sec{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:rgba(33,30,26,0.4);padding:16px 16px 8px;}",
+      ".sdn-out{display:block;width:100%;text-align:left;font-size:11px;line-height:1.4;color:#211E1A;background:transparent;border:none;padding:5px 16px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}",
+      ".sdn-out:hover{background:rgba(33,30,26,0.05);color:var(--sdn-ox);}",
+      ".sdn-hlrow{position:relative;padding:10px 12px 11px 20px;border-bottom:1px solid rgba(33,30,26,0.06);}",
+      ".sdn-hlrow::before{content:'';position:absolute;left:10px;top:12px;bottom:12px;width:3px;border-radius:2px;background:var(--rowc,#C9A227);}",
+      ".sdn-hltext{width:100%;text-align:left;font-family:'IBM Plex Serif',Georgia,serif;font-size:12px;line-height:1.5;color:#211E1A;background:transparent;border:none;cursor:pointer;padding:0;display:block;padding-right:14px;}",
+      ".sdn-hltext:hover{color:var(--sdn-ox);}",
+      ".sdn-hldel{position:absolute;top:8px;right:9px;font-size:11px;color:rgba(33,30,26,0.3);background:none;border:none;cursor:pointer;opacity:0;transition:opacity .12s;padding:0 2px;}",
+      ".sdn-hlrow:hover .sdn-hldel{opacity:1;}",
+      ".sdn-hlc{width:100%;margin-top:6px;font-family:'IBM Plex Mono',monospace;font-size:10px;color:rgba(33,30,26,0.72);background:transparent;border:none;border-bottom:1px dashed rgba(33,30,26,0.16);outline:none;padding:2px 0;}",
+      ".sdn-hlc:focus{border-bottom-color:var(--sdn-ox);}",
+      ".sdn-gen{display:block;width:calc(100% - 28px);margin:6px 14px 16px;text-align:left;font-size:10.5px;letter-spacing:.03em;color:var(--sdn-ox);background:transparent;border:1px solid rgba(122,31,43,0.3);border-radius:3px;padding:9px 11px;cursor:pointer;transition:background .12s;}",
+      ".sdn-gen:hover{background:rgba(122,31,43,0.06);}",
+      ".sdn-empty{font-size:10.5px;line-height:1.6;color:rgba(33,30,26,0.42);padding:2px 16px 16px;}",
+      ".sdn-reading{flex:1;min-height:0;overflow:auto;background:#E7E2D9;padding:26px 30px 48px;display:flex;flex-direction:column;align-items:center;gap:22px;position:relative;}",
+      ".sdn-page{position:relative;background:#fff;border:1px solid rgba(33,30,26,0.1);border-radius:2px;box-shadow:0 1px 2px rgba(33,30,26,0.14),0 12px 34px rgba(33,30,26,0.12);flex:none;opacity:0;transition:opacity .3s ease;}",
+      ".sdn-page.in{opacity:1;}",
+      ".sdn-load{position:absolute;inset:0;display:flex;flex-direction:column;gap:14px;align-items:center;justify-content:center;color:rgba(33,30,26,0.5);font-size:11px;letter-spacing:.14em;text-transform:uppercase;}",
+      ".sdn-loadbar{width:120px;height:2px;background:rgba(33,30,26,0.12);overflow:hidden;position:relative;}",
+      ".sdn-loadbar::after{content:'';position:absolute;left:0;top:0;height:2px;width:40%;background:var(--sdn-ox);animation:ox-sweep 1.3s ease-in-out infinite;}",
+      ".sdn-pageind{position:absolute;left:50%;transform:translateX(-50%);background:rgba(33,30,26,0.86);color:#FAF8F3;font-size:11px;letter-spacing:.1em;padding:5px 13px;border-radius:20px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:6;}",
+      ".sdn-pageind.show{opacity:1;}",
+      ".sdn-foot{flex:none;border-top:1px solid rgba(33,30,26,0.1);background:#FFFDF8;}",
+      ".sdn-ans{display:none;padding:16px 24px;max-height:220px;overflow:auto;border-bottom:1px solid rgba(33,30,26,0.08);}",
+      ".sdn-ans .q{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.03em;color:rgba(33,30,26,0.5);margin-bottom:8px;}",
+      ".sdn-ans .a{font-family:'IBM Plex Serif',Georgia,serif;font-size:14.5px;line-height:1.66;color:#211E1A;}",
+      ".sdn-assist{display:flex;gap:9px;align-items:center;padding:12px 24px;}",
+      ".sdn-chip{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:rgba(33,30,26,0.62);background:#FCFAF4;border:1px solid rgba(33,30,26,0.18);border-radius:20px;padding:8px 13px;cursor:pointer;white-space:nowrap;transition:color .12s,border-color .12s;}",
+      ".sdn-chip:hover{color:var(--sdn-ox);border-color:var(--sdn-ox);}",
+      ".sdn-askin{flex:1;font-family:'IBM Plex Mono',monospace;font-size:13px;color:#211E1A;background:#FCFAF4;border:1px solid rgba(33,30,26,0.2);border-radius:4px;padding:11px 13px;outline:none;}",
+      ".sdn-askin:focus{border-color:var(--sdn-ox);}",
+      ".sdn-send{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#FFFDF8;background:var(--sdn-ox);border:none;border-radius:4px;padding:11px 18px;cursor:pointer;transition:filter .12s;}",
+      ".sdn-send:hover{filter:brightness(0.9);}",
+      ".sdn-note{margin-top:10px;font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:rgba(33,30,26,0.55);background:transparent;border:1px solid rgba(33,30,26,0.2);border-radius:3px;padding:6px 10px;cursor:pointer;}",
+      ".sdn-note:hover{color:var(--sdn-ox);border-color:var(--sdn-ox);}",
+      ".sdn-missing{margin:auto;max-width:440px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:16px;color:rgba(33,30,26,0.6);font-size:12px;line-height:1.7;}",
+      ".sdn-reattach{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#FFFDF8;background:var(--sdn-ox);border:none;border-radius:3px;padding:11px 18px;cursor:pointer;}",
+      ".sdn-tl{position:absolute;left:0;top:0;right:0;bottom:0;overflow:hidden;line-height:1;}",
+      ".sdn-tl span,.sdn-tl br{color:transparent;position:absolute;white-space:pre;cursor:text;transform-origin:0% 0%;}",
+      ".sdn-tl span::selection{background:rgba(122,31,43,0.28);}",
+      ".sdn-pdf-scroll::-webkit-scrollbar{width:11px;height:11px;}",
+      ".sdn-pdf-scroll::-webkit-scrollbar-thumb{background:rgba(33,30,26,0.22);border-radius:6px;border:3px solid transparent;background-clip:content-box;}",
+      ".sdn-pdf-scroll::-webkit-scrollbar-track{background:transparent;}",
+    ].join('');
     document.head.appendChild(s);
   }
   openPdf = async (id) => {
@@ -718,72 +780,84 @@ class Component extends DCLogic {
     this.injectPdfCss();
     const accent = this.curAccent();
     this.pageWraps = {}; this.pdfDoc = null; this.pdfOutline = null; this.pdfDocNode = node;
-    const ov = document.createElement('div');
-    ov.style.cssText = 'position:fixed;inset:0;z-index:100;background:rgba(33,30,26,0.62);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;font-family:"IBM Plex Mono",ui-monospace,monospace;';
+    const el = (tag, cls, css) => { const d = document.createElement(tag); if (cls) d.className = cls; if (css) d.style.cssText = css; return d; };
+    const ov = el('div', 'sdn-ov'); ov.style.zIndex = '100'; ov.style.setProperty('--sdn-ox', accent);
     ov.addEventListener('pointerdown', (e) => { if (e.target === ov) this.closePdf(); });
-    const panel = document.createElement('div');
-    panel.style.cssText = 'width:100%;max-width:1180px;height:100%;background:#FFFDF8;border:1px solid rgba(33,30,26,0.3);box-shadow:0 18px 60px rgba(33,30,26,0.3);display:flex;flex-direction:column;';
-    // header
-    const head = document.createElement('div');
-    head.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:14px 22px;border-bottom:1px solid rgba(33,30,26,0.14);flex:none;';
-    head.innerHTML = '<div style="display:flex;align-items:baseline;gap:12px;min-width:0;"><span style="font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;color:' + accent + ';">PDF</span><span style="font-family:\'Cormorant Garamond\',Georgia,serif;font-size:18px;color:#211E1A;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + this.esc(node.filename || 'documento.pdf') + '</span></div>';
-    const ctrls = document.createElement('div'); ctrls.style.cssText = 'display:flex;gap:8px;flex:none;align-items:center;';
-    const mkHeadBtn = (label, fn) => { const b = document.createElement('button'); b.textContent = label; b.style.cssText = 'font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:rgba(33,30,26,0.6);background:transparent;border:1px solid rgba(33,30,26,0.2);border-radius:2px;padding:7px 11px;cursor:pointer;'; b.onclick = fn; return b; };
+    const panel = el('div', 'sdn-panel');
+    // header — title + a tidy, grouped toolbar (icons with tooltips)
+    const head = el('div', 'sdn-head');
+    const title = el('div', 'sdn-htitle'); title.innerHTML = '<span class="sdn-kick">PDF</span><span class="sdn-fname">' + this.esc(node.filename || 'documento.pdf') + '</span>';
+    head.appendChild(title);
+    const tools = el('div', 'sdn-tools');
+    const ico = (glyph, tip, fn) => { const b = el('button', 'sdn-ico'); b.textContent = glyph; b.title = tip; b.onclick = fn; return b; };
     if (blob) {
-      const find = document.createElement('input'); find.placeholder = 'buscar no PDF'; find.style.cssText = 'font-family:"IBM Plex Mono",monospace;font-size:11px;color:#211E1A;background:#FCFAF4;border:1px solid rgba(33,30,26,0.2);border-radius:2px;padding:6px 9px;outline:none;width:130px;';
+      const find = el('input', 'sdn-search'); find.placeholder = 'buscar no PDF';
       find.onkeydown = (e) => { if (e.key === 'Enter') { e.preventDefault(); this.searchPdf(find.value); } };
-      ctrls.appendChild(find);
-      const zr = document.createElement('div'); zr.style.cssText = 'display:flex;border:1px solid rgba(33,30,26,0.2);border-radius:2px;overflow:hidden;';
-      const zb = (t, f) => { const b = document.createElement('button'); b.textContent = t; b.style.cssText = 'font-size:14px;color:#211E1A;background:transparent;border:none;padding:3px 9px;cursor:pointer;line-height:1;'; b.onclick = f; return b; };
-      zr.appendChild(zb('−', () => this.zoomPdf(1 / 1.15))); zr.appendChild(zb('+', () => this.zoomPdf(1.15))); ctrls.appendChild(zr);
-      const crop = mkHeadBtn('▢ recortar', () => this.toggleCrop(crop)); ctrls.appendChild(crop);
+      tools.appendChild(find);
+      const zseg = el('div', 'sdn-seg');
+      zseg.appendChild(ico('−', 'Diminuir zoom', () => this.zoomPdf(1 / 1.15)));
+      this.pdfZpct = el('span', 'sdn-zpct'); this.pdfZpct.textContent = '100%'; zseg.appendChild(this.pdfZpct);
+      zseg.appendChild(ico('+', 'Aumentar zoom', () => this.zoomPdf(1.15)));
+      tools.appendChild(zseg);
+      this.pdfCropBtn = ico('▢', 'Recortar região (figura → imagem)', () => this.toggleCrop(this.pdfCropBtn)); tools.appendChild(this.pdfCropBtn);
     }
-    if (blob) ctrls.appendChild(mkHeadBtn('✦ resumir', () => this.askPdf(this.pdfDocNode, 'Resuma este documento em tópicos curtos e liste os termos-chave.', this.pdfAns)));
-    if (blob) ctrls.appendChild(mkHeadBtn('👁 visão', () => this.askPdfVision(this.pdfDocNode, this.pdfAns)));
-    ctrls.appendChild(mkHeadBtn('↧ destaques', () => this.exportHighlights(this.pdfDocNode)));
-    if (blob) ctrls.appendChild(mkHeadBtn('↓ baixar', () => { const u = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = u; a.download = node.filename || 'documento.pdf'; a.click(); setTimeout(() => URL.revokeObjectURL(u), 1500); }));
-    const close = document.createElement('button'); close.textContent = '✕';
-    close.style.cssText = 'font-size:14px;color:rgba(33,30,26,0.45);background:none;border:1px solid rgba(33,30,26,0.18);border-radius:2px;width:30px;height:30px;cursor:pointer;';
-    close.onclick = () => this.closePdf();
-    ctrls.appendChild(close); head.appendChild(ctrls); panel.appendChild(head);
-    // content row: sidebar + pages
-    const row = document.createElement('div'); row.style.cssText = 'flex:1;min-height:0;display:flex;';
-    const side = document.createElement('div'); side.className = 'sdn-pdf-scroll'; side.style.cssText = 'width:248px;flex:none;border-right:1px solid rgba(33,30,26,0.12);overflow:auto;background:#FAF8F3;';
-    const body = document.createElement('div'); body.className = 'sdn-pdf-scroll';
-    body.style.cssText = 'flex:1;min-height:0;overflow:auto;background:#525659;padding:22px;display:flex;flex-direction:column;align-items:center;gap:18px;';
+    tools.appendChild(ico('↧', 'Exportar destaques como nota', () => this.exportHighlights(this.pdfDocNode)));
+    tools.appendChild(ico('☰', 'Mostrar/ocultar painel', () => { if (this.pdfSide) this.pdfSide.classList.toggle('hidden'); }));
+    if (blob) tools.appendChild(ico('↓', 'Baixar o PDF', () => { const u = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = u; a.download = node.filename || 'documento.pdf'; a.click(); setTimeout(() => URL.revokeObjectURL(u), 1500); }));
+    const close = el('button', 'sdn-x'); close.textContent = '✕'; close.title = 'Fechar (Esc)'; close.onclick = () => this.closePdf(); tools.appendChild(close);
+    head.appendChild(tools); panel.appendChild(head);
+    // content row: sidebar + reading area
+    const row = el('div', 'sdn-row');
+    const side = el('div', 'sdn-side sdn-pdf-scroll');
+    const body = el('div', 'sdn-reading sdn-pdf-scroll');
+    const pind = el('div', 'sdn-pageind');
+    body.appendChild(pind);
     row.appendChild(side); row.appendChild(body); panel.appendChild(row);
-    // footer: "Pergunte ao PDF" (grounded Q&A)
-    const foot = document.createElement('div'); foot.style.cssText = 'flex:none;border-top:1px solid rgba(33,30,26,0.12);background:#FFFDF8;';
-    const ans = document.createElement('div'); ans.style.cssText = 'display:none;padding:14px 22px;max-height:200px;overflow:auto;border-bottom:1px solid rgba(33,30,26,0.08);font-family:"IBM Plex Serif",Georgia,serif;font-size:14px;line-height:1.6;color:#211E1A;';
-    foot.appendChild(ans);
-    const askRow = document.createElement('div'); askRow.style.cssText = 'display:flex;gap:10px;align-items:center;padding:12px 22px;';
-    const inp = document.createElement('input'); inp.placeholder = 'Pergunte ao PDF…'; inp.style.cssText = 'flex:1;font-family:"IBM Plex Mono",monospace;font-size:13px;color:#211E1A;background:#FCFAF4;border:1px solid rgba(33,30,26,0.2);border-radius:2px;padding:10px 12px;outline:none;';
+    // footer — "Assistente do PDF": quick actions + grounded Q&A
+    const foot = el('div', 'sdn-foot');
+    const ans = el('div', 'sdn-ans'); foot.appendChild(ans);
+    const assist = el('div', 'sdn-assist');
+    if (blob) {
+      const c1 = el('button', 'sdn-chip'); c1.textContent = '✦ Resumir'; c1.onclick = () => this.askPdf(this.pdfDocNode, 'Resuma este documento em tópicos curtos e liste os termos-chave.', this.pdfAns); assist.appendChild(c1);
+      const c2 = el('button', 'sdn-chip'); c2.textContent = '👁 Visão'; c2.title = 'Ler as páginas com visão (para PDF escaneado)'; c2.onclick = () => this.askPdfVision(this.pdfDocNode, this.pdfAns); assist.appendChild(c2);
+    }
+    const inp = el('input', 'sdn-askin'); inp.placeholder = 'Pergunte ao PDF…';
     inp.onkeydown = (e) => { if (e.key === 'Enter') { e.preventDefault(); this.askPdf(node, inp.value, ans); inp.value = ''; } };
-    const askBtn = document.createElement('button'); askBtn.textContent = 'Perguntar'; askBtn.style.cssText = 'font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#FFFDF8;background:' + accent + ';border:none;border-radius:2px;padding:10px 18px;cursor:pointer;';
-    askBtn.onclick = () => { this.askPdf(node, inp.value, ans); inp.value = ''; };
-    askRow.appendChild(inp); askRow.appendChild(askBtn); foot.appendChild(askRow); panel.appendChild(foot);
+    const sendB = el('button', 'sdn-send'); sendB.textContent = 'Perguntar'; sendB.onclick = () => { this.askPdf(node, inp.value, ans); inp.value = ''; };
+    assist.appendChild(inp); assist.appendChild(sendB); foot.appendChild(assist); panel.appendChild(foot);
     ov.appendChild(panel); document.body.appendChild(ov);
-    this.pdfEl = ov; this.pdfBody = body; this.pdfSide = side; this.pdfAns = ans; this._pdfBlob = blob;
+    this.pdfEl = ov; this.pdfBody = body; this.pdfSide = side; this.pdfAns = ans; this._pdfBlob = blob; this.pdfPageInd = pind;
+    requestAnimationFrame(() => ov.classList.add('in'));   // fade + rise entrance
     this.renderHlPanel(node);
     if (!blob) {
-      const box = document.createElement('div'); box.style.cssText = 'margin:auto;max-width:440px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:16px;';
-      box.innerHTML = '<div style="color:#FAF8F3;font-size:12px;line-height:1.7;">O arquivo não está neste dispositivo (o PDF fica salvo localmente). Os destaques e o texto estão preservados — re-anexe o mesmo PDF para vê-lo de novo.</div>';
-      const fi = document.createElement('input'); fi.type = 'file'; fi.accept = 'application/pdf,.pdf'; fi.style.display = 'none';
+      const box = el('div', 'sdn-missing');
+      box.innerHTML = '<div>O arquivo não está neste dispositivo (o PDF fica salvo localmente). Os destaques e o texto estão preservados — re-anexe o mesmo PDF para vê-lo de novo.</div>';
+      const fi = el('input'); fi.type = 'file'; fi.accept = 'application/pdf,.pdf'; fi.style.display = 'none';
       fi.onchange = (e) => { const f = e.target.files && e.target.files[0]; if (f) this.reattachPdf(node.id, f); };
-      const btn = document.createElement('button'); btn.textContent = '↥ re-anexar este PDF';
-      btn.style.cssText = 'font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#211E1A;background:#FAF8F3;border:none;border-radius:2px;padding:11px 18px;cursor:pointer;';
-      btn.onclick = () => fi.click();
+      const btn = el('button', 'sdn-reattach'); btn.textContent = '↥ re-anexar este PDF'; btn.onclick = () => fi.click();
       box.appendChild(btn); box.appendChild(fi); body.appendChild(box); return;
     }
+    const load = el('div', 'sdn-load'); load.innerHTML = '<div class="sdn-loadbar"></div><span>abrindo documento…</span>'; body.appendChild(load); this.pdfLoad = load;
     body.addEventListener('mouseup', () => setTimeout(() => this.onPdfSelect(node), 0));
     body.addEventListener('pointerdown', this.onCropDown);
+    body.addEventListener('scroll', this.onPdfScroll);
     this.pdfCropMode = false;
-    this.renderPdfPages(body, blob, node).then(() => this.renderHlPanel(node)).catch(() => { body.innerHTML = '<div style="margin:auto;color:#FAF8F3;font-size:12px;">Falha ao renderizar o PDF.</div>'; });
+    this.renderPdfPages(body, blob, node).then(() => this.renderHlPanel(node)).catch(() => { body.innerHTML = '<div class="sdn-missing"><div>Falha ao renderizar o PDF.</div></div>'; });
   }
+  onPdfScroll = () => {
+    if (!this.pdfBody || !this.pdfPageInd) return;
+    const b = this.pdfBody; const mid = b.scrollTop + b.clientHeight / 2;
+    let cur = 1; Object.keys(this.pageWraps).forEach(p => { if (this.pageWraps[p].offsetTop <= mid) cur = Number(p); });
+    const total = this.pdfDoc ? this.pdfDoc.numPages : Object.keys(this.pageWraps).length;
+    this.pdfPageInd.textContent = cur + ' / ' + total;
+    this.pdfPageInd.style.top = (b.scrollTop + b.clientHeight - 46) + 'px';
+    this.pdfPageInd.classList.add('show');
+    clearTimeout(this._pind); this._pind = setTimeout(() => { if (this.pdfPageInd) this.pdfPageInd.classList.remove('show'); }, 1100);
+  };
   // ---- region crop: drag a rectangle over a page → crop the canvas into an image node ----
   toggleCrop(btn) {
     this.pdfCropMode = !this.pdfCropMode;
-    if (btn) { btn.style.background = this.pdfCropMode ? this.curAccent() : 'transparent'; btn.style.color = this.pdfCropMode ? '#FFFDF8' : 'rgba(33,30,26,0.6)'; }
+    if (btn) btn.classList.toggle('on', this.pdfCropMode);
     if (this.pdfBody) { this.pdfBody.style.cursor = this.pdfCropMode ? 'crosshair' : ''; [...this.pdfBody.querySelectorAll('.sdn-tl')].forEach(t => t.style.pointerEvents = this.pdfCropMode ? 'none' : ''); }
     this.toast(this.pdfCropMode ? 'Recorte ligado — arraste sobre a figura' : 'Recorte desligado');
   }
@@ -836,7 +910,8 @@ class Component extends DCLogic {
       const scale = Math.min(2, maxW / v0.width) * (this.userZoom || 1);
       const vp = page.getViewport({ scale });
       const wrap = document.createElement('div');
-      wrap.style.cssText = 'position:relative;width:' + Math.round(vp.width) + 'px;height:' + Math.round(vp.height) + 'px;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,0.4);flex:none;';
+      wrap.className = 'sdn-page';
+      wrap.style.width = Math.round(vp.width) + 'px'; wrap.style.height = Math.round(vp.height) + 'px';
       wrap.dataset.page = String(p);
       const canvas = document.createElement('canvas'); canvas.width = Math.round(vp.width); canvas.height = Math.round(vp.height);
       canvas.style.cssText = 'display:block;width:100%;height:100%;';
@@ -845,7 +920,9 @@ class Component extends DCLogic {
       const tl = document.createElement('div'); tl.className = 'sdn-tl'; tl.style.width = Math.round(vp.width) + 'px'; tl.style.height = Math.round(vp.height) + 'px';
       wrap.appendChild(tl);
       try { const tc = await page.getTextContent(); await lib.renderTextLayer({ textContent: tc, container: tl, viewport: vp, textDivs: [] }).promise; } catch (e) {}
+      if (this.pdfLoad) { try { this.pdfLoad.remove(); } catch (e) {} this.pdfLoad = null; }
       body.appendChild(wrap);
+      requestAnimationFrame(() => wrap.classList.add('in'));   // gentle fade-in per page
       this.pageWraps[p] = wrap;
       this.paintHighlights(wrap, p, this.byId()[node.id] || node);
       this.paintBacklinks(wrap, p, node.id);
@@ -875,13 +952,15 @@ class Component extends DCLogic {
   showPdfToolbar(rect, text, node, page) {
     this.hidePdfToolbar();
     const bar = document.createElement('div');
-    bar.style.cssText = 'position:fixed;z-index:101;left:' + Math.round(rect.left + rect.width / 2) + 'px;top:' + Math.round(rect.top - 44) + 'px;transform:translateX(-50%);display:flex;align-items:center;gap:1px;background:#211E1A;border-radius:3px;box-shadow:0 4px 16px rgba(0,0,0,0.4);padding:0 4px;font-family:"IBM Plex Mono",monospace;';
-    const mk = (label, fn) => { const b = document.createElement('button'); b.textContent = label; b.style.cssText = 'font-size:10px;letter-spacing:.06em;color:#FAF8F3;background:transparent;border:none;padding:8px 10px;cursor:pointer;'; b.onmouseenter = () => b.style.background = 'rgba(250,248,243,0.12)'; b.onmouseleave = () => b.style.background = 'transparent'; b.onmousedown = (e) => e.preventDefault(); b.onclick = fn; return b; };
+    bar.style.cssText = 'position:fixed;z-index:101;left:' + Math.round(rect.left + rect.width / 2) + 'px;top:' + Math.round(rect.top - 48) + 'px;transform:translateX(-50%) scale(.96);opacity:0;transition:opacity .12s ease,transform .12s cubic-bezier(.2,.7,.3,1);display:flex;align-items:center;gap:1px;background:#211E1A;border-radius:6px;box-shadow:0 8px 24px rgba(0,0,0,0.32);padding:3px 5px;font-family:"IBM Plex Mono",monospace;';
+    const mk = (label, fn) => { const b = document.createElement('button'); b.textContent = label; b.style.cssText = 'font-size:10.5px;letter-spacing:.05em;color:#FAF8F3;background:transparent;border:none;border-radius:4px;padding:7px 11px;cursor:pointer;transition:background .1s;'; b.onmouseenter = () => b.style.background = 'rgba(250,248,243,0.14)'; b.onmouseleave = () => b.style.background = 'transparent'; b.onmousedown = (e) => e.preventDefault(); b.onclick = fn; return b; };
     bar.appendChild(mk('✚ Nota', () => { this.createNoteFromPdf(text, node, page); this.hidePdfToolbar(); }));
     bar.appendChild(mk('✦ IA', () => { this.generateFromPdf(text, node, page); this.hidePdfToolbar(); }));
-    const sep = document.createElement('span'); sep.style.cssText = 'width:1px;height:18px;background:rgba(250,248,243,0.2);margin:0 3px;'; bar.appendChild(sep);
-    this.PDF_HL_COLORS.forEach(col => { const d = document.createElement('button'); d.title = 'Destacar ' + col.name; d.style.cssText = 'width:16px;height:16px;border-radius:50%;border:1px solid rgba(250,248,243,0.4);background:' + col.c + ';margin:0 2px;cursor:pointer;padding:0;'; d.onmousedown = (e) => e.preventDefault(); d.onclick = () => { this.highlightSelection(node, col.c); this.hidePdfToolbar(); }; bar.appendChild(d); });
+    const sep = document.createElement('span'); sep.style.cssText = 'width:1px;height:18px;background:rgba(250,248,243,0.18);margin:0 4px;'; bar.appendChild(sep);
+    this.PDF_HL_COLORS.forEach(col => { const d = document.createElement('button'); d.title = 'Destacar ' + col.name; d.style.cssText = 'width:15px;height:15px;border-radius:50%;border:1px solid rgba(250,248,243,0.35);background:' + col.c + ';margin:0 2px;cursor:pointer;padding:0;transition:transform .1s;'; d.onmouseenter = () => d.style.transform = 'scale(1.18)'; d.onmouseleave = () => d.style.transform = 'scale(1)'; d.onmousedown = (e) => e.preventDefault(); d.onclick = () => { this.highlightSelection(node, col.c); this.hidePdfToolbar(); }; bar.appendChild(d); });
+    const caret = document.createElement('span'); caret.style.cssText = 'position:absolute;left:50%;bottom:-5px;transform:translateX(-50%);width:10px;height:10px;background:#211E1A;border-bottom-right-radius:2px;clip-path:polygon(100% 0,0 100%,100% 100%);rotate:45deg;'; bar.appendChild(caret);
     document.body.appendChild(bar); this.pdfBar = bar;
+    requestAnimationFrame(() => { bar.style.opacity = '1'; bar.style.transform = 'translateX(-50%) scale(1)'; });
   }
   hidePdfToolbar() { if (this.pdfBar) { try { this.pdfBar.remove(); } catch (e) {} this.pdfBar = null; } }
   createNoteFromPdf(text, node, page) {
@@ -911,7 +990,16 @@ class Component extends DCLogic {
       this.closePdf(); setTimeout(() => this.openPdf(id), 80);
     }).catch(() => this.toast('Falha ao re-anexar'));
   }
-  zoomPdf(f) { this.userZoom = Math.max(0.6, Math.min(2.6, (this.userZoom || 1) * f)); if (this.pdfBody && this._pdfBlob) { const sc = this.pdfBody.scrollTop; this.pageWraps = {}; this.pdfBody.innerHTML = ''; this.renderPdfPages(this.pdfBody, this._pdfBlob, this.pdfDocNode).then(() => { try { this.pdfBody.scrollTop = sc * 1; } catch (e) {} }).catch(() => {}); } }
+  zoomPdf(f) {
+    this.userZoom = Math.max(0.6, Math.min(2.6, (this.userZoom || 1) * f));
+    if (this.pdfZpct) this.pdfZpct.textContent = Math.round((this.userZoom || 1) * 100) + '%';
+    if (this.pdfBody && this._pdfBlob) {
+      const b = this.pdfBody; const ratio = b.scrollHeight ? (b.scrollTop / b.scrollHeight) : 0;
+      this.pageWraps = {}; b.innerHTML = '';
+      if (this.pdfPageInd) b.appendChild(this.pdfPageInd);
+      this.renderPdfPages(b, this._pdfBlob, this.pdfDocNode).then(() => { try { b.scrollTop = ratio * b.scrollHeight; } catch (e) {} }).catch(() => {});
+    }
+  }
   searchPdf(query) {
     query = (query || '').trim().toLowerCase(); if (!query || !this.pdfBody) return;
     [...this.pdfBody.querySelectorAll('.sdn-find')].forEach(e => { e.style.background = ''; e.classList.remove('sdn-find'); });
@@ -966,25 +1054,21 @@ class Component extends DCLogic {
     const side = this.pdfSide; if (!side) return;
     node = this.byId()[this.pdfNodeId] || node || {};
     side.innerHTML = '';
-    const sec = (title) => { const h = document.createElement('div'); h.textContent = title; h.style.cssText = 'font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:rgba(33,30,26,0.4);padding:14px 16px 8px;'; return h; };
+    const sec = (title) => { const h = document.createElement('div'); h.className = 'sdn-sec'; h.textContent = title; return h; };
     if (this.pdfOutline && this.pdfOutline.length) {
       side.appendChild(sec('Sumário'));
-      this.pdfOutline.forEach(o => { const a = document.createElement('button'); a.textContent = o.title; a.style.cssText = 'display:block;width:100%;text-align:left;font-size:11px;line-height:1.4;color:#211E1A;background:transparent;border:none;padding:5px 16px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;'; a.onmouseenter = () => a.style.background = 'rgba(33,30,26,0.05)'; a.onmouseleave = () => a.style.background = 'transparent'; a.onclick = () => { if (o.page) this.scrollToHlPage(o.page); }; side.appendChild(a); });
+      this.pdfOutline.forEach(o => { const a = document.createElement('button'); a.className = 'sdn-out'; a.textContent = o.title; a.onclick = () => { if (o.page) this.scrollToHlPage(o.page); }; side.appendChild(a); });
     }
     const hls = node.highlights || [];
     side.appendChild(sec('Destaques (' + hls.length + ')'));
-    if (!hls.length) { const e = document.createElement('div'); e.textContent = 'Selecione um trecho e escolha uma cor.'; e.style.cssText = 'font-size:10.5px;line-height:1.6;color:rgba(33,30,26,0.45);padding:2px 16px 16px;'; side.appendChild(e); }
-    if (hls.length) { const g = document.createElement('button'); g.textContent = '↳ gerar questões destes destaques'; g.style.cssText = 'display:block;width:calc(100% - 28px);margin:2px 14px 12px;text-align:left;font-size:10.5px;letter-spacing:.04em;color:' + this.curAccent() + ';background:transparent;border:1px solid rgba(122,31,43,0.3);border-radius:2px;padding:8px 10px;cursor:pointer;'; g.onclick = () => this.generateFromHighlights(node); side.appendChild(g); }
+    if (!hls.length) { const e = document.createElement('div'); e.className = 'sdn-empty'; e.textContent = 'Selecione um trecho no PDF e escolha uma cor para destacá-lo.'; side.appendChild(e); }
+    if (hls.length) { const g = document.createElement('button'); g.className = 'sdn-gen'; g.textContent = '↳ gerar questões destes destaques'; g.onclick = () => this.generateFromHighlights(node); side.appendChild(g); }
     hls.forEach(h => {
-      const row = document.createElement('div'); row.className = 'sdn-hl-row'; row.style.cssText = 'padding:9px 14px 9px 16px;border-bottom:1px solid rgba(33,30,26,0.07);';
-      const top = document.createElement('div'); top.style.cssText = 'display:flex;gap:8px;align-items:flex-start;';
-      const dot = document.createElement('span'); dot.style.cssText = 'width:9px;height:9px;border-radius:50%;background:' + (h.color || '#C9A227') + ';flex:none;margin-top:4px;';
-      const snip = document.createElement('button'); snip.textContent = (h.text || '').slice(0, 70); snip.title = 'Ir para a página ' + h.page; snip.style.cssText = 'flex:1;text-align:left;font-size:11px;line-height:1.45;color:#211E1A;background:transparent;border:none;cursor:pointer;padding:0;';
-      snip.onclick = () => this.scrollToHlPage(h.page);
-      const del = document.createElement('button'); del.textContent = '✕'; del.title = 'Remover'; del.style.cssText = 'font-size:11px;color:rgba(33,30,26,0.35);background:none;border:none;cursor:pointer;padding:0 2px;flex:none;'; del.onclick = () => this.deleteHl(node.id, h.id);
-      top.appendChild(dot); top.appendChild(snip); top.appendChild(del); row.appendChild(top);
-      const ci = document.createElement('input'); ci.value = h.comment || ''; ci.placeholder = 'comentário…'; ci.className = 'sdn-hl-comment'; ci.style.cssText = 'width:100%;margin-top:6px;font-family:"IBM Plex Mono",monospace;font-size:10px;color:rgba(33,30,26,0.7);background:transparent;border:none;border-bottom:1px dashed rgba(33,30,26,0.18);outline:none;padding:2px 0;';
-      ci.oninput = (e) => this.updateHlComment(node.id, h.id, e.target.value);
+      const row = document.createElement('div'); row.className = 'sdn-hlrow'; row.style.setProperty('--rowc', h.color || '#C9A227');
+      const snip = document.createElement('button'); snip.className = 'sdn-hltext'; snip.textContent = (h.text || '').slice(0, 90); snip.title = 'Ir para a página ' + h.page; snip.onclick = () => this.scrollToHlPage(h.page);
+      const del = document.createElement('button'); del.className = 'sdn-hldel'; del.textContent = '✕'; del.title = 'Remover'; del.onclick = () => this.deleteHl(node.id, h.id);
+      row.appendChild(snip); row.appendChild(del);
+      const ci = document.createElement('input'); ci.className = 'sdn-hlc'; ci.value = h.comment || ''; ci.placeholder = 'comentário…'; ci.oninput = (e) => this.updateHlComment(node.id, h.id, e.target.value);
       row.appendChild(ci); side.appendChild(row);
     });
   }
@@ -1055,10 +1139,9 @@ class Component extends DCLogic {
       .then((d) => {
         if (!this.pdfEl || !ansEl.isConnected) return;
         ansEl.innerHTML = '';
-        const q = document.createElement('div'); q.textContent = '“' + question + '”'; q.style.cssText = 'font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.04em;color:rgba(33,30,26,0.5);margin-bottom:8px;';
-        const a = document.createElement('div'); a.innerHTML = this.textToHtml(d.answer || '');
-        const note = document.createElement('button'); note.textContent = '✚ virar nota';
-        note.style.cssText = 'margin-top:10px;font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:rgba(33,30,26,0.55);background:transparent;border:1px solid rgba(33,30,26,0.2);border-radius:2px;padding:6px 10px;cursor:pointer;';
+        const q = document.createElement('div'); q.className = 'q'; q.textContent = '“' + question + '”';
+        const a = document.createElement('div'); a.className = 'a'; a.innerHTML = this.textToHtml(d.answer || '');
+        const note = document.createElement('button'); note.className = 'sdn-note'; note.textContent = '✚ virar nota';
         note.onclick = () => { this.createNote('PDF · ' + question.slice(0, 28), 'Pergunta: ' + question + '\n\n' + (d.answer || ''), 'pdf-qa'); this.toast('Resposta virou nota'); };
         ansEl.appendChild(q); ansEl.appendChild(a); ansEl.appendChild(note);
       })
