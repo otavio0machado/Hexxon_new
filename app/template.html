@@ -145,18 +145,18 @@
           <div onPointerDown="{{ n.onDown }}" style="position:absolute;left:{{ n.x }}px;top:{{ n.y }}px;width:{{ n.w }}px;pointer-events:auto;cursor:grab;transition:transform .14s cubic-bezier(.2,.7,.3,1),filter .14s ease;{{ n.dragCss }}">
 
             <sc-if value="{{ n.isTitle }}" hint-placeholder-val="{{ false }}">
-              <div style="background:var(--surface-raised);border:1px solid var(--ink-28);border-radius:3px;padding:28px 32px;box-shadow:0 1px 0 var(--ink-05),inset 0 0 0 3px var(--ink-035);text-align:center;">
-                <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.3em;color:var(--ox);text-transform:uppercase;margin-bottom:13px;">{{ n.kickerLabel }}</div>
-                <input onPointerDown="{{ stop }}" value="{{ n.titleBig }}" onInput="{{ n.onTitleRename }}" title="renomear disciplina" style="width:100%;text-align:center;font-family:var(--serif);font-size:44px;line-height:1.0;color:var(--ink);font-weight:600;letter-spacing:.005em;background:transparent;border:none;outline:none;padding:0;" />
+              <div class="card card--node card--node--title" style="background:var(--surface-raised);border:1px solid var(--ink-28);border-radius:3px;padding:28px 32px;box-shadow:0 1px 0 var(--ink-05),inset 0 0 0 3px var(--ink-035);text-align:center;">
+                <div class="kicker" style="font-size:10px;letter-spacing:.3em;color:var(--ox);margin-bottom:13px;">{{ n.kickerLabel }}</div>
+                <input onPointerDown="{{ stop }}" value="{{ n.titleBig }}" onInput="{{ n.onTitleRename }}" title="renomear disciplina" class="input--seam input--serif t-title" style="width:100%;text-align:center;line-height:1.0;color:var(--ink);letter-spacing:.005em;padding:0;" />
                 <div style="height:1px;background:var(--ink-20);margin:18px auto 13px;width:58px;"></div>
                 <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.16em;color:var(--ink-50);text-transform:uppercase;">{{ n.titleMeta }}</div>
               </div>
             </sc-if>
 
             <sc-if value="{{ n.isLesson }}" hint-placeholder-val="{{ true }}">
-              <div style="background:var(--surface-raised);border:1px solid var(--ink-24);border-radius:3px;padding:19px 21px;box-shadow:0 1px 0 var(--ink-04);{{ n.cardCss }}">
-                <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.28em;color:var(--ink-42);text-transform:uppercase;margin-bottom:9px;">{{ n.kicker }}</div>
-                <div style="font-family:var(--serif);font-size:22px;line-height:1.1;color:var(--ink);font-weight:600;">{{ n.titleText }}</div>
+              <div class="card card--node card--node--lesson" style="background:var(--surface-raised);border:1px solid var(--ink-24);border-radius:3px;padding:19px 21px;box-shadow:0 1px 0 var(--ink-04);{{ n.cardCss }}">
+                <div class="kicker kicker--ink" style="font-size:10px;letter-spacing:.28em;color:var(--ink-42);margin-bottom:9px;">{{ n.kicker }}</div>
+                <div class="t-subhead" style="line-height:1.1;color:var(--ink);">{{ n.titleText }}</div>
                 <button onPointerDown="{{ stop }}" onClick="{{ n.onMaterial }}" style="display:flex;align-items:center;gap:8px;margin-top:15px;background:none;border:none;padding:0;cursor:pointer;width:100%;text-align:left;" style-hover="opacity:0.7;">
                   <span style="width:5px;height:5px;background:var(--ox);display:inline-block;flex:none;"></span>
                   <span style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.1em;color:var(--ink-50);text-transform:uppercase;flex:1;">{{ n.material }}</span>
@@ -166,25 +166,25 @@
             </sc-if>
 
             <sc-if value="{{ n.genEmpty }}" hint-placeholder-val="{{ false }}">
-              <div style="background:var(--surface-sunken);border:1px dashed var(--ink-34);border-radius:3px;padding:20px;">
-                <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.28em;color:var(--ink-40);text-transform:uppercase;margin-bottom:13px;">Nó vazio</div>
-                <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;line-height:1.55;color:var(--ink-60);margin-bottom:15px;">Conecte uma Nota ou PDF e invoque a IA para preencher este nó.</div>
-                <div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.04em;color:var(--ink-50);margin-bottom:16px;">{{ n.connLine }}</div>
-                <button onPointerDown="{{ stop }}" onClick="{{ n.onAi }}" style="width:100%;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ox);background:transparent;border:1px solid var(--ox);border-radius:2px;padding:10px 12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;" style-hover="background:var(--ox-06);">
+              <div class="card card--node card--dashed" style="background:var(--surface-sunken);border:1px dashed var(--ink-34);border-radius:3px;padding:20px;">
+                <div class="kicker kicker--ink" style="font-size:10px;letter-spacing:.28em;color:var(--ink-40);margin-bottom:13px;">Nó vazio</div>
+                <div class="t-body" style="font-size:12px;line-height:1.55;color:var(--ink-60);margin-bottom:15px;">Conecte uma Nota ou PDF e invoque a IA para preencher este nó.</div>
+                <div class="t-caption" style="font-size:10.5px;letter-spacing:.04em;color:var(--ink-50);text-transform:none;margin-bottom:16px;">{{ n.connLine }}</div>
+                <button onPointerDown="{{ stop }}" onClick="{{ n.onAi }}" class="btn btn--accent btn--block" style="font-size:11px;letter-spacing:.16em;border-radius:2px;padding:10px 12px;gap:8px;" style-hover="background:var(--ox-06);">
                   <span style="width:5px;height:5px;background:var(--ox);display:inline-block;"></span>Invocar IA
                 </button>
               </div>
             </sc-if>
 
             <sc-if value="{{ n.genResult }}" hint-placeholder-val="{{ false }}">
-              <div onClick="{{ n.onSkip }}" onDoubleClick="{{ n.onOpen }}" class="ox-scroll" style="background:var(--surface-raised);border:1px solid var(--ink-28);border-radius:3px;padding:20px 22px;box-shadow:0 1px 0 var(--ink-05);{{ n.genBodyCss }}">
-                <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.24em;color:var(--ox);text-transform:uppercase;margin-bottom:5px;">{{ n.resultKicker }}</div>
-                <div style="font-family:var(--serif);font-size:25px;line-height:1.04;color:var(--ink);font-weight:600;margin-bottom:7px;">{{ n.blockTitle }}</div>
+              <div onClick="{{ n.onSkip }}" onDoubleClick="{{ n.onOpen }}" class="ox-scroll card card--node card--node--result" style="background:var(--surface-raised);border:1px solid var(--ink-28);border-radius:3px;padding:20px 22px;box-shadow:0 1px 0 var(--ink-05);{{ n.genBodyCss }}">
+                <div class="kicker" style="font-size:10px;letter-spacing:.24em;color:var(--ox);margin-bottom:5px;">{{ n.resultKicker }}</div>
+                <div class="t-heading" style="font-size:25px;line-height:1.04;color:var(--ink);margin-bottom:7px;">{{ n.blockTitle }}</div>
                 <div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.08em;color:var(--text-muted);text-transform:uppercase;margin-bottom:15px;">lê de — {{ n.connectedLabel }}</div>
                 <div style="height:1px;background:var(--ink-16);margin-bottom:15px;"></div>
                 <sc-if value="{{ n.showStatus }}" hint-placeholder-val="{{ false }}">
                   <div style="display:flex;align-items:center;gap:9px;margin-bottom:2px;">
-                    <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-60);">{{ n.statusText }}</span>
+                    <span class="t-body" style="font-size:12px;color:var(--ink-60);">{{ n.statusText }}</span>
                     <span style="display:inline-block;width:6px;height:13px;background:var(--ox);animation:ox-blink 1s steps(1) infinite;"></span>
                   </div>
                   <div style="height:1px;background:var(--ink-10);overflow:hidden;margin-top:12px;position:relative;">
@@ -193,50 +193,50 @@
                 </sc-if>
                 <sc-for list="{{ n.shownLines }}" as="line" hint-placeholder-count="0">
                   <div style="display:flex;gap:12px;margin-bottom:13px;align-items:flex-start;">
-                    <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ox);line-height:1.62;flex:none;padding-top:1px;">{{ line.n }}</span>
-                    <span style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;line-height:1.62;color:var(--ink);">{{ line.text }}<sc-if value="{{ line.caret }}" hint-placeholder-val="{{ false }}"><span style="display:inline-block;width:6px;height:12px;background:var(--ox);margin-left:2px;transform:translateY(1px);animation:ox-blink 1s steps(1) infinite;"></span></sc-if></span>
+                    <span class="t-body" style="font-size:11px;color:var(--ox);line-height:1.62;flex:none;padding-top:1px;">{{ line.n }}</span>
+                    <span class="t-body" style="font-size:12.5px;line-height:1.62;color:var(--ink);">{{ line.text }}<sc-if value="{{ line.caret }}" hint-placeholder-val="{{ false }}"><span style="display:inline-block;width:6px;height:12px;background:var(--ox);margin-left:2px;transform:translateY(1px);animation:ox-blink 1s steps(1) infinite;"></span></sc-if></span>
                   </div>
                 </sc-for>
                 <sc-if value="{{ n.filled }}" hint-placeholder-val="{{ false }}">
                   <div style="height:1px;background:var(--ink-12);margin:3px 0 13px;"></div>
                   <div style="display:flex;justify-content:space-between;align-items:center;">
-                    <button onPointerDown="{{ stop }}" onClick="{{ n.onRegen }}" style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-tertiary);background:transparent;border:none;cursor:pointer;padding:0;" style-hover="color:var(--ox);">↺ regenerar</button>
-                    <button onPointerDown="{{ stop }}" onClick="{{ n.onFlash }}" style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-tertiary);background:transparent;border:none;cursor:pointer;padding:0;" style-hover="color:var(--ox);">↻ revisar</button>
-                    <button onPointerDown="{{ stop }}" onClick="{{ n.onOpen }}" style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ox);background:transparent;border:none;cursor:pointer;padding:0;display:flex;align-items:center;gap:6px;" style-hover="opacity:0.7;">abrir leitura ↗</button>
+                    <button onPointerDown="{{ stop }}" onClick="{{ n.onRegen }}" class="btn btn--quiet" style="font-size:9.5px;letter-spacing:.1em;color:var(--text-tertiary);padding:0;" style-hover="color:var(--ox);">↺ regenerar</button>
+                    <button onPointerDown="{{ stop }}" onClick="{{ n.onFlash }}" class="btn btn--quiet" style="font-size:9.5px;letter-spacing:.1em;color:var(--text-tertiary);padding:0;" style-hover="color:var(--ox);">↻ revisar</button>
+                    <button onPointerDown="{{ stop }}" onClick="{{ n.onOpen }}" class="btn btn--quiet" style="font-size:9.5px;letter-spacing:.1em;color:var(--ox);padding:0;display:flex;align-items:center;gap:6px;" style-hover="opacity:0.7;">abrir leitura ↗</button>
                   </div>
                 </sc-if>
               </div>
             </sc-if>
 
             <sc-if value="{{ n.isNote }}" hint-placeholder-val="{{ false }}">
-              <div style="background:var(--surface-sunken);border:1px solid var(--ink-28);border-radius:3px;padding:15px 17px;box-shadow:0 1px 0 var(--ink-04);">
+              <div class="card card--node card--node--note" style="background:var(--surface-sunken);border:1px solid var(--ink-28);border-radius:3px;padding:15px 17px;box-shadow:0 1px 0 var(--ink-04);">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;gap:6px;">
                   <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--ox);">{{ n.noteSource }}</span>
                   <div style="display:flex;gap:6px;align-items:center;">
                     <sc-if value="{{ n.hasSource }}" hint-placeholder-val="{{ false }}">
                       <button onPointerDown="{{ stop }}" onClick="{{ n.onSource }}" title="Abrir o PDF na fonte" style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.06em;color:var(--ox);background:transparent;border:1px solid var(--ox-35);border-radius:2px;padding:3px 7px;cursor:pointer;" style-hover="background:var(--ox-06);">{{ n.sourceLabel }}</button>
                     </sc-if>
-                    <button onPointerDown="{{ stop }}" onClick="{{ n.onExpandNote }}" title="Abrir editor" style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-50);background:transparent;border:1px solid var(--ink-20);border-radius:2px;padding:3px 7px;cursor:pointer;" style-hover="color:var(--ox);border-color:var(--ox);">⤢ editar</button>
+                    <button onPointerDown="{{ stop }}" onClick="{{ n.onExpandNote }}" title="Abrir editor" class="btn btn--ghost btn--sm" style="font-size:9px;letter-spacing:.08em;color:var(--ink-50);border-color:var(--ink-20);border-radius:2px;padding:3px 7px;" style-hover="color:var(--ox);border-color:var(--ox);">⤢ editar</button>
                   </div>
                 </div>
-                <input onPointerDown="{{ stop }}" value="{{ n.noteTitle }}" onInput="{{ n.onNoteTitleInput }}" placeholder="título da nota" style="width:100%;font-family:var(--serif);font-size:19px;color:var(--ink);font-weight:600;background:transparent;border:none;outline:none;padding:0;margin-bottom:9px;" />
-                <textarea onPointerDown="{{ stop }}" value="{{ n.noteContent }}" onInput="{{ n.onNoteInput }}" placeholder="cole aqui suas anotações / o conteúdo da aula…" class="ox-scroll" style="width:100%;height:{{ n.noteAreaH }}px;resize:none;font-family:'IBM Plex Mono',monospace;font-size:11.5px;line-height:1.55;color:var(--ink-78);background:var(--surface-raised);border:1px solid var(--ink-16);border-radius:2px;padding:9px 10px;outline:none;"></textarea>
+                <input onPointerDown="{{ stop }}" value="{{ n.noteTitle }}" onInput="{{ n.onNoteTitleInput }}" placeholder="título da nota" class="input--seam input--serif" style="width:100%;font-size:19px;color:var(--ink);font-weight:600;padding:0;margin-bottom:9px;" />
+                <textarea onPointerDown="{{ stop }}" value="{{ n.noteContent }}" onInput="{{ n.onNoteInput }}" placeholder="cole aqui suas anotações / o conteúdo da aula…" class="ox-scroll textarea textarea--mono" style="width:100%;height:{{ n.noteAreaH }}px;resize:none;font-size:11.5px;line-height:1.55;color:var(--ink-78);background:var(--surface-raised);border:1px solid var(--ink-16);border-radius:2px;padding:9px 10px;"></textarea>
               </div>
             </sc-if>
 
             <sc-if value="{{ n.isImage }}" hint-placeholder-val="{{ false }}">
-              <div style="background:var(--surface-raised);border:1px solid var(--ink-28);border-radius:3px;padding:8px;box-shadow:0 1px 0 var(--ink-05);">
+              <div class="card card--node" style="background:var(--surface-raised);border:1px solid var(--ink-28);border-radius:3px;padding:8px;box-shadow:0 1px 0 var(--ink-05);">
                 <div style="position:relative;">
                   <img src="{{ n.imgSrc }}" alt="{{ n.imgCaption }}" draggable="false" style="display:block;width:100%;height:{{ n.imgAreaH }}px;object-fit:contain;background:var(--surface-page);border:1px solid var(--ink-08);border-radius:2px;" />
-                  <button onPointerDown="{{ stop }}" onClick="{{ n.onViewImg }}" title="Ampliar" style="position:absolute;top:6px;right:6px;width:24px;height:24px;display:flex;align-items:center;justify-content:center;background:rgba(255,253,248,0.92);border:1px solid var(--ink-22);border-radius:2px;color:var(--ink);font-family:'IBM Plex Mono',monospace;font-size:12px;cursor:pointer;" style-hover="border-color:var(--ox);color:var(--ox);">⤢</button>
+                  <button onPointerDown="{{ stop }}" onClick="{{ n.onViewImg }}" title="Ampliar" class="btn btn--icon" style="position:absolute;top:6px;right:6px;width:24px;height:24px;background:rgba(255,253,248,0.92);border:1px solid var(--ink-22);border-radius:2px;color:var(--ink);font-size:12px;" style-hover="border-color:var(--ox);color:var(--ox);">⤢</button>
                 </div>
-                <input onPointerDown="{{ stop }}" value="{{ n.imgCaption }}" onInput="{{ n.onImgCaption }}" placeholder="legenda da imagem…" style="width:100%;margin-top:7px;font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--text-secondary);background:transparent;border:none;outline:none;padding:0 2px;" />
+                <input onPointerDown="{{ stop }}" value="{{ n.imgCaption }}" onInput="{{ n.onImgCaption }}" placeholder="legenda da imagem…" class="input--seam" style="width:100%;margin-top:7px;font-size:10.5px;color:var(--text-secondary);padding:0 2px;" />
               </div>
             </sc-if>
 
             <sc-if value="{{ n.isPdf }}" hint-placeholder-val="{{ false }}">
-              <div style="background:var(--surface-raised);border:1px solid var(--ink-28);border-radius:3px;padding:17px 18px;box-shadow:0 1px 0 var(--ink-04);{{ n.cardCss }}">
-                <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--ox);margin-bottom:11px;">PDF · documento</div>
+              <div class="card card--node card--node--pdf" style="background:var(--surface-raised);border:1px solid var(--ink-28);border-radius:3px;padding:17px 18px;box-shadow:0 1px 0 var(--ink-04);{{ n.cardCss }}">
+                <div class="kicker" style="font-size:9px;letter-spacing:.22em;color:var(--ox);margin-bottom:11px;">PDF · documento</div>
                 <div style="display:flex;gap:11px;align-items:flex-start;margin-bottom:13px;">
                   <sc-if value="{{ n.pdfHasThumb }}" hint-placeholder-val="{{ false }}">
                     <img src="{{ n.pdfThumb }}" draggable="false" style="flex:none;width:46px;height:60px;object-fit:cover;object-position:top;border:1px solid var(--ink-20);border-radius:2px;background:#fff;" />
@@ -245,11 +245,11 @@
                     <span style="flex:none;width:30px;height:38px;border:1px solid var(--ink-30);border-radius:2px;background:var(--surface-sunken);display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px;font-family:'IBM Plex Mono',monospace;font-size:7.5px;letter-spacing:.06em;color:var(--ox);">PDF</span>
                   </sc-if>
                   <div style="flex:1;min-width:0;">
-                    <div style="font-family:var(--serif);font-size:17px;line-height:1.2;color:var(--ink);font-weight:600;word-break:break-word;">{{ n.pdfName }}</div>
-                    <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.04em;color:var(--text-muted);margin-top:3px;">{{ n.pdfMeta }}</div>
+                    <div class="t-lead" style="line-height:1.2;color:var(--ink);font-weight:600;word-break:break-word;">{{ n.pdfName }}</div>
+                    <div class="t-caption" style="font-size:9px;letter-spacing:.04em;color:var(--text-muted);text-transform:none;margin-top:3px;">{{ n.pdfMeta }}</div>
                   </div>
                 </div>
-                <button onPointerDown="{{ stop }}" onClick="{{ n.onOpenPdf }}" style="width:100%;font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ox);background:transparent;border:1px solid var(--ox);border-radius:2px;padding:9px 12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;" style-hover="background:var(--ox-06);">abrir PDF ↗</button>
+                <button onPointerDown="{{ stop }}" onClick="{{ n.onOpenPdf }}" class="btn btn--accent btn--block" style="font-size:10.5px;letter-spacing:.14em;border-radius:2px;padding:9px 12px;gap:8px;" style-hover="background:var(--ox-06);">abrir PDF ↗</button>
               </div>
             </sc-if>
 
@@ -293,9 +293,9 @@
       <!-- selection action bar (Duplicar / Excluir) -->
       <sc-if value="{{ selChrome }}" hint-placeholder-val="{{ false }}">
         <div onPointerDown="{{ selChrome.onStop }}" class="ox-pop" style="position:absolute;left:{{ selChrome.left }}px;top:{{ selChrome.top }}px;display:flex;gap:5px;background:var(--surface-raised);border:1px solid var(--ink-16);border-radius:8px;padding:4px;box-shadow:0 2px 6px var(--ink-08),0 10px 26px var(--ink-14);z-index:35;">
-          <button onClick="{{ selChrome.onDup }}" style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink);background:transparent;border:none;border-radius:2px;padding:6px 9px;cursor:pointer;" style-hover="background:var(--ink-06);">⧉ duplicar</button>
+          <button onClick="{{ selChrome.onDup }}" class="btn btn--quiet" style="font-size:10px;letter-spacing:.08em;color:var(--ink);border-radius:2px;padding:6px 9px;" style-hover="background:var(--ink-06);">⧉ duplicar</button>
           <span style="width:1px;background:var(--ink-14);"></span>
-          <button onClick="{{ selChrome.onDel }}" style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ox);background:transparent;border:none;border-radius:2px;padding:6px 9px;cursor:pointer;" style-hover="background:var(--ox-08);">✕ excluir</button>
+          <button onClick="{{ selChrome.onDel }}" class="btn btn--quiet" style="font-size:10px;letter-spacing:.08em;color:var(--ox);border-radius:2px;padding:6px 9px;" style-hover="background:var(--ox-08);">✕ excluir</button>
         </div>
       </sc-if>
 
@@ -303,29 +303,29 @@
       <div style="position:absolute;left:24px;bottom:24px;display:flex;align-items:center;gap:12px;background:rgba(252,250,244,0.72);backdrop-filter:blur(12px) saturate(1.1);-webkit-backdrop-filter:blur(12px) saturate(1.1);border:1px solid var(--ink-10);border-radius:11px;padding:7px 14px;box-shadow:0 3px 14px var(--ink-08);">
         <div style="display:flex;align-items:center;background:transparent;border:1px solid var(--ink-14);border-radius:7px;overflow:hidden;">
           <button onClick="{{ zoomOut }}" style="font-family:'IBM Plex Mono',monospace;font-size:15px;color:var(--ink);background:transparent;border:none;border-right:1px solid var(--ink-16);padding:6px 13px;cursor:pointer;line-height:1;" style-hover="background:var(--ink-04);">−</button>
-          <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.06em;color:var(--ink-62);padding:0 11px;min-width:54px;text-align:center;">{{ zoomPct }}</span>
+          <span class="t-body" style="font-size:11px;letter-spacing:.06em;color:var(--ink-62);padding:0 11px;min-width:54px;text-align:center;">{{ zoomPct }}</span>
           <button onClick="{{ zoomIn }}" style="font-family:'IBM Plex Mono',monospace;font-size:15px;color:var(--ink);background:transparent;border:none;border-left:1px solid var(--ink-16);padding:6px 13px;cursor:pointer;line-height:1;" style-hover="background:var(--ink-04);">+</button>
         </div>
-        <button onClick="{{ resetView }}" style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-50);background:transparent;border:none;cursor:pointer;padding:0;" style-hover="color:var(--ox);">ajustar</button>
+        <button onClick="{{ resetView }}" class="btn btn--quiet" style="font-size:10px;letter-spacing:.14em;color:var(--ink-50);padding:0;" style-hover="color:var(--ox);">ajustar</button>
         <span style="width:1px;height:14px;background:var(--ink-18);"></span>
         <button onClick="{{ undo }}" title="Desfazer (⌘Z)" style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--text-tertiary);background:transparent;border:none;cursor:pointer;padding:0;line-height:1;" style-hover="color:var(--ox);">↶</button>
         <button onClick="{{ redo }}" title="Refazer (⌘⇧Z)" style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--text-tertiary);background:transparent;border:none;cursor:pointer;padding:0;line-height:1;" style-hover="color:var(--ox);">↷</button>
         <sc-if value="{{ hasReview }}" hint-placeholder-val="{{ false }}">
           <span style="width:1px;height:14px;background:var(--ink-18);"></span>
-          <button onClick="{{ reviewAll }}" title="Revisar todas as questões do quadro" style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ox);background:transparent;border:none;cursor:pointer;padding:0;" style-hover="opacity:0.7;">↻ revisar tudo</button>
+          <button onClick="{{ reviewAll }}" title="Revisar todas as questões do quadro" class="btn btn--quiet" style="font-size:10px;letter-spacing:.14em;color:var(--ox);padding:0;" style-hover="opacity:0.7;">↻ revisar tudo</button>
         </sc-if>
         <span style="width:1px;height:14px;background:var(--ink-18);"></span>
-        <button onClick="{{ deleteDiscipline }}" title="Excluir esta disciplina" style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-50);background:transparent;border:none;cursor:pointer;padding:0;" style-hover="color:var(--ox);">excluir disciplina</button>
+        <button onClick="{{ deleteDiscipline }}" title="Excluir esta disciplina" class="btn btn--quiet" style="font-size:10px;letter-spacing:.14em;color:var(--ink-50);padding:0;" style-hover="color:var(--ox);">excluir disciplina</button>
       </div>
 
       <div style="position:absolute;right:24px;bottom:24px;display:flex;gap:10px;align-items:center;">
         <input ref="{{ setFileInput }}" type="file" accept="application/pdf,.pdf" onChange="{{ onPdfPick }}" style="display:none;" />
         <input ref="{{ setImgInput }}" type="file" accept="image/*" onChange="{{ onImgPick }}" style="display:none;" />
-        <button onClick="{{ pickPdf }}" title="Importar PDF como nota" style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink);background:var(--surface-raised);border:1px solid var(--ink-28);border-radius:6px;padding:11px 14px;cursor:pointer;" style-hover="border-color:var(--ink-50);">↥ PDF</button>
-        <button onClick="{{ pickImage }}" title="Adicionar imagem (ou cole com ⌘V)" style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink);background:var(--surface-raised);border:1px solid var(--ink-28);border-radius:6px;padding:11px 14px;cursor:pointer;" style-hover="border-color:var(--ink-50);">+ Imagem</button>
-        <button onClick="{{ addNoteNode }}" style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink);background:var(--surface-raised);border:1px solid var(--ink-28);border-radius:6px;padding:11px 14px;cursor:pointer;" style-hover="border-color:var(--ink-50);">+ Nota</button>
-        <button onClick="{{ addNode }}" style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink);background:var(--surface-raised);border:1px solid var(--ink-28);border-radius:6px;padding:11px 16px;cursor:pointer;" style-hover="border-color:var(--ink-50);">+ Nó</button>
-        <button onClick="{{ cornerAi }}" style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--surface-raised);background:var(--ox);border:1px solid var(--ox);border-radius:6px;padding:11px 18px;cursor:pointer;display:flex;align-items:center;gap:8px;box-shadow:0 2px 8px var(--ox-22);" style-hover="filter:brightness(0.92);">
+        <button onClick="{{ pickPdf }}" title="Importar PDF como nota" class="btn btn--ghost" style="font-size:11px;letter-spacing:.14em;color:var(--ink);background:var(--surface-raised);border-color:var(--ink-28);border-radius:6px;padding:11px 14px;" style-hover="border-color:var(--ink-50);">↥ PDF</button>
+        <button onClick="{{ pickImage }}" title="Adicionar imagem (ou cole com ⌘V)" class="btn btn--ghost" style="font-size:11px;letter-spacing:.14em;color:var(--ink);background:var(--surface-raised);border-color:var(--ink-28);border-radius:6px;padding:11px 14px;" style-hover="border-color:var(--ink-50);">+ Imagem</button>
+        <button onClick="{{ addNoteNode }}" class="btn btn--ghost" style="font-size:11px;letter-spacing:.14em;color:var(--ink);background:var(--surface-raised);border-color:var(--ink-28);border-radius:6px;padding:11px 14px;" style-hover="border-color:var(--ink-50);">+ Nota</button>
+        <button onClick="{{ addNode }}" class="btn btn--ghost" style="font-size:11px;letter-spacing:.14em;color:var(--ink);background:var(--surface-raised);border-color:var(--ink-28);border-radius:6px;padding:11px 16px;" style-hover="border-color:var(--ink-50);">+ Nó</button>
+        <button onClick="{{ cornerAi }}" class="btn btn--primary" style="font-size:11px;letter-spacing:.14em;color:var(--surface-raised);background:var(--ox);border-color:var(--ox);border-radius:6px;padding:11px 18px;display:flex;align-items:center;gap:8px;box-shadow:0 2px 8px var(--ox-22);" style-hover="filter:brightness(0.92);">
           <span style="width:5px;height:5px;background:var(--surface-raised);display:inline-block;"></span>Invocar IA
         </button>
       </div>
@@ -337,22 +337,22 @@
             <button onClick="{{ dismissHint }}" style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text-muted);background:none;border:none;cursor:pointer;padding:0;line-height:1;" style-hover="color:var(--ink);">✕</button>
           </div>
           <div style="display:flex;gap:11px;margin-bottom:11px;align-items:flex-start;">
-            <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--ox);padding-top:1px;">01</span>
-            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;line-height:1.5;color:var(--text-secondary);">Toque duplo no papel para criar um nó.</span>
+            <span class="t-caption" style="font-size:10px;color:var(--ox);text-transform:none;padding-top:1px;">01</span>
+            <span class="t-body" style="font-size:11px;line-height:1.5;color:var(--text-secondary);">Toque duplo no papel para criar um nó.</span>
           </div>
           <div style="display:flex;gap:11px;margin-bottom:11px;align-items:flex-start;">
-            <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--ox);padding-top:1px;">02</span>
-            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;line-height:1.5;color:var(--text-secondary);">Crie uma Nota ou importe um PDF e conecte (●) ao nó.</span>
+            <span class="t-caption" style="font-size:10px;color:var(--ox);text-transform:none;padding-top:1px;">02</span>
+            <span class="t-body" style="font-size:11px;line-height:1.5;color:var(--text-secondary);">Crie uma Nota ou importe um PDF e conecte (●) ao nó.</span>
           </div>
           <div style="display:flex;gap:11px;align-items:flex-start;">
-            <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--ox);padding-top:1px;">03</span>
-            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;line-height:1.5;color:var(--text-secondary);">Selecione o nó e invoque a IA.</span>
+            <span class="t-caption" style="font-size:10px;color:var(--ox);text-transform:none;padding-top:1px;">03</span>
+            <span class="t-body" style="font-size:11px;line-height:1.5;color:var(--text-secondary);">Selecione o nó e invoque a IA.</span>
           </div>
         </div>
       </sc-if>
 
       <sc-if value="{{ hintClosed }}" hint-placeholder-val="{{ true }}">
-        <button onClick="{{ openHint }}" style="position:absolute;top:18px;right:24px;width:30px;height:30px;border-radius:50%;border:1px solid var(--ink-28);background:var(--surface-raised);font-family:var(--serif);font-size:16px;color:var(--ink);cursor:pointer;" style-hover="border-color:var(--ox);">?</button>
+        <button onClick="{{ openHint }}" class="btn btn--icon" style="position:absolute;top:18px;right:24px;width:30px;height:30px;border-radius:50%;border:1px solid var(--ink-28);background:var(--surface-raised);font-family:var(--serif);font-size:16px;color:var(--ink);" style-hover="border-color:var(--ox);">?</button>
       </sc-if>
     </div>
   </sc-if>
@@ -361,8 +361,8 @@
   <sc-if value="{{ showConta }}" hint-placeholder-val="{{ false }}">
     <div class="ox-scroll" style="position:absolute;inset:54px 0 0 0;overflow:auto;background:var(--surface-page);">
       <div style="max-width:920px;margin:0 auto;padding:56px 56px 64px;">
-        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.32em;color:var(--ox);text-transform:uppercase;margin-bottom:14px;">Conta &amp; preferências</div>
-        <h1 style="font-family:var(--serif);font-size:54px;line-height:0.95;color:var(--ink);font-weight:600;margin:0 0 32px;">{{ acctName }}</h1>
+        <div class="kicker" style="letter-spacing:.32em;margin-bottom:14px;">Conta &amp; preferências</div>
+        <h1 class="t-display" style="font-size:54px;line-height:0.95;margin:0 0 32px;">{{ acctName }}</h1>
 
         <!-- cloud account / sync -->
         <div style="background:var(--surface-raised);border:1px solid var(--ink-18);border-radius:3px;padding:22px 24px;margin-bottom:36px;">
@@ -374,34 +374,34 @@
           <sc-if value="{{ cloudUnavailable }}" hint-placeholder-val="{{ true }}">
             <div style="font-family:'IBM Plex Serif',Georgia,serif;font-size:14px;line-height:1.6;color:var(--text-secondary);">
               A sincronização na nuvem está <strong>desativada</strong>. Seus dados ficam salvos apenas neste navegador.
-              Para sincronizar entre dispositivos, configure <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;">SUPABASE_URL</span> e <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;">SUPABASE_ANON_KEY</span> no servidor.
+              Para sincronizar entre dispositivos, configure <span class="t-body">SUPABASE_URL</span> e <span class="t-body">SUPABASE_ANON_KEY</span> no servidor.
             </div>
           </sc-if>
 
           <sc-if value="{{ cloudLoggedIn }}" hint-placeholder-val="{{ false }}">
             <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;">
               <div>
-                <div style="font-family:var(--serif);font-size:19px;color:var(--ink);">{{ userEmail }}</div>
-                <div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--ink-50);margin-top:3px;">Conectado · seus dados sincronizam automaticamente.</div>
+                <div class="t-subhead" style="font-size:19px;">{{ userEmail }}</div>
+                <div class="t-caption" style="font-size:10.5px;color:var(--ink-50);margin-top:3px;">Conectado · seus dados sincronizam automaticamente.</div>
               </div>
-              <button onClick="{{ logout }}" style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-60);background:transparent;border:1px solid var(--ink-24);border-radius:2px;padding:10px 16px;cursor:pointer;" style-hover="color:var(--ox);border-color:var(--ox);">Sair</button>
+              <button onClick="{{ logout }}" class="btn btn--ghost btn--sm" style="color:var(--ink-60);border-color:var(--ink-24);padding:10px 16px;" style-hover="color:var(--ox);border-color:var(--ox);">Sair</button>
             </div>
           </sc-if>
 
           <sc-if value="{{ cloudNeedsAuth }}" hint-placeholder-val="{{ false }}">
-            <div style="font-family:'IBM Plex Serif',Georgia,serif;font-size:14px;line-height:1.55;color:var(--text-secondary);margin-bottom:16px;">Entre com seu e-mail para salvar e sincronizar suas disciplinas na nuvem. Enviaremos um código — sem senha.</div>
+            <div class="t-body-serif" style="line-height:1.55;color:var(--text-secondary);margin-bottom:16px;">Entre com seu e-mail para salvar e sincronizar suas disciplinas na nuvem. Enviaremos um código — sem senha.</div>
 
             <sc-if value="{{ authStageEmail }}" hint-placeholder-val="{{ true }}">
               <div style="display:flex;gap:10px;flex-wrap:wrap;">
-                <input value="{{ authEmail }}" onInput="{{ setAuthEmail }}" onKeyDown="{{ onAuthKey }}" placeholder="seu@email.com" type="email" style="flex:1;min-width:200px;font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--ink);background:var(--surface-sunken);border:1px solid var(--ink-22);border-radius:2px;padding:11px 13px;outline:none;" style-focus="border-color:var(--ox);" />
+                <input value="{{ authEmail }}" onInput="{{ setAuthEmail }}" onKeyDown="{{ onAuthKey }}" placeholder="seu@email.com" type="email" class="input" style="flex:1;min-width:200px;background:var(--surface-sunken);border-color:var(--ink-22);padding:11px 13px;" style-focus="border-color:var(--ox);" />
                 <button onClick="{{ authSubmit }}" style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--surface-raised);background:var(--ox);border:none;border-radius:2px;padding:11px 20px;cursor:pointer;" style-hover="filter:brightness(0.88);">{{ authBtnLabel }}</button>
               </div>
             </sc-if>
 
             <sc-if value="{{ authStageCode }}" hint-placeholder-val="{{ false }}">
-              <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-60);margin-bottom:10px;">{{ authSentTo }}</div>
+              <div class="t-label" style="font-size:11px;color:var(--ink-60);text-transform:none;letter-spacing:0;margin-bottom:10px;">{{ authSentTo }}</div>
               <div style="display:flex;gap:10px;flex-wrap:wrap;">
-                <input value="{{ authCode }}" onInput="{{ setAuthCode }}" onKeyDown="{{ onAuthKey }}" placeholder="código de 6 dígitos" inputmode="numeric" style="flex:1;min-width:160px;font-family:'IBM Plex Mono',monospace;font-size:15px;letter-spacing:.2em;color:var(--ink);background:var(--surface-sunken);border:1px solid var(--ink-22);border-radius:2px;padding:11px 13px;outline:none;" style-focus="border-color:var(--ox);" />
+                <input value="{{ authCode }}" onInput="{{ setAuthCode }}" onKeyDown="{{ onAuthKey }}" placeholder="código de 6 dígitos" inputmode="numeric" class="input" style="flex:1;min-width:160px;font-size:15px;letter-spacing:.2em;background:var(--surface-sunken);border-color:var(--ink-22);padding:11px 13px;" style-focus="border-color:var(--ox);" />
                 <button onClick="{{ authSubmit }}" style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--surface-raised);background:var(--ox);border:none;border-radius:2px;padding:11px 20px;cursor:pointer;" style-hover="filter:brightness(0.88);">{{ authBtnLabel }}</button>
               </div>
               <button onClick="{{ changeAuthEmail }}" style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.06em;color:var(--ink-50);background:none;border:none;cursor:pointer;padding:10px 0 0;" style-hover="color:var(--ox);">← usar outro e-mail</button>
@@ -417,20 +417,20 @@
           </div>
           <div style="display:grid;grid-template-columns:1fr 110px;gap:14px 18px;">
             <div>
-              <label style="display:block;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-50);margin-bottom:6px;">Nome</label>
-              <input value="{{ editName }}" onInput="{{ onEditName }}" placeholder="Seu nome" style="width:100%;font-family:var(--serif);font-size:20px;color:var(--ink);background:var(--surface-sunken);border:1px solid var(--ink-20);border-radius:2px;padding:9px 11px;outline:none;" style-focus="border-color:var(--ox);" />
+              <label class="field-label" style="display:block;font-size:9px;color:var(--ink-50);margin-bottom:6px;">Nome</label>
+              <input value="{{ editName }}" onInput="{{ onEditName }}" placeholder="Seu nome" class="input input--serif" style="width:100%;font-size:20px;background:var(--surface-sunken);border-color:var(--ink-20);padding:9px 11px;" style-focus="border-color:var(--ox);" />
             </div>
             <div>
-              <label style="display:block;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-50);margin-bottom:6px;">Iniciais</label>
-              <input value="{{ editInitials }}" onInput="{{ onEditInitials }}" placeholder="AB" maxlength="3" style="width:100%;font-family:'IBM Plex Mono',monospace;font-size:15px;letter-spacing:.06em;color:var(--ink);background:var(--surface-sunken);border:1px solid var(--ink-20);border-radius:2px;padding:11px;outline:none;text-align:center;" style-focus="border-color:var(--ox);" />
+              <label class="field-label" style="display:block;font-size:9px;color:var(--ink-50);margin-bottom:6px;">Iniciais</label>
+              <input value="{{ editInitials }}" onInput="{{ onEditInitials }}" placeholder="AB" maxlength="3" class="input" style="width:100%;font-size:15px;letter-spacing:.06em;background:var(--surface-sunken);border-color:var(--ink-20);padding:11px;text-align:center;" style-focus="border-color:var(--ox);" />
             </div>
             <div>
-              <label style="display:block;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-50);margin-bottom:6px;">Curso</label>
-              <input value="{{ editCourse }}" onInput="{{ onEditCourse }}" placeholder="ex.: Ciência da Computação" style="width:100%;font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--ink);background:var(--surface-sunken);border:1px solid var(--ink-20);border-radius:2px;padding:11px;outline:none;" style-focus="border-color:var(--ox);" />
+              <label class="field-label" style="display:block;font-size:9px;color:var(--ink-50);margin-bottom:6px;">Curso</label>
+              <input value="{{ editCourse }}" onInput="{{ onEditCourse }}" placeholder="ex.: Ciência da Computação" class="input" style="width:100%;background:var(--surface-sunken);border-color:var(--ink-20);padding:11px;" style-focus="border-color:var(--ox);" />
             </div>
             <div>
-              <label style="display:block;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-50);margin-bottom:6px;">Semestre</label>
-              <input value="{{ editTerm }}" onInput="{{ onEditTerm }}" placeholder="2026.1" style="width:100%;font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--ink);background:var(--surface-sunken);border:1px solid var(--ink-20);border-radius:2px;padding:11px;outline:none;" style-focus="border-color:var(--ox);" />
+              <label class="field-label" style="display:block;font-size:9px;color:var(--ink-50);margin-bottom:6px;">Semestre</label>
+              <input value="{{ editTerm }}" onInput="{{ onEditTerm }}" placeholder="2026.1" class="input" style="width:100%;background:var(--surface-sunken);border-color:var(--ink-20);padding:11px;" style-focus="border-color:var(--ox);" />
             </div>
           </div>
         </div>
@@ -438,16 +438,16 @@
         <div style="display:grid;grid-template-columns:260px 1fr;gap:48px;align-items:start;">
           <!-- identity -->
           <div>
-            <div style="width:88px;height:88px;background:var(--surface-raised);border:1px solid var(--ox);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:34px;color:var(--ox);margin-bottom:20px;">{{ acctInitials }}</div>
+            <div class="t-heading" style="width:88px;height:88px;background:var(--surface-raised);border:1px solid var(--ox);display:flex;align-items:center;justify-content:center;font-size:34px;color:var(--ox);margin-bottom:20px;">{{ acctInitials }}</div>
             <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;line-height:1.9;color:var(--ink-60);">
               <sc-if value="{{ acctHasEmail }}"><div style="color:var(--ink);">{{ acctEmail }}</div></sc-if>
               <sc-if value="{{ acctHasCourse }}"><div>{{ acctCourse }}</div></sc-if>
               <div>{{ acctTerm }}</div>
             </div>
             <div style="display:flex;gap:36px;margin-top:30px;padding-top:24px;border-top:1px solid var(--ink-14);">
-              <div><div style="font-family:var(--serif);font-size:34px;color:var(--ink);line-height:1;">{{ statDisc }}</div><div style="font-family:'IBM Plex Mono',monospace;font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-muted);margin-top:5px;">Disciplinas</div></div>
-              <div><div style="font-family:var(--serif);font-size:34px;color:var(--ink);line-height:1;">{{ statNos }}</div><div style="font-family:'IBM Plex Mono',monospace;font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-muted);margin-top:5px;">Nós</div></div>
-              <div><div style="font-family:var(--serif);font-size:34px;color:var(--ox);line-height:1;">{{ statGer }}</div><div style="font-family:'IBM Plex Mono',monospace;font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-muted);margin-top:5px;">Gerações</div></div>
+              <div><div class="t-heading" style="font-size:34px;line-height:1;">{{ statDisc }}</div><div class="t-micro" style="letter-spacing:.14em;text-transform:uppercase;color:var(--text-muted);margin-top:5px;">Disciplinas</div></div>
+              <div><div class="t-heading" style="font-size:34px;line-height:1;">{{ statNos }}</div><div class="t-micro" style="letter-spacing:.14em;text-transform:uppercase;color:var(--text-muted);margin-top:5px;">Nós</div></div>
+              <div><div class="t-heading" style="font-size:34px;color:var(--ox);line-height:1;">{{ statGer }}</div><div class="t-micro" style="letter-spacing:.14em;text-transform:uppercase;color:var(--text-muted);margin-top:5px;">Gerações</div></div>
             </div>
           </div>
 
@@ -456,7 +456,7 @@
             <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--text-muted);padding-bottom:14px;border-bottom:1px solid var(--ink-16);margin-bottom:6px;">Aparência</div>
 
             <div style="display:flex;justify-content:space-between;align-items:center;padding:18px 0;border-bottom:1px solid var(--ink-10);">
-              <div><div style="font-family:var(--serif);font-size:19px;color:var(--ink);">Cor de acento</div><div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--ink-50);margin-top:3px;">Usada com parcimônia em todo o app.</div></div>
+              <div><div class="t-subhead" style="font-size:19px;">Cor de acento</div><div class="t-caption" style="font-size:10.5px;color:var(--ink-50);margin-top:3px;">Usada com parcimônia em todo o app.</div></div>
               <div style="display:flex;gap:9px;">
                 <sc-for list="{{ accentSwatches }}" as="sw" hint-placeholder-count="4">
                   <button onClick="{{ sw.onPick }}" title="{{ sw.label }}" style="width:26px;height:26px;border-radius:2px;background:{{ sw.color }};border:1px solid var(--ink-20);cursor:pointer;position:relative;" style-hover="transform:scale(1.08);">
@@ -467,7 +467,7 @@
             </div>
 
             <div style="display:flex;justify-content:space-between;align-items:center;padding:18px 0;border-bottom:1px solid var(--ink-10);">
-              <div><div style="font-family:var(--serif);font-size:19px;color:var(--ink);">Fonte dos títulos</div><div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--ink-50);margin-top:3px;">Serifa editorial dos cabeçalhos.</div></div>
+              <div><div class="t-subhead" style="font-size:19px;">Fonte dos títulos</div><div class="t-caption" style="font-size:10.5px;color:var(--ink-50);margin-top:3px;">Serifa editorial dos cabeçalhos.</div></div>
               <div style="display:flex;border:1px solid var(--ink-22);border-radius:2px;overflow:hidden;">
                 <sc-for list="{{ serifOptions }}" as="so" hint-placeholder-count="2">
                   <button onClick="{{ so.onPick }}" style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.06em;padding:8px 13px;cursor:pointer;border:none;background:{{ so.bg }};color:{{ so.fg }};border-left:{{ so.sep }};" style-hover="filter:brightness(0.97);">{{ so.short }}</button>
@@ -476,25 +476,25 @@
             </div>
 
             <div style="display:flex;justify-content:space-between;align-items:center;padding:18px 0;border-bottom:1px solid var(--ink-10);">
-              <div><div style="font-family:var(--serif);font-size:19px;color:var(--ink);">Grid pontilhado</div><div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--ink-50);margin-top:3px;">Pontos guia no fundo do quadro.</div></div>
+              <div><div class="t-subhead" style="font-size:19px;">Grid pontilhado</div><div class="t-caption" style="font-size:10.5px;color:var(--ink-50);margin-top:3px;">Pontos guia no fundo do quadro.</div></div>
               <button onClick="{{ toggleGrid }}" style="width:42px;height:23px;border-radius:2px;border:1px solid var(--ink-22);background:{{ gridTrack }};position:relative;cursor:pointer;padding:0;">
                 <span style="position:absolute;top:2px;left:{{ gridKnob }};width:17px;height:17px;background:var(--surface-raised);border:1px solid var(--ink-20);transition:left .16s ease;"></span>
               </button>
             </div>
 
             <div style="display:flex;justify-content:space-between;align-items:center;padding:18px 0;border-bottom:1px solid var(--ink-10);">
-              <div><div style="font-family:var(--serif);font-size:19px;color:var(--ink);">Mostrar dicas no quadro</div><div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--ink-50);margin-top:3px;">Painel "Como funciona" ao abrir.</div></div>
+              <div><div class="t-subhead" style="font-size:19px;">Mostrar dicas no quadro</div><div class="t-caption" style="font-size:10.5px;color:var(--ink-50);margin-top:3px;">Painel "Como funciona" ao abrir.</div></div>
               <button onClick="{{ toggleHints }}" style="width:42px;height:23px;border-radius:2px;border:1px solid var(--ink-22);background:{{ hintsTrack }};position:relative;cursor:pointer;padding:0;">
                 <span style="position:absolute;top:2px;left:{{ hintsKnob }};width:17px;height:17px;background:var(--surface-raised);border:1px solid var(--ink-20);transition:left .16s ease;"></span>
               </button>
             </div>
 
             <div style="display:flex;gap:14px;margin-top:34px;align-items:center;flex-wrap:wrap;">
-              <button onClick="{{ goHome }}" style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink);background:var(--surface-raised);border:1px solid var(--ink-28);border-radius:6px;padding:11px 18px;cursor:pointer;" style-hover="border-color:var(--ink-50);">← Voltar à estante</button>
+              <button onClick="{{ goHome }}" class="btn" style="letter-spacing:.14em;color:var(--ink);background:var(--surface-raised);border-color:var(--ink-28);border-radius:6px;padding:11px 18px;" style-hover="border-color:var(--ink-50);">← Voltar à estante</button>
               <input ref="{{ setImportInput }}" type="file" accept="application/json,.json" onChange="{{ onImportFile }}" style="display:none;" />
-              <button onClick="{{ exportData }}" title="Baixar um backup .json com tudo" style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-62);background:transparent;border:1px solid var(--ink-24);border-radius:2px;padding:11px 14px;cursor:pointer;" style-hover="color:var(--ox);border-color:var(--ox);">↓ Exportar</button>
-              <button onClick="{{ pickImport }}" title="Restaurar a partir de um backup .json" style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-62);background:transparent;border:1px solid var(--ink-24);border-radius:2px;padding:11px 14px;cursor:pointer;" style-hover="color:var(--ox);border-color:var(--ox);">↥ Importar</button>
-              <button onClick="{{ resetAll }}" style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-50);background:transparent;border:none;cursor:pointer;padding:11px 4px;" style-hover="color:var(--ox);">Apagar tudo</button>
+              <button onClick="{{ exportData }}" title="Baixar um backup .json com tudo" class="btn btn--ghost" style="color:var(--ink-62);border-color:var(--ink-24);padding:11px 14px;" style-hover="color:var(--ox);border-color:var(--ox);">↓ Exportar</button>
+              <button onClick="{{ pickImport }}" title="Restaurar a partir de um backup .json" class="btn btn--ghost" style="color:var(--ink-62);border-color:var(--ink-24);padding:11px 14px;" style-hover="color:var(--ox);border-color:var(--ox);">↥ Importar</button>
+              <button onClick="{{ resetAll }}" class="btn btn--quiet" style="letter-spacing:.14em;color:var(--ink-50);padding:11px 4px;" style-hover="color:var(--ox);">Apagar tudo</button>
             </div>
           </div>
         </div>
@@ -504,22 +504,22 @@
 
   <!-- ===================== READING / FOCUS ===================== -->
   <sc-if value="{{ reading }}" hint-placeholder-val="{{ false }}">
-    <div onClick="{{ closeReading }}" style="position:absolute;inset:0;z-index:70;background:rgba(28,25,22,0.46);display:flex;align-items:flex-start;justify-content:center;padding:40px 24px;overflow:auto;" class="ox-scroll ox-modal">
-      <div onClick="{{ stop }}" class="ox-sheet" style="width:100%;max-width:860px;background:var(--surface-raised);border:1px solid var(--ink-16);box-shadow:0 1px 1px var(--ink-04),0 24px 70px var(--ink-28);margin:auto;">
-        <div style="padding:38px 52px 28px;border-bottom:1px solid var(--ink-14);">
+    <div onClick="{{ closeReading }}" style="position:absolute;inset:0;z-index:70;padding:40px 24px;overflow:auto;" class="ox-scroll ox-modal scrim">
+      <div onClick="{{ stop }}" class="ox-sheet sheet sheet--editor" style="width:100%;max-width:860px;margin:auto;">
+        <div class="sheet__head" style="padding:38px 52px 28px;">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;">
             <div>
-              <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--ox);margin-bottom:11px;">{{ readingKicker }}</div>
-              <h2 style="font-family:var(--serif);font-size:40px;line-height:1;color:var(--ink);font-weight:600;margin:0;">{{ readingTitle }}</h2>
-              <div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.04em;color:var(--ink-50);margin-top:12px;">{{ readingMeta }}</div>
+              <div class="kicker" style="margin-bottom:11px;">{{ readingKicker }}</div>
+              <h2 class="t-title" style="margin:0;">{{ readingTitle }}</h2>
+              <div class="t-caption" style="margin-top:12px;">{{ readingMeta }}</div>
             </div>
-            <button onClick="{{ closeReading }}" style="font-family:'IBM Plex Mono',monospace;font-size:14px;color:var(--text-muted);background:none;border:1px solid var(--ink-18);border-radius:2px;width:30px;height:30px;cursor:pointer;flex:none;" style-hover="color:var(--ink);border-color:var(--ink-40);">✕</button>
+            <button onClick="{{ closeReading }}" class="btn btn--icon" style="font-size:14px;flex:none;" style-hover="color:var(--ink);border-color:var(--ink-40);">✕</button>
           </div>
           <div style="display:flex;align-items:center;gap:13px;margin-top:24px;">
             <div style="flex:1;height:2px;background:var(--ink-10);position:relative;">
               <div style="position:absolute;top:0;left:0;height:2px;background:var(--ox);width:{{ readProgressW }};transition:width .3s ease;"></div>
             </div>
-            <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.08em;color:var(--text-tertiary);white-space:nowrap;">{{ readProgressLabel }}</span>
+            <span class="t-caption" style="white-space:nowrap;color:var(--text-tertiary);">{{ readProgressLabel }}</span>
           </div>
         </div>
 
@@ -528,26 +528,26 @@
             <div style="display:grid;grid-template-columns:1fr 184px;gap:32px;padding:30px 0;border-bottom:1px solid var(--ink-10);">
               <div>
                 <div style="display:flex;gap:16px;align-items:flex-start;">
-                  <span style="font-family:var(--serif);font-size:30px;color:var(--ox);line-height:1;flex:none;width:34px;">{{ q.num }}</span>
+                  <span class="t-heading" style="color:var(--ox);line-height:1;flex:none;width:34px;">{{ q.num }}</span>
                   <div style="flex:1;">
-                    <div style="font-family:'IBM Plex Mono',monospace;font-size:14px;line-height:1.62;color:var(--ink);">{{ q.text }}</div>
+                    <div class="t-body" style="font-size:14px;line-height:1.62;color:var(--ink);">{{ q.text }}</div>
 
-                    <textarea value="{{ q.work }}" onInput="{{ q.onWork }}" placeholder="sua resolução…" style="width:100%;margin-top:16px;min-height:74px;resize:vertical;font-family:'IBM Plex Mono',monospace;font-size:12.5px;line-height:25px;color:var(--ink);background:linear-gradient(transparent 24px, var(--ink-10) 25px);background-size:100% 25px;border:none;border-top:1px solid var(--ink-12);border-bottom:1px solid var(--ink-12);padding:6px 2px;outline:none;"></textarea>
+                    <textarea value="{{ q.work }}" onInput="{{ q.onWork }}" placeholder="sua resolução…" class="textarea textarea--mono" style="width:100%;margin-top:16px;min-height:74px;font-size:12.5px;line-height:25px;background:linear-gradient(transparent 24px, var(--ink-10) 25px);background-size:100% 25px;border:none;border-top:1px solid var(--ink-12);border-bottom:1px solid var(--ink-12);padding:6px 2px;"></textarea>
 
                     <div style="display:flex;gap:18px;align-items:center;margin-top:14px;">
                       <button onClick="{{ q.onResolve }}" style="display:flex;align-items:center;gap:9px;background:none;border:none;cursor:pointer;padding:0;">
                         <span style="width:16px;height:16px;border:1px solid {{ q.checkBorder }};background:{{ q.checkBg }};display:flex;align-items:center;justify-content:center;color:var(--surface-raised);font-size:10px;">{{ q.checkMark }}</span>
                         <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:{{ q.resolveColor }};">{{ q.resolveLabel }}</span>
                       </button>
-                      <button onClick="{{ q.onReveal }}" style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-50);background:none;border:none;cursor:pointer;padding:0;" style-hover="color:var(--ox);">{{ q.revealLabel }}</button>
-                      <button onClick="{{ q.onDelete }}" title="Remover questão" style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-40);background:none;border:none;cursor:pointer;padding:0;margin-left:auto;" style-hover="color:var(--ox);">excluir</button>
+                      <button onClick="{{ q.onReveal }}" class="btn btn--quiet t-label" style="padding:0;color:var(--ink-50);" style-hover="color:var(--ox);">{{ q.revealLabel }}</button>
+                      <button onClick="{{ q.onDelete }}" title="Remover questão" class="btn btn--quiet t-label" style="padding:0;margin-left:auto;color:var(--ink-40);" style-hover="color:var(--ox);">excluir</button>
                     </div>
 
                     <sc-if value="{{ q.revealed }}" hint-placeholder-val="{{ false }}">
                       <div style="margin-top:16px;padding:18px 20px;background:var(--surface-page);border:1px solid var(--ink-14);border-left:2px solid var(--ox);">
                         <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--ox);margin-bottom:12px;">Resolução</div>
                         <sc-for list="{{ q.solution }}" as="sl" hint-placeholder-count="2">
-                          <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;line-height:1.6;color:var(--ink);margin-bottom:9px;">{{ sl }}</div>
+                          <div class="t-body" style="font-size:12px;line-height:1.6;margin-bottom:9px;">{{ sl }}</div>
                         </sc-for>
                         <sc-if value="{{ q.hasTable }}" hint-placeholder-val="{{ false }}">
                           <div style="display:inline-grid;grid-template-columns:repeat(5,auto);border:1px solid var(--ink-20);margin:6px 0 4px;">
@@ -559,7 +559,7 @@
                             </sc-for>
                           </div>
                         </sc-if>
-                        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ox);margin-top:8px;letter-spacing:.02em;">→ {{ q.answer }}</div>
+                        <div class="t-body" style="font-size:11px;color:var(--ox);margin-top:8px;letter-spacing:.02em;">→ {{ q.answer }}</div>
                       </div>
                     </sc-if>
                   </div>
@@ -567,18 +567,18 @@
               </div>
 
               <div style="border-left:1px solid var(--ink-10);padding-left:24px;">
-                <div style="font-family:'IBM Plex Mono',monospace;font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-40);margin-bottom:10px;">Margem</div>
-                <textarea value="{{ q.margin }}" onInput="{{ q.onMargin }}" placeholder="anotação…" style="width:100%;min-height:60px;resize:vertical;font-family:var(--serif);font-style:italic;font-size:15px;line-height:1.45;color:var(--ink-70);background:transparent;border:none;outline:none;padding:0;"></textarea>
+                <div class="t-micro" style="letter-spacing:.2em;text-transform:uppercase;color:var(--ink-40);margin-bottom:10px;">Margem</div>
+                <textarea value="{{ q.margin }}" onInput="{{ q.onMargin }}" placeholder="anotação…" class="textarea" style="width:100%;min-height:60px;font-style:italic;color:var(--ink-70);background:transparent;border:none;padding:0;"></textarea>
               </div>
             </div>
           </sc-for>
 
           <div style="display:flex;justify-content:space-between;align-items:center;margin-top:28px;">
-            <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.06em;color:var(--text-muted);">Salvo no nó · {{ readProgressLabel }}</span>
+            <span class="t-caption" style="letter-spacing:.06em;color:var(--text-muted);">Salvo no nó · {{ readProgressLabel }}</span>
             <div style="display:flex;gap:14px;align-items:center;">
-              <button onClick="{{ exportReadingPdf }}" style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-tertiary);background:none;border:1px solid var(--ink-20);border-radius:2px;padding:9px 13px;cursor:pointer;" style-hover="color:var(--ox);border-color:var(--ox);">↓ PDF</button>
-              <button onClick="{{ openFlashReading }}" style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-tertiary);background:none;border:1px solid var(--ink-20);border-radius:2px;padding:9px 13px;cursor:pointer;" style-hover="color:var(--ox);border-color:var(--ox);">↻ Revisar</button>
-              <button onClick="{{ closeReading }}" style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--surface-raised);background:var(--ox);border:none;border-radius:2px;padding:11px 22px;cursor:pointer;" style-hover="filter:brightness(0.88);">Concluir</button>
+              <button onClick="{{ exportReadingPdf }}" class="btn btn--ghost btn--sm t-label" style="padding:9px 13px;color:var(--text-tertiary);" style-hover="color:var(--ox);border-color:var(--ox);">↓ PDF</button>
+              <button onClick="{{ openFlashReading }}" class="btn btn--ghost btn--sm t-label" style="padding:9px 13px;color:var(--text-tertiary);" style-hover="color:var(--ox);border-color:var(--ox);">↻ Revisar</button>
+              <button onClick="{{ closeReading }}" class="btn btn--primary t-label" style="letter-spacing:.14em;padding:11px 22px;" style-hover="filter:brightness(0.88);">Concluir</button>
             </div>
           </div>
         </div>
@@ -589,43 +589,43 @@
   <!-- ===================== FLASHCARDS / REVISÃO ===================== -->
   <sc-if value="{{ flash }}" hint-placeholder-val="{{ false }}">
     <div onClick="{{ closeFlash }}" style="position:absolute;inset:0;z-index:75;background:rgba(28,25,22,0.58);display:flex;align-items:center;justify-content:center;padding:32px;" class="ox-modal">
-      <div onClick="{{ stop }}" class="ox-riser" style="width:100%;max-width:560px;">
+      <div onClick="{{ stop }}" class="modal ox-riser" style="width:100%;max-width:560px;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
           <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--surface-page);">Revisão · {{ flashCount }}</span>
           <div style="display:flex;align-items:center;gap:10px;">
-            <button onClick="{{ shuffleFlash }}" title="Embaralhar" style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--surface-page);background:none;border:1px solid rgba(250,248,243,0.4);border-radius:2px;padding:7px 11px;cursor:pointer;" style-hover="border-color:var(--surface-page);">↬ embaralhar</button>
-            <button onClick="{{ closeFlash }}" style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--surface-page);background:none;border:1px solid rgba(250,248,243,0.4);border-radius:2px;width:30px;height:30px;cursor:pointer;">✕</button>
+            <button onClick="{{ shuffleFlash }}" title="Embaralhar" class="btn btn--on-dark btn--sm" style="border-radius:2px;" style-hover="border-color:var(--surface-page);">↬ embaralhar</button>
+            <button onClick="{{ closeFlash }}" class="btn btn--icon btn--on-dark" style="border-radius:2px;">✕</button>
           </div>
         </div>
         <div onClick="{{ flipCard }}" style="background:var(--surface-raised);border:1px solid var(--ink-16);border-radius:12px;box-shadow:0 1px 1px rgba(0,0,0,0.05),0 30px 70px rgba(0,0,0,0.4);min-height:300px;padding:40px;display:flex;flex-direction:column;cursor:pointer;transition:transform .18s cubic-bezier(.2,.7,.3,1);" style-hover="transform:translateY(-2px);">
           <sc-if value="{{ flashFront }}" hint-placeholder-val="{{ true }}">
             <div style="flex:1;display:flex;flex-direction:column;justify-content:center;">
               <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:18px;flex-wrap:wrap;">
-                <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--ox);">Questão {{ flashNum }}</span>
+                <span class="kicker" style="letter-spacing:.24em;">Questão {{ flashNum }}</span>
                 <sc-if value="{{ flashFrom }}" hint-placeholder-val="{{ false }}">
                   <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.06em;color:var(--ink-42);">· {{ flashFrom }}</span>
                 </sc-if>
               </div>
-              <div style="font-family:var(--serif);font-size:26px;line-height:1.25;color:var(--ink);">{{ flashText }}</div>
+              <div class="t-body-serif" style="font-size:26px;line-height:1.25;color:var(--ink);">{{ flashText }}</div>
             </div>
-            <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.08em;color:var(--ink-40);text-align:center;margin-top:24px;">toque no cartão para ver a resolução</div>
+            <div class="t-caption" style="letter-spacing:.08em;color:var(--ink-40);text-align:center;margin-top:24px;">toque no cartão para ver a resolução</div>
           </sc-if>
           <sc-if value="{{ flashBack }}" hint-placeholder-val="{{ false }}">
             <div style="flex:1;">
-              <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--ox);margin-bottom:14px;">Resolução</div>
+              <div class="kicker" style="font-size:9px;letter-spacing:.2em;color:var(--ox);margin-bottom:14px;">Resolução</div>
               <sc-for list="{{ flashSolution }}" as="sl" hint-placeholder-count="2">
-                <div style="font-family:'IBM Plex Mono',monospace;font-size:13px;line-height:1.62;color:var(--ink);margin-bottom:10px;">{{ sl }}</div>
+                <div class="t-body" style="line-height:1.62;color:var(--ink);margin-bottom:10px;">{{ sl }}</div>
               </sc-for>
-              <div style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--ox);margin-top:10px;font-weight:500;">→ {{ flashAnswer }}</div>
+              <div class="t-body" style="color:var(--ox);margin-top:10px;font-weight:500;">→ {{ flashAnswer }}</div>
             </div>
-            <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.08em;color:var(--ink-40);text-align:center;margin-top:24px;">toque para virar de volta</div>
+            <div class="t-caption" style="letter-spacing:.08em;color:var(--ink-40);text-align:center;margin-top:24px;">toque para virar de volta</div>
           </sc-if>
         </div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;gap:12px;">
-          <button onClick="{{ flashPrev }}" style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--surface-page);background:transparent;border:1px solid rgba(250,248,243,0.4);border-radius:2px;padding:10px 16px;cursor:pointer;" style-hover="border-color:var(--surface-page);">← anterior</button>
+          <button onClick="{{ flashPrev }}" class="btn btn--on-dark" style="letter-spacing:.1em;border-radius:2px;padding:10px 16px;" style-hover="border-color:var(--surface-page);">← anterior</button>
           <div style="display:flex;gap:10px;">
-            <button onClick="{{ markReview }}" style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--surface-page);background:transparent;border:1px solid rgba(250,248,243,0.55);border-radius:2px;padding:10px 18px;cursor:pointer;" style-hover="border-color:var(--surface-page);">Revisar de novo</button>
-            <button onClick="{{ markKnow }}" style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink);background:var(--surface-page);border:1px solid var(--surface-page);border-radius:2px;padding:10px 18px;cursor:pointer;" style-hover="filter:brightness(0.95);">Eu sei →</button>
+            <button onClick="{{ markReview }}" class="btn btn--on-dark" style="letter-spacing:.12em;border-color:rgba(250,248,243,0.55);border-radius:2px;padding:10px 18px;" style-hover="border-color:var(--surface-page);">Revisar de novo</button>
+            <button onClick="{{ markKnow }}" class="btn btn--on-dark" style="letter-spacing:.12em;--_bg:var(--surface-page);--_fg:var(--ink);--_bd:var(--surface-page);border-radius:2px;padding:10px 18px;" style-hover="filter:brightness(0.95);">Eu sei →</button>
           </div>
         </div>
       </div>
@@ -638,21 +638,21 @@
       <div onClick="{{ stop }}" style="width:100%;max-width:980px;height:100%;max-height:780px;background:var(--surface-raised);border:1px solid var(--ink-30);box-shadow:0 18px 60px var(--ink-24);display:flex;flex-direction:column;">
         <div style="display:flex;justify-content:space-between;align-items:center;padding:18px 26px;border-bottom:1px solid var(--ink-14);flex:none;">
           <div style="display:flex;align-items:baseline;gap:14px;">
-            <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--ox);">{{ material.kicker }}</span>
-            <span style="font-family:var(--serif);font-size:21px;color:var(--ink);font-weight:600;">{{ material.title }}</span>
+            <span class="kicker" style="font-size:10px;letter-spacing:.22em;color:var(--ox);">{{ material.kicker }}</span>
+            <span class="t-subhead" style="color:var(--ink);font-weight:600;">{{ material.title }}</span>
           </div>
           <div style="display:flex;align-items:center;gap:16px;">
-            <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.06em;color:var(--text-muted);">{{ material.meta }}</span>
-            <button style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-tertiary);background:none;border:1px solid var(--ink-20);border-radius:2px;padding:6px 11px;cursor:pointer;" style-hover="color:var(--ox);border-color:var(--ox);">↓ PDF</button>
-            <button onClick="{{ closeMaterial }}" style="font-family:'IBM Plex Mono',monospace;font-size:14px;color:var(--text-muted);background:none;border:1px solid var(--ink-18);border-radius:2px;width:30px;height:30px;cursor:pointer;" style-hover="color:var(--ink);">✕</button>
+            <span class="t-caption" style="letter-spacing:.06em;color:var(--text-muted);">{{ material.meta }}</span>
+            <button class="btn btn--ghost btn--sm" style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-tertiary);" style-hover="color:var(--ox);border-color:var(--ox);">↓ PDF</button>
+            <button onClick="{{ closeMaterial }}" class="btn btn--ghost btn--icon" style="font-size:14px;color:var(--text-muted);" style-hover="color:var(--ink);">✕</button>
           </div>
         </div>
 
         <div class="ox-scroll" style="flex:1;overflow:auto;padding:30px 48px;">
           <div style="max-width:680px;margin:0 auto;">
-            <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-40);margin-bottom:8px;">Conteúdo da aula</div>
-            <textarea value="{{ material.text }}" onInput="{{ material.onText }}" placeholder="Cole/escreva aqui o conteúdo desta aula (slides, definições, exercícios…). Conecte esta aula a um nó de geração para a IA usar este material." class="ox-scroll" style="width:100%;min-height:420px;resize:vertical;font-family:'IBM Plex Serif',Georgia,serif;font-size:15px;line-height:1.7;color:var(--ink);background:var(--surface-sunken);border:1px solid var(--ink-16);border-radius:2px;padding:16px 18px;outline:none;" style-focus="border-color:var(--ox);"></textarea>
-            <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-muted);margin-top:10px;">Conecte (●) esta aula a um nó de geração — o conteúdo entra como contexto da IA.</div>
+            <div class="t-micro" style="letter-spacing:.2em;text-transform:uppercase;color:var(--ink-40);margin-bottom:8px;">Conteúdo da aula</div>
+            <textarea value="{{ material.text }}" onInput="{{ material.onText }}" placeholder="Cole/escreva aqui o conteúdo desta aula (slides, definições, exercícios…). Conecte esta aula a um nó de geração para a IA usar este material." class="ox-scroll textarea" style="width:100%;min-height:420px;resize:vertical;color:var(--ink);background:var(--surface-sunken);border:1px solid var(--ink-16);border-radius:2px;padding:16px 18px;outline:none;" style-focus="border-color:var(--ox);"></textarea>
+            <div class="t-caption" style="color:var(--text-muted);margin-top:10px;">Conecte (●) esta aula a um nó de geração — o conteúdo entra como contexto da IA.</div>
           </div>
         </div>
       </div>
@@ -664,15 +664,15 @@
     <div onClick="{{ closeSearch }}" style="position:absolute;inset:0;z-index:80;background:rgba(28,25,22,0.42);display:flex;align-items:flex-start;justify-content:center;padding-top:96px;" class="ox-modal">
       <div onClick="{{ stop }}" class="ox-sheet" style="width:100%;max-width:600px;background:var(--surface-raised);border:1px solid var(--ink-16);box-shadow:0 1px 1px var(--ink-04),0 24px 64px var(--ink-28);">
         <div style="display:flex;align-items:center;gap:14px;padding:18px 22px;border-bottom:1px solid var(--ink-14);">
-          <span style="width:7px;height:7px;background:var(--ox);display:inline-block;flex:none;"></span>
-          <input ref="{{ setSearchInput }}" value="{{ search.q }}" onInput="{{ onSearchInput }}" onKeyDown="{{ onSearchKey }}" placeholder="Buscar disciplinas, aulas, nós…" style="flex:1;font-family:'IBM Plex Mono',monospace;font-size:15px;color:var(--ink);background:transparent;border:none;outline:none;" />
-          <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.06em;color:var(--ink-40);border:1px solid var(--ink-20);border-radius:2px;padding:2px 6px;">ESC</span>
+          <span class="ox-dot" style="width:7px;height:7px;background:var(--ox);display:inline-block;flex:none;"></span>
+          <input ref="{{ setSearchInput }}" value="{{ search.q }}" onInput="{{ onSearchInput }}" onKeyDown="{{ onSearchKey }}" placeholder="Buscar disciplinas, aulas, nós…" class="input" style="flex:1;font-family:'IBM Plex Mono',monospace;font-size:15px;color:var(--ink);background:transparent;border:none;outline:none;" />
+          <span class="kbd" style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.06em;color:var(--ink-40);border:1px solid var(--ink-20);border-radius:2px;padding:2px 6px;">ESC</span>
         </div>
 
         <div class="ox-scroll" style="max-height:50vh;overflow:auto;">
           <sc-if value="{{ searchEmpty }}" hint-placeholder-val="{{ true }}">
             <div style="padding:22px;">
-              <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-40);margin-bottom:14px;">Sugestões</div>
+              <div class="kicker kicker--ink" style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-40);margin-bottom:14px;">Sugestões</div>
               <div style="display:flex;flex-wrap:wrap;gap:9px;">
                 <sc-for list="{{ suggestions }}" as="sg" hint-placeholder-count="4">
                   <button onClick="{{ sg.onPick }}" style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink);background:var(--surface-page);border:1px solid var(--ink-18);border-radius:2px;padding:7px 12px;cursor:pointer;" style-hover="border-color:var(--ox);color:var(--ox);">{{ sg.text }}</button>
@@ -685,10 +685,10 @@
             <div style="padding:8px 0 12px;">
               <sc-for list="{{ searchResults }}" as="r" hint-placeholder-count="4">
                 <button onClick="{{ r.onPick }}" style="display:flex;align-items:center;gap:16px;width:100%;padding:13px 22px;background:{{ r.rowBg }};border:none;border-bottom:1px solid var(--ink-07);cursor:pointer;text-align:left;" style-hover="background:var(--surface-page);">
-                  <span style="font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.14em;color:var(--ox);border:1px solid var(--ox-35);padding:3px 6px;width:46px;text-align:center;flex:none;">{{ r.type }}</span>
+                  <span class="badge badge--accent" style="font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.14em;color:var(--ox);border:1px solid var(--ox-35);padding:3px 6px;width:46px;text-align:center;flex:none;">{{ r.type }}</span>
                   <span style="flex:1;min-width:0;">
-                    <span style="font-family:var(--serif);font-size:18px;color:var(--ink);display:block;line-height:1.2;">{{ r.title }}</span>
-                    <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--ink-50);display:block;margin-top:2px;">{{ r.context }}</span>
+                    <span class="t-subhead" style="font-family:var(--serif);font-size:18px;color:var(--ink);display:block;line-height:1.2;">{{ r.title }}</span>
+                    <span class="t-caption" style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--ink-50);display:block;margin-top:2px;">{{ r.context }}</span>
                   </span>
                   <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-34);flex:none;">↗</span>
                 </button>
@@ -697,7 +697,7 @@
           </sc-if>
 
           <sc-if value="{{ searchNoResults }}" hint-placeholder-val="{{ false }}">
-            <div style="padding:34px 22px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text-muted);">Nada encontrado para "{{ search.q }}".</div>
+            <div class="t-body" style="padding:34px 22px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text-muted);">Nada encontrado para "{{ search.q }}".</div>
           </sc-if>
         </div>
       </div>
@@ -706,24 +706,24 @@
 
   <!-- ===================== NEW DISCIPLINE ===================== -->
   <sc-if value="{{ newDisc }}" hint-placeholder-val="{{ false }}">
-    <div onClick="{{ closeNewDisc }}" style="position:absolute;inset:0;z-index:80;background:rgba(28,25,22,0.46);display:flex;align-items:flex-start;justify-content:center;padding:40px 24px;overflow:auto;" class="ox-scroll ox-modal">
-      <div onClick="{{ stop }}" class="ox-sheet" style="width:100%;max-width:460px;background:var(--surface-raised);border:1px solid var(--ink-16);box-shadow:0 1px 1px var(--ink-04),0 24px 70px var(--ink-28);padding:34px 36px 30px;margin:auto;">
-        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--ox);margin-bottom:12px;">Novo quadro</div>
-        <h2 style="font-family:var(--serif);font-size:34px;line-height:1;color:var(--ink);font-weight:600;margin:0 0 24px;">Nova disciplina</h2>
+    <div onClick="{{ closeNewDisc }}" style="position:absolute;inset:0;z-index:80;display:flex;align-items:flex-start;justify-content:center;padding:40px 24px;overflow:auto;" class="scrim ox-scroll ox-modal">
+      <div onClick="{{ stop }}" class="sheet sheet--dialog ox-sheet" style="width:100%;max-width:460px;padding:34px 36px 30px;margin:auto;">
+        <div class="kicker" style="margin-bottom:12px;">Novo quadro</div>
+        <h2 class="t-heading" style="margin:0 0 24px;">Nova disciplina</h2>
 
-        <label style="display:block;font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-50);margin-bottom:8px;">Nome da disciplina</label>
-        <input ref="{{ setNewName }}" onKeyDown="{{ onNewKey }}" placeholder="ex.: Estruturas de Dados" style="width:100%;font-family:var(--serif);font-size:22px;color:var(--ink);background:var(--surface-sunken);border:1px solid var(--ink-22);border-radius:2px;padding:11px 13px;outline:none;margin-bottom:20px;" style-focus="border-color:var(--ox);" />
+        <label class="field-label" style="display:block;margin-bottom:8px;">Nome da disciplina</label>
+        <input ref="{{ setNewName }}" onKeyDown="{{ onNewKey }}" placeholder="ex.: Estruturas de Dados" class="input input--serif" style="width:100%;font-size:22px;margin-bottom:20px;" style-focus="border-color:var(--ox);" />
 
-        <label style="display:block;font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-50);margin-bottom:8px;">Semestre</label>
-        <input ref="{{ setNewSem }}" value="2026.1" style="width:100%;font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--ink);background:var(--surface-sunken);border:1px solid var(--ink-22);border-radius:2px;padding:11px 13px;outline:none;margin-bottom:24px;" style-focus="border-color:var(--ox);" />
+        <label class="field-label" style="display:block;margin-bottom:8px;">Semestre</label>
+        <input ref="{{ setNewSem }}" value="2026.1" class="input" style="width:100%;margin-bottom:24px;" style-focus="border-color:var(--ox);" />
 
         <div style="border-top:1px solid var(--ink-12);padding-top:20px;margin-bottom:6px;">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-            <label style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-50);">Cronograma / ementa <span style="color:var(--text-faint);">(opcional)</span></label>
+            <label class="field-label">Cronograma / ementa <span style="color:var(--text-faint);">(opcional)</span></label>
             <input ref="{{ setSylInput }}" type="file" accept="application/pdf,.pdf" onChange="{{ onSyllabusPdf }}" style="display:none;" />
-            <button onClick="{{ pickSyllabusPdf }}" title="Preencher a partir de um PDF" style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-tertiary);background:transparent;border:1px solid var(--ink-20);border-radius:2px;padding:4px 8px;cursor:pointer;" style-hover="color:var(--ox);border-color:var(--ox);">↥ do PDF</button>
+            <button onClick="{{ pickSyllabusPdf }}" title="Preencher a partir de um PDF" class="btn btn--ghost btn--sm" style="font-size:9px;letter-spacing:.08em;padding:4px 8px;" style-hover="color:var(--ox);border-color:var(--ox);">↥ do PDF</button>
           </div>
-          <textarea value="{{ newDisc.syllabus }}" onInput="{{ setSyllabus }}" placeholder="cole aqui o cronograma/ementa — a IA cria um nó por matéria…" class="ox-scroll" style="width:100%;height:96px;resize:vertical;font-family:'IBM Plex Mono',monospace;font-size:11.5px;line-height:1.55;color:var(--ink-78);background:var(--surface-sunken);border:1px solid var(--ink-22);border-radius:2px;padding:10px;outline:none;margin-bottom:14px;" style-focus="border-color:var(--ox);"></textarea>
+          <textarea value="{{ newDisc.syllabus }}" onInput="{{ setSyllabus }}" placeholder="cole aqui o cronograma/ementa — a IA cria um nó por matéria…" class="textarea textarea--mono ox-scroll" style="width:100%;height:96px;font-size:11.5px;margin-bottom:14px;" style-focus="border-color:var(--ox);"></textarea>
           <div style="display:flex;justify-content:space-between;align-items:center;">
             <div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--ink-60);max-width:300px;">Gerar matérias com IA<div style="font-size:9px;color:var(--ink-42);margin-top:2px;">monta um pré-canvas com título + um nó por matéria</div></div>
             <button onClick="{{ toggleUseAI }}" style="width:42px;height:23px;border-radius:2px;border:1px solid var(--ink-22);background:{{ newDisc.aiTrack }};position:relative;cursor:pointer;padding:0;flex:none;">
@@ -733,8 +733,8 @@
         </div>
 
         <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:24px;">
-          <button onClick="{{ closeNewDisc }}" style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-tertiary);background:none;border:none;cursor:pointer;padding:11px 12px;" style-hover="color:var(--ink);">Cancelar</button>
-          <button onClick="{{ createDisc }}" style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--surface-raised);background:var(--ox);border:none;border-radius:2px;padding:11px 20px;cursor:pointer;" style-hover="filter:brightness(0.88);">{{ newDisc.createLabel }}</button>
+          <button onClick="{{ closeNewDisc }}" class="btn btn--quiet" style="letter-spacing:.12em;padding:11px 12px;" style-hover="color:var(--ink);">Cancelar</button>
+          <button onClick="{{ createDisc }}" class="btn btn--primary" style="letter-spacing:.12em;padding:11px 20px;" style-hover="filter:brightness(0.88);">{{ newDisc.createLabel }}</button>
         </div>
       </div>
     </div>
@@ -743,22 +743,22 @@
   <!-- ===================== DISCIPLINE MENU (shelf) ===================== -->
   <sc-if value="{{ discMenu }}" hint-placeholder-val="{{ false }}">
     <div onClick="{{ closeDiscMenu }}" style="position:absolute;inset:0;z-index:80;background:rgba(28,25,22,0.46);display:flex;align-items:center;justify-content:center;padding:24px;" class="ox-modal">
-      <div onClick="{{ stop }}" class="ox-sheet" style="width:100%;max-width:380px;background:var(--surface-raised);border:1px solid var(--ink-16);box-shadow:0 1px 1px var(--ink-04),0 24px 70px var(--ink-28);padding:28px 30px 22px;">
-        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--ox);margin-bottom:10px;">Disciplina</div>
-        <h2 style="font-family:var(--serif);font-size:28px;line-height:1.05;color:var(--ink);font-weight:600;margin:0 0 4px;">{{ discMenu.name }}</h2>
-        <div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.04em;color:var(--ink-50);margin-bottom:18px;">{{ discMenu.meta }}</div>
+      <div onClick="{{ stop }}" class="ox-sheet sheet sheet--dialog" style="width:100%;max-width:380px;background:var(--surface-raised);border:1px solid var(--ink-16);box-shadow:0 1px 1px var(--ink-04),0 24px 70px var(--ink-28);padding:28px 30px 22px;">
+        <div class="kicker" style="margin-bottom:10px;">Disciplina</div>
+        <h2 class="t-heading" style="margin:0 0 4px;">{{ discMenu.name }}</h2>
+        <div class="t-caption" style="color:var(--ink-50);margin-bottom:18px;">{{ discMenu.meta }}</div>
 
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
           <div style="display:flex;gap:8px;">
             <sc-for list="{{ discMenu.colors }}" as="c" hint-placeholder-count="6">
-              <button onClick="{{ c.onPick }}" title="Cor" style="width:24px;height:24px;border-radius:2px;background:{{ c.color }};border:1px solid var(--ink-20);cursor:pointer;position:relative;" style-hover="transform:scale(1.08);">
+              <button onClick="{{ c.onPick }}" class="btn btn--icon" title="Cor" style="width:24px;height:24px;--_bd:var(--ink-20);background:{{ c.color }};position:relative;" style-hover="transform:scale(1.08);">
                 <sc-if value="{{ c.selected }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;inset:-4px;border:1px solid var(--ink);border-radius:3px;"></span></sc-if>
               </button>
             </sc-for>
           </div>
           <div style="display:flex;gap:6px;">
-            <sc-if value="{{ discMenu.canLeft }}" hint-placeholder-val="{{ true }}"><button onClick="{{ discMenu.onMoveLeft }}" title="Mover para a esquerda" style="width:26px;height:26px;border:1px solid var(--ink-20);border-radius:2px;background:var(--surface-raised);color:var(--ink);font-family:'IBM Plex Mono',monospace;cursor:pointer;" style-hover="border-color:var(--ox);">←</button></sc-if>
-            <sc-if value="{{ discMenu.canRight }}" hint-placeholder-val="{{ true }}"><button onClick="{{ discMenu.onMoveRight }}" title="Mover para a direita" style="width:26px;height:26px;border:1px solid var(--ink-20);border-radius:2px;background:var(--surface-raised);color:var(--ink);font-family:'IBM Plex Mono',monospace;cursor:pointer;" style-hover="border-color:var(--ox);">→</button></sc-if>
+            <sc-if value="{{ discMenu.canLeft }}" hint-placeholder-val="{{ true }}"><button onClick="{{ discMenu.onMoveLeft }}" class="btn btn--icon" title="Mover para a esquerda" style="width:26px;height:26px;--_bd:var(--ink-20);" style-hover="border-color:var(--ox);">←</button></sc-if>
+            <sc-if value="{{ discMenu.canRight }}" hint-placeholder-val="{{ true }}"><button onClick="{{ discMenu.onMoveRight }}" class="btn btn--icon" title="Mover para a direita" style="width:26px;height:26px;--_bd:var(--ink-20);" style-hover="border-color:var(--ox);">→</button></sc-if>
           </div>
         </div>
 
@@ -771,14 +771,14 @@
 
   <!-- ===================== RENAME DISCIPLINE ===================== -->
   <sc-if value="{{ renameDisc }}" hint-placeholder-val="{{ false }}">
-    <div onClick="{{ closeRename }}" style="position:absolute;inset:0;z-index:81;background:var(--ink-34);display:flex;align-items:center;justify-content:center;padding:24px;">
-      <div onClick="{{ stop }}" style="width:100%;max-width:440px;background:var(--surface-raised);border:1px solid var(--ink-30);box-shadow:0 18px 60px var(--ink-24);padding:34px 36px 30px;">
-        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--ox);margin-bottom:12px;">Renomear</div>
-        <h2 style="font-family:var(--serif);font-size:30px;line-height:1;color:var(--ink);font-weight:600;margin:0 0 22px;">Nome da disciplina</h2>
-        <input ref="{{ setRenameInput }}" title="novo nome da disciplina" value="{{ renameDisc.name }}" onInput="{{ setRenameName }}" onKeyDown="{{ onRenameKey }}" style="width:100%;font-family:var(--serif);font-size:22px;color:var(--ink);background:var(--surface-sunken);border:1px solid var(--ink-22);border-radius:2px;padding:11px 13px;outline:none;margin-bottom:26px;" style-focus="border-color:var(--ox);" />
+    <div onClick="{{ closeRename }}" class="scrim ox-modal" style="position:absolute;inset:0;z-index:81;padding:24px;">
+      <div onClick="{{ stop }}" class="modal modal--menu ox-riser" style="width:100%;max-width:440px;padding:34px 36px 30px;">
+        <div class="kicker" style="margin-bottom:12px;">Renomear</div>
+        <h2 class="t-heading" style="margin:0 0 22px;">Nome da disciplina</h2>
+        <input ref="{{ setRenameInput }}" title="novo nome da disciplina" value="{{ renameDisc.name }}" onInput="{{ setRenameName }}" onKeyDown="{{ onRenameKey }}" class="input input--serif" style="width:100%;font-size:22px;margin-bottom:26px;" style-focus="border-color:var(--ox);" />
         <div style="display:flex;justify-content:flex-end;gap:12px;">
-          <button onClick="{{ closeRename }}" style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-tertiary);background:none;border:none;cursor:pointer;padding:11px 12px;" style-hover="color:var(--ink);">Cancelar</button>
-          <button onClick="{{ commitRename }}" style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--surface-raised);background:var(--ox);border:none;border-radius:2px;padding:11px 20px;cursor:pointer;" style-hover="filter:brightness(0.88);">Salvar</button>
+          <button onClick="{{ closeRename }}" class="btn btn--quiet" style="padding:11px 12px;" style-hover="color:var(--ink);">Cancelar</button>
+          <button onClick="{{ commitRename }}" class="btn btn--primary" style="padding:11px 20px;" style-hover="filter:brightness(0.88);">Salvar</button>
         </div>
       </div>
     </div>
@@ -786,36 +786,36 @@
 
   <!-- ===================== NOTE EDITOR (Notion-style) ===================== -->
   <sc-if value="{{ noteEdit }}" hint-placeholder-val="{{ false }}">
-    <div onClick="{{ closeNoteEditor }}" style="position:absolute;inset:0;z-index:82;background:rgba(28,25,22,0.46);display:flex;align-items:flex-start;justify-content:center;padding:40px 24px;overflow:auto;" class="ox-scroll ox-modal">
-      <div onClick="{{ stop }}" class="ox-sheet" style="width:100%;max-width:760px;background:var(--surface-raised);border:1px solid var(--ink-16);box-shadow:0 1px 1px var(--ink-04),0 24px 70px var(--ink-28);margin:auto;display:flex;flex-direction:column;min-height:480px;">
+    <div onClick="{{ closeNoteEditor }}" style="position:absolute;inset:0;z-index:82;background:rgba(28,25,22,0.46);display:flex;align-items:flex-start;justify-content:center;padding:40px 24px;overflow:auto;" class="scrim ox-scroll ox-modal">
+      <div onClick="{{ stop }}" class="sheet ox-sheet" style="width:100%;max-width:760px;background:var(--surface-raised);border:1px solid var(--ink-16);box-shadow:0 1px 1px var(--ink-04),0 24px 70px var(--ink-28);margin:auto;display:flex;flex-direction:column;min-height:480px;">
         <div style="display:flex;justify-content:space-between;align-items:center;padding:18px 28px;border-bottom:1px solid var(--ink-12);flex:none;">
-          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--ox);">Nota</span>
+          <span class="kicker">Nota</span>
           <div style="display:flex;align-items:center;gap:12px;">
-            <span style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:var(--ink-40);">{{ noteEdit.chars }}</span>
-            <button onClick="{{ toggleNotePreview }}" style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-60);background:transparent;border:1px solid var(--ink-20);border-radius:2px;padding:6px 11px;cursor:pointer;" style-hover="color:var(--ox);border-color:var(--ox);">{{ noteEdit.modeLabel }}</button>
-            <button onClick="{{ closeNoteEditor }}" style="font-family:'IBM Plex Mono',monospace;font-size:14px;color:var(--text-muted);background:none;border:1px solid var(--ink-18);border-radius:2px;width:30px;height:30px;cursor:pointer;" style-hover="color:var(--ink);border-color:var(--ink-40);">✕</button>
+            <span class="t-caption" style="color:var(--ink-40);">{{ noteEdit.chars }}</span>
+            <button onClick="{{ toggleNotePreview }}" class="btn btn--ghost btn--sm" style="font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-60);border-color:var(--ink-20);border-radius:2px;" style-hover="color:var(--ox);border-color:var(--ox);">{{ noteEdit.modeLabel }}</button>
+            <button onClick="{{ closeNoteEditor }}" class="btn btn--icon" style="font-size:14px;color:var(--text-muted);border-color:var(--ink-18);border-radius:2px;width:30px;height:30px;" style-hover="color:var(--ink);border-color:var(--ink-40);">✕</button>
           </div>
         </div>
 
         <div style="padding:30px 48px 14px;flex:none;">
-          <input value="{{ noteEdit.title }}" onInput="{{ noteEdit.onTitle }}" placeholder="Sem título" style="width:100%;font-family:var(--serif);font-size:38px;line-height:1.1;color:var(--ink);font-weight:600;background:transparent;border:none;outline:none;padding:0;" />
+          <input value="{{ noteEdit.title }}" onInput="{{ noteEdit.onTitle }}" placeholder="Sem título" class="input--seam input--serif t-title" style="width:100%;line-height:1.1;color:var(--ink);font-weight:600;padding:0;" />
         </div>
 
         <sc-if value="{{ noteEdit.isEdit }}" hint-placeholder-val="{{ true }}">
-          <textarea ref="{{ setNoteBodyRef }}" value="{{ noteEdit.content }}" onInput="{{ noteEdit.onBody }}" onKeyDown="{{ noteEdit.onBodyKey }}" placeholder="Escreva aqui…  ( # ## ### títulos · - / 1. listas · &gt; citação · --- linha · **negrito** *itálico* `código` [link](url) · ⌘B/⌘I )" class="ox-scroll" style="flex:1;width:100%;min-height:300px;resize:none;font-family:'IBM Plex Serif',Georgia,serif;font-size:16px;line-height:1.7;color:var(--ink);background:transparent;border:none;outline:none;padding:8px 48px 44px;"></textarea>
+          <textarea ref="{{ setNoteBodyRef }}" value="{{ noteEdit.content }}" onInput="{{ noteEdit.onBody }}" onKeyDown="{{ noteEdit.onBodyKey }}" placeholder="Escreva aqui…  ( # ## ### títulos · - / 1. listas · &gt; citação · --- linha · **negrito** *itálico* `código` [link](url) · ⌘B/⌘I )" class="textarea ox-scroll" style="flex:1;width:100%;min-height:300px;resize:none;font-size:16px;line-height:1.7;color:var(--ink);background:transparent;border:none;outline:none;padding:8px 48px 44px;"></textarea>
         </sc-if>
 
         <sc-if value="{{ noteEdit.isPreview }}" hint-placeholder-val="{{ false }}">
           <div class="ox-scroll" style="flex:1;overflow:auto;padding:8px 48px 44px;">
             <sc-for list="{{ noteEdit.blocks }}" as="b" hint-placeholder-count="3">
-              <sc-if value="{{ b.isH1 }}" hint-placeholder-val="{{ false }}"><h2 style="font-family:var(--serif);font-size:30px;line-height:1.15;color:var(--ink);font-weight:600;margin:18px 0 8px;">{{ b.content }}</h2></sc-if>
-              <sc-if value="{{ b.isH2 }}" hint-placeholder-val="{{ false }}"><h3 style="font-family:var(--serif);font-size:23px;line-height:1.2;color:var(--ink);font-weight:600;margin:16px 0 6px;">{{ b.content }}</h3></sc-if>
-              <sc-if value="{{ b.isH3 }}" hint-placeholder-val="{{ false }}"><h4 style="font-family:var(--serif);font-size:19px;line-height:1.25;color:var(--ink);font-weight:600;margin:14px 0 5px;">{{ b.content }}</h4></sc-if>
+              <sc-if value="{{ b.isH1 }}" hint-placeholder-val="{{ false }}"><h2 class="t-heading" style="color:var(--ink);margin:18px 0 8px;">{{ b.content }}</h2></sc-if>
+              <sc-if value="{{ b.isH2 }}" hint-placeholder-val="{{ false }}"><h3 class="t-subhead" style="color:var(--ink);margin:16px 0 6px;">{{ b.content }}</h3></sc-if>
+              <sc-if value="{{ b.isH3 }}" hint-placeholder-val="{{ false }}"><h4 class="t-lead" style="font-size:19px;color:var(--ink);font-weight:600;margin:14px 0 5px;">{{ b.content }}</h4></sc-if>
               <sc-if value="{{ b.isLi }}" hint-placeholder-val="{{ false }}"><div style="display:flex;gap:11px;align-items:flex-start;margin:5px 0;"><span style="width:5px;height:5px;background:var(--ox);margin-top:9px;flex:none;"></span><span style="font-family:'IBM Plex Serif',Georgia,serif;font-size:16px;line-height:1.65;color:var(--ink-85);">{{ b.content }}</span></div></sc-if>
-              <sc-if value="{{ b.isOl }}" hint-placeholder-val="{{ false }}"><div style="display:flex;gap:11px;align-items:flex-start;margin:5px 0;"><span style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--ox);margin-top:2px;flex:none;min-width:20px;">{{ b.num }}</span><span style="font-family:'IBM Plex Serif',Georgia,serif;font-size:16px;line-height:1.65;color:var(--ink-85);">{{ b.content }}</span></div></sc-if>
-              <sc-if value="{{ b.isQuote }}" hint-placeholder-val="{{ false }}"><div style="border-left:3px solid var(--ox);padding:2px 0 2px 16px;margin:8px 0;font-family:'IBM Plex Serif',Georgia,serif;font-style:italic;font-size:16px;line-height:1.6;color:var(--text-secondary);">{{ b.content }}</div></sc-if>
+              <sc-if value="{{ b.isOl }}" hint-placeholder-val="{{ false }}"><div style="display:flex;gap:11px;align-items:flex-start;margin:5px 0;"><span class="t-body" style="color:var(--ox);margin-top:2px;flex:none;min-width:20px;">{{ b.num }}</span><span style="font-family:'IBM Plex Serif',Georgia,serif;font-size:16px;line-height:1.65;color:var(--ink-85);">{{ b.content }}</span></div></sc-if>
+              <sc-if value="{{ b.isQuote }}" hint-placeholder-val="{{ false }}"><div class="t-body-serif t-body-serif--quote" style="border-left:3px solid var(--ox);padding:2px 0 2px 16px;margin:8px 0;line-height:1.6;color:var(--text-secondary);">{{ b.content }}</div></sc-if>
               <sc-if value="{{ b.isHr }}" hint-placeholder-val="{{ false }}"><div style="height:1px;background:var(--ink-16);margin:18px 0;"></div></sc-if>
-              <sc-if value="{{ b.isP }}" hint-placeholder-val="{{ false }}"><p style="font-family:'IBM Plex Serif',Georgia,serif;font-size:16px;line-height:1.7;color:var(--ink-85);margin:0 0 10px;">{{ b.content }}</p></sc-if>
+              <sc-if value="{{ b.isP }}" hint-placeholder-val="{{ false }}"><p class="t-body-serif" style="color:var(--ink-85);margin:0 0 10px;">{{ b.content }}</p></sc-if>
               <sc-if value="{{ b.isSp }}" hint-placeholder-val="{{ false }}"><div style="height:10px;"></div></sc-if>
             </sc-for>
           </div>
@@ -831,18 +831,18 @@
     <div onClick="{{ closeImg }}" style="position:absolute;inset:0;z-index:85;background:rgba(20,18,16,0.82);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:34px;" class="ox-modal">
       <img src="{{ imgViewUrl }}" alt="{{ imgViewCaption }}" onClick="{{ stop }}" class="ox-riser" style="max-width:94%;max-height:84%;object-fit:contain;background:var(--surface-raised);border-radius:6px;border:1px solid rgba(250,248,243,0.3);box-shadow:0 30px 80px rgba(0,0,0,0.5);" />
       <div onClick="{{ stop }}" style="display:flex;align-items:center;gap:16px;margin-top:16px;">
-        <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--surface-page);max-width:60vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ imgViewCaption }}</span>
-        <button onClick="{{ closeImg }}" style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--surface-page);background:transparent;border:1px solid rgba(250,248,243,0.45);border-radius:2px;padding:8px 14px;cursor:pointer;" style-hover="border-color:var(--surface-page);">Fechar ✕</button>
+        <span class="t-label" style="color:var(--surface-page);max-width:60vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ imgViewCaption }}</span>
+        <button onClick="{{ closeImg }}" class="btn btn--ghost btn--on-dark btn--sm" style="color:var(--surface-page);background:transparent;border:1px solid rgba(250,248,243,0.45);" style-hover="border-color:var(--surface-page);">Fechar ✕</button>
       </div>
     </div>
   </sc-if>
 
   <!-- ===================== AI POPOVER ===================== -->
   <sc-if value="{{ popover }}" hint-placeholder-val="{{ false }}">
-    <div onPointerDown="{{ stop }}" class="ox-pop" style="position:absolute;left:{{ popover.left }}px;top:{{ popover.top }}px;width:320px;background:var(--surface-raised);border:1px solid var(--ink-20);border-radius:8px;box-shadow:0 2px 6px var(--ink-06),0 14px 40px var(--ink-18);padding:16px 16px 14px;z-index:60;">
+    <div onPointerDown="{{ stop }}" class="ox-pop popover" style="position:absolute;left:{{ popover.left }}px;top:{{ popover.top }}px;width:320px;background:var(--surface-raised);border:1px solid var(--ink-20);border-radius:8px;box-shadow:0 2px 6px var(--ink-06),0 14px 40px var(--ink-18);padding:16px 16px 14px;z-index:60;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:13px;">
-        <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--ox);display:flex;align-items:center;gap:7px;"><span style="width:5px;height:5px;background:var(--ox);display:inline-block;"></span>Invocar IA</span>
-        <button onClick="{{ closePopover }}" style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text-muted);background:none;border:none;cursor:pointer;padding:0;line-height:1;" style-hover="color:var(--ink);">✕</button>
+        <span class="kicker" style="display:flex;align-items:center;gap:7px;"><span class="ox-dot ox-dot--sm"></span>Invocar IA</span>
+        <button onClick="{{ closePopover }}" class="btn btn--quiet btn--icon" style="font-size:12px;color:var(--text-muted);padding:0;line-height:1;" style-hover="color:var(--ink);">✕</button>
       </div>
       <div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.08em;color:var(--ink-50);text-transform:uppercase;margin-bottom:7px;">Lê de</div>
       <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;min-height:20px;">
@@ -850,7 +850,7 @@
           <span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--ink);border:1px solid var(--ink-22);border-radius:2px;padding:3px 8px;">{{ chip }}</span>
         </sc-for>
         <sc-if value="{{ popover.empty }}" hint-placeholder-val="{{ false }}">
-          <span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--text-muted);font-style:italic;">nenhum nó conectado — conecte aulas para dar contexto</span>
+          <span class="t-body" style="font-size:10.5px;color:var(--text-muted);font-style:italic;">nenhum nó conectado — conecte aulas para dar contexto</span>
         </sc-if>
       </div>
       <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:11px;">
@@ -869,17 +869,17 @@
           </sc-for>
         </div>
       </div>
-      <textarea ref="{{ setAiInput }}" value="{{ popover.text }}" onInput="{{ onPopInput }}" onKeyDown="{{ onPopKey }}" placeholder="ex.: faça um bloco de questões das aulas 1 e 2" style="width:100%;height:62px;resize:none;font-family:'IBM Plex Mono',monospace;font-size:12px;line-height:1.5;color:var(--ink);background:var(--surface-sunken);border:1px solid var(--ink-22);border-radius:2px;padding:10px;outline:none;" style-focus="border-color:var(--ox);"></textarea>
+      <textarea ref="{{ setAiInput }}" value="{{ popover.text }}" onInput="{{ onPopInput }}" onKeyDown="{{ onPopKey }}" placeholder="ex.: faça um bloco de questões das aulas 1 e 2" class="textarea textarea--mono" style="width:100%;height:62px;resize:none;background:var(--surface-sunken);" style-focus="border-color:var(--ox);"></textarea>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;">
         <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.08em;color:var(--ink-40);text-transform:uppercase;">↵ gerar · esc fecha</span>
-        <button onClick="{{ submitGen }}" style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--surface-raised);background:var(--ox);border:none;border-radius:2px;padding:9px 17px;cursor:pointer;" style-hover="filter:brightness(0.88);">Gerar</button>
+        <button onClick="{{ submitGen }}" class="btn btn--primary" style="font-size:11px;letter-spacing:.14em;padding:9px 17px;" style-hover="filter:brightness(0.88);">Gerar</button>
       </div>
     </div>
   </sc-if>
 
   <!-- ===================== TOAST ===================== -->
   <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
-    <div class="ox-toast" style="position:absolute;left:50%;bottom:30px;transform:translateX(-50%);z-index:90;background:var(--ink);color:var(--surface-page);font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.06em;padding:11px 17px;border-radius:7px;box-shadow:0 8px 26px var(--ink-28);">{{ toast }}</div>
+    <div class="ox-toast toast" style="position:absolute;left:50%;bottom:30px;transform:translateX(-50%);z-index:90;background:var(--ink);color:var(--surface-page);">{{ toast }}</div>
   </sc-if>
 
 </div>
